@@ -14,10 +14,21 @@
 
   function api(payload) {
     payload.pin = cfg.pin;
+    if (!/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/.test(cfg.url)) {
+      return Promise.resolve({ ok: false, error: "Adresa skriptu musí začínat https://script.google.com/macros/s/ a končit /exec." });
+    }
     // bez hlavičky Content-Type – jinak by prohlížeč blokoval požadavek na Google
     return fetch(cfg.url, { method: "POST", body: JSON.stringify(payload) })
-      .then(function (r) { return r.json(); })
-      .catch(function () { return { ok: false, error: "Nepodařilo se spojit se skriptem. Zkontroluj internet a adresu v Nastavení." }; });
+      .then(function (r) { return r.text(); })
+      .then(function (text) {
+        try { return JSON.parse(text); }
+        catch (e) {
+          // skript místo odpovědi vrátil chybovou stránku – ukážeme její text
+          var plain = text.replace(/<style[\s\S]*?<\/style>/gi, "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+          return { ok: false, error: "Skript vrátil chybu: " + plain.slice(0, 200) };
+        }
+      })
+      .catch(function () { return { ok: false, error: "Nepodařilo se spojit se skriptem. Zkontroluj internet a že je u implementace „Kdo má přístup: Kdokoli“." }; });
   }
 
   /* --- nastavení --- */
@@ -42,8 +53,8 @@
   function loadTables() {
     return api({ action: "tables" }).then(function (res) {
       if (!res.ok) {
-        if (res.error === "Špatný PIN.") { openSettings(); msg("cfg-msg", res.error, "bad"); }
-        else msg("order-msg", res.error, "bad");
+        openSettings();
+        msg("cfg-msg", res.error, "bad");
         return false;
       }
       free = res.tables;
