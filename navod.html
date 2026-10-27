@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Návod pro pokladní – Maturitní ples 2027</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #e6b84f; --gold-mid: #f4cf63; --gold-hi: #fff1b8; --butter: #fdf08a;
+    --text: #f6efd9; --muted: #a69a7c; --line: rgba(232,190,90,.2); --bg: #000; --card: #0b0905;
+    --red: #ff8a7a; --green: #8fe3a1;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Montserrat", sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; padding: 2rem 1.2rem 4rem; }
+  .wrap { max-width: 860px; margin: 0 auto; }
+  h1, h2 { font-family: "Archivo Black", sans-serif; font-weight: 400; text-transform: uppercase; }
+  h1 { font-size: clamp(1.8rem, 6vw, 2.8rem); line-height: 1.05; color: var(--gold-mid); }
+  h2 { font-size: 1.25rem; margin: 2.6rem 0 1rem; color: var(--gold); }
+  .eyebrow { font-weight: 800; font-size: .7rem; letter-spacing: .35em; text-transform: uppercase; color: var(--gold); margin-bottom: .6rem; }
+  .lead { color: var(--muted); margin-top: .8rem; max-width: 640px; }
+  a { color: var(--gold-mid); }
+
+  /* rychlý přehled */
+  .flow { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.6rem; align-items: center; }
+  .flow span { border: 1px solid var(--gold); border-radius: 999px; padding: .35rem .8rem; font-weight: 800; font-size: .78rem; color: var(--gold-hi); background: rgba(230,184,79,.08); }
+  .flow i { color: var(--gold); font-style: normal; }
+
+  /* kroky */
+  .step { display: grid; grid-template-columns: 56px 1fr; gap: 1rem; padding: 1.4rem 0; border-top: 1px solid var(--line); }
+  .num { width: 48px; height: 48px; border-radius: 50%; background: var(--butter); color: #1a1406; display: grid; place-items: center; font-family: "Archivo Black", sans-serif; font-size: 1.3rem; }
+  .step h3 { font-size: 1.05rem; font-weight: 800; color: var(--gold-hi); margin-bottom: .3rem; }
+  .step p, .step li { color: var(--text); font-size: .95rem; }
+  .step ul { margin: .4rem 0 0 1.1rem; }
+  .step .why { color: var(--muted); font-size: .85rem; margin-top: .4rem; }
+
+  /* ukázky obrazovek */
+  .mock { margin-top: .9rem; border: 1px solid rgba(230,184,79,.45); border-radius: 16px; background: var(--card); padding: 1rem; max-width: 420px; font-size: .85rem; }
+  .mock .lbl { font-weight: 800; font-size: .6rem; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); margin-bottom: .3rem; }
+  .mock .input { border: 1px solid rgba(230,184,79,.35); border-radius: 10px; padding: .45rem .7rem; background: #000; color: var(--text); margin-bottom: .5rem; }
+  .mock .row { display: flex; gap: .5rem; }
+  .mock .row > div { flex: 1; }
+  .mock .note { color: var(--muted); font-size: .78rem; margin: .3rem 0 .6rem; }
+  .mock .warn { color: var(--red); }
+  .mock .ok { color: var(--green); }
+  .btn { display: inline-block; background: var(--butter); color: #1a1406; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; font-size: .72rem; border-radius: 999px; padding: .55rem 1.1rem; }
+  .btn.sec { background: transparent; color: var(--gold); border: 1px solid rgba(230,184,79,.5); }
+  .link { color: var(--gold); text-decoration: underline; font-weight: 600; }
+  .seats { display: flex; gap: .35rem; justify-content: center; margin: .3rem 0; }
+  .seat { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: .8rem; background: var(--gold-mid); color: #120d03; }
+  .seat.sel { background: #fff; box-shadow: 0 0 0 3px var(--gold); }
+  .seat.taken { background: #3a342a; color: #b9ae98; }
+  .tablebox { border: 2px solid var(--gold); border-radius: 8px; text-align: center; padding: .5rem; font-weight: 800; letter-spacing: .15em; color: var(--gold); margin: .2rem auto; max-width: 220px; }
+  .item { display: flex; justify-content: space-between; border-bottom: 1px solid var(--line); padding: .3rem 0; }
+  .item b { color: var(--gold-mid); }
+  .stepper { display: flex; align-items: center; gap: .4rem; }
+  .stepper span { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--gold); display: grid; place-items: center; color: var(--gold); }
+  .stepper em { font-style: normal; font-weight: 800; border: 1px solid rgba(230,184,79,.35); border-radius: 8px; padding: .2rem .7rem; }
+  .qr { width: 90px; height: 90px; border-radius: 10px; background:
+        repeating-linear-gradient(90deg, #000 0 6px, #fff 6px 12px), #fff; background-blend-mode: difference;
+        border: 8px solid #fff; margin: .4rem auto; position: relative; }
+  .qr::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, transparent 0 6px, rgba(255,255,255,.85) 6px 12px); }
+  .timer { text-align: center; font-family: "Archivo Black", sans-serif; color: var(--gold-mid); font-size: .9rem; }
+  .tickets { display: grid; grid-template-columns: 1fr 1fr; gap: .4rem; margin: .5rem 0; }
+  .tickets div { font-size: .72rem; color: var(--muted); }
+  .tickets b { display: block; border: 1px solid rgba(230,184,79,.35); border-radius: 8px; padding: .3rem; text-align: center; color: var(--text); background: #000; }
+
+  /* situace */
+  .cases { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: .8rem; }
+  .case { border: 1px solid var(--line); border-radius: 14px; padding: 1rem; background: #050403; }
+  .case h4 { font-size: .9rem; color: var(--gold-hi); margin-bottom: .35rem; }
+  .case p { font-size: .85rem; color: var(--text); }
+  .case q { display: block; color: var(--red); font-size: .8rem; margin-bottom: .4rem; quotes: "„" "“"; }
+
+  .rules { list-style: none; }
+  .rules li { padding: .5rem 0 .5rem 1.8rem; position: relative; border-bottom: 1px solid var(--line); font-size: .92rem; }
+  .rules li::before { content: "✦"; position: absolute; left: 0; color: var(--gold); }
+  .rules li.no::before { content: "✕"; color: var(--red); }
+
+  .print { margin-top: 1.4rem; }
+  .print button { font: inherit; cursor: pointer; border: 0; }
+  footer { margin-top: 3rem; color: var(--muted); font-size: .8rem; text-align: center; }
+
+  @media print {
+    body { background: #fff; color: #111; padding: 0; }
+    :root { --text: #111; --muted: #555; --line: #ddd; --card: #fff; --gold: #8a6510; --gold-mid: #8a6510; --gold-hi: #111; }
+    .mock { border-color: #c9a64a; }
+    .mock .input, .tickets b, .stepper em { background: #fff; }
+    .num, .btn { background: #f2d98c !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .seat { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .case { background: #fff; }
+    .step, .case, .mock { break-inside: avoid; }
+    .print { display: none; }
+    h2 { break-after: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="eyebrow">Maturitní ples 4.F a 4.H · 30. 1. 2027</p>
+  <h1>Návod pro pokladní</h1>
+  <p class="lead">Jak prodat vstupenku za pár minut: vyber místa, napiš jméno, nech kupujícího zaplatit QR kódem, zapiš čísla lístků a hotovo.
+    Prodej běží na webu <a href="https://arnycze.github.io/Maturak27/#mista">arnycze.github.io/Maturak27</a>, funguje na mobilu i na počítači.</p>
+
+  <div class="flow">
+    <span>1 Přihlásit</span><i>→</i><span>2 Jméno</span><i>→</i><span>3 Místa / stání</span><i>→</i>
+    <span>4 QR kód</span><i>→</i><span>5 Platba</span><i>→</i><span>6 Čísla lístků</span><i>→</i><span>7 Zaplaceno ✓</span>
+  </div>
+
+  <div class="print"><button class="btn sec" onclick="window.print()">🖨️ Vytisknout / uložit jako PDF</button></div>
+
+  <h2>Krok za krokem</h2>
+
+  <div class="step">
+    <div class="num">1</div>
+    <div>
+      <h3>Přihlas se</h3>
+      <p>Otevři web, sjeď na <b>Volná místa</b> a pod plánkem klepni na <span class="link">🔒 Přihlášení pro pokladní</span>. Zadej přihlašovací jméno a heslo, které ti dal Arnošt.</p>
+      <div class="mock">
+        <div class="lbl">Přihlašovací jméno</div><div class="input">jan.novak</div>
+        <div class="lbl">Heslo</div><div class="input">••••••••</div>
+        <span class="btn">Přihlásit</span>
+      </div>
+      <p class="why">Přihlášení vydrží 6 hodin. Pod plánkem pak uvidíš „🎟️ Pokladna: tvoje jméno“ a rámeček <b>Nákup</b>.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">2</div>
+    <div>
+      <h3>Napiš jméno a příjmení kupujícího</h3>
+      <p>Úplně nahoře v rámečku <b>Nákup</b>. Obě políčka jsou povinná. Hned pod nimi se ukáže, kolik vstupenek si ten člověk ještě může koupit.</p>
+      <div class="mock">
+        <div class="row">
+          <div><div class="lbl">Jméno kupujícího</div><div class="input">Jan</div></div>
+          <div><div class="lbl">Příjmení kupujícího</div><div class="input">Novák</div></div>
+        </div>
+        <div class="note">Jan Novák už má 4 vstupenky – může koupit ještě 6.</div>
+      </div>
+      <p class="why">Jeden člověk smí mít dohromady <b>nejvýš 10 vstupenek</b> (u stolu i na stání). Víc ti aplikace do nákupu nepustí.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">3</div>
+    <div>
+      <h3>Vyber místa u stolů a/nebo stání</h3>
+      <ul>
+        <li><b>Místa u stolu:</b> klepni na stůl v plánku (nebo v „Seznamu stolů“). V okénku klepni na <b>zlatá</b> (volná) místa – vybraná zbělají. Pak <b>Hotovo</b>.</li>
+        <li>Můžeš přidat místa i u <b>dalších stolů</b> – stoly v nákupu mají bílý rámeček.</li>
+        <li><b>Stání:</b> v rámečku Nákup tlačítky <b>−</b> a <b>+</b> nastav počet vstupenek na stání.</li>
+      </ul>
+      <div class="mock">
+        <div class="lbl" style="text-align:center">Velký sál · stůl pro 6</div>
+        <div class="seats"><div class="seat taken">1</div><div class="seat sel">2</div><div class="seat sel">3</div></div>
+        <div class="tablebox">VS 12</div>
+        <div class="seats"><div class="seat">4</div><div class="seat">5</div><div class="seat taken">6</div></div>
+        <div class="note" style="text-align:center">zlaté = volné · bílé = vybrané · šedé = prodané</div>
+      </div>
+      <div class="mock">
+        <div class="lbl">Nákup</div>
+        <div class="item"><span>Stůl <b>VS 12</b> · místa 2, 3</span><span class="link">odebrat</span></div>
+        <div class="item"><span>Stůl <b>LS 50</b> · místo 7</span><span class="link">odebrat</span></div>
+        <div class="item" style="align-items:center"><span><b>Vstupenky na stání</b><br><small style="color:var(--muted)">zbývá 318 z 322</small></span>
+          <div class="stepper"><span>−</span><em>2</em><span>+</span></div></div>
+        <p style="margin-top:.5rem;font-family:'Archivo Black';">5 vstupenek · 2250 Kč</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">4</div>
+    <div>
+      <h3>Vygeneruj QR kód</h3>
+      <p>Zkontroluj s kupujícím místa a cenu a klepni na <span class="btn">Vygenerovat QR kód</span>. Všechny vstupenky z nákupu se na <b>5 minut podrží</b> – nikdo jiný je mezitím nekoupí.</p>
+      <div class="mock" style="text-align:center">
+        <div class="timer">Rezervace platí ještě 4:52</div>
+        <div class="qr"></div>
+        <p style="font-family:'Archivo Black'">2250 Kč</p>
+        <div class="note">Kupující Jan Novák · VS 2700012</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">5</div>
+    <div>
+      <h3>Kupující zaplatí</h3>
+      <p>Kupující otevře <b>aplikaci své banky</b>, zvolí platbu QR kódem a naskenuje kód z tvého displeje. Částka, účet i variabilní symbol se vyplní samy. Počkej, až ti <b>ukáže potvrzení platby</b> (odesláno / provedeno).</p>
+      <p class="why">Na displeji běží odpočet. Pod minutu zčervená – pokud to nestihne, viz „Co když…“ níže.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">6</div>
+    <div>
+      <h3>Zapiš čísla papírových lístků</h3>
+      <p>Ke každé vstupence je v okénku políčko. Vezmi papírové lístky, které kupujícímu dáš, a do každého políčka napiš <b>číslo z lístku</b> (1, 2, 70, 400…). Po zapsání čísla můžeš klepnout na Enter – skočí to do dalšího políčka.</p>
+      <div class="mock">
+        <div class="lbl" style="text-align:center">Čísla papírových vstupenek</div>
+        <div class="tickets">
+          <div>Stůl VS 12 · místo 2<b>124</b></div>
+          <div>Stůl VS 12 · místo 3<b>125</b></div>
+          <div>Stůl LS 50 · místo 7<b>126</b></div>
+          <div>Stání · vstupenka 1<b>401</b></div>
+          <div>Stání · vstupenka 2<b>402</b></div>
+        </div>
+      </div>
+      <p class="why">Stejné číslo nejde zapsat dvakrát – ani v jednom nákupu, ani u někoho jiného. Aplikace tě na překlep upozorní.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">7</div>
+    <div>
+      <h3>Klepni na „✓ Zaplaceno“ a předej lístky</h3>
+      <p>Klepni na <span class="btn">✓ Zaplaceno</span>. Objeví se <span class="ok">✓ Zaplaceno</span> – vstupenky jsou prodané a zapsané v tabulce i s čísly lístků. Teprve <b>teď předej papírové lístky</b> kupujícímu. Pak <span class="btn sec">Zpět na plánek</span> a můžeš obsloužit dalšího.</p>
+      <p class="why">Platbu potom ještě automaticky ověří banka (Fio) – to už řešit nemusíš.</p>
+    </div>
+  </div>
+
+  <h2>Co když…</h2>
+  <div class="cases">
+    <div class="case">
+      <h4>…si to kupující rozmyslí nebo chce jiná místa?</h4>
+      <p>Klepni na <b>Zrušit nákup</b>. Vstupenky se hned uvolní, ale zůstanou vybrané v rámečku Nákup i se jménem – můžeš je upravit a vygenerovat nový QR, nebo dát <b>Vyprázdnit nákup</b>.</p>
+    </div>
+    <div class="case">
+      <h4>…to nestihne za 5 minut?</h4>
+      <p>Rezervace vyprší a místa se uvolní. Pokud kupující <b>přesto zaplatil</b>, zapiš čísla lístků a dej <b>Zaplaceno</b> – zapíše se to, pokud místa mezitím nikdo nekoupil. Jinak vygeneruj nový QR.</p>
+    </div>
+    <div class="case">
+      <q>Místa 2, 3 si právě někdo zabral. Vyber jiná.</q>
+      <p>Jiná pokladní byla rychlejší. Vyber s kupujícím jiná místa.</p>
+    </div>
+    <div class="case">
+      <q>Jeden člověk si může koupit nejvýš 10 vstupenek…</q>
+      <p>Uber z nákupu tolik vstupenek, kolik aplikace napíše. Když přijdou dva <b>různí lidé se stejným jménem</b>, připiš k příjmení rozlišení, např. „Novák ml.“.</p>
+    </div>
+    <div class="case">
+      <q>Vstupenka č. 124 už je zapsaná u jiného nákupu.</q>
+      <p>Zkontroluj číslo na lístku – nejspíš překlep. Pokud je číslo opravdu dvakrát, dej lístek stranou a nahlas to Arnoštovi.</p>
+    </div>
+    <div class="case">
+      <q>Přihlášení vypršelo – přihlas se prosím znovu.</q>
+      <p>Po 6 hodinách tě to odhlásí. Přihlas se znovu – rozpracovaná místa si vyber znovu.</p>
+    </div>
+    <div class="case">
+      <q>Rezervační systém teď neodpovídá.</q>
+      <p>Zkontroluj internet (Wi-Fi / data) a zkus to za chvíli. Nic neprodávej „na papír“ mimo aplikaci.</p>
+    </div>
+    <div class="case">
+      <h4>…kupující nemá bankovní aplikaci?</h4>
+      <p>Může zaplatit převodem na účet <b>2203629553/2010</b> s variabilním symbolem z okénka – ale musí to stihnout během rezervace. Hotovost aplikace neřeší – domluv se s Arnoštem.</p>
+    </div>
+  </div>
+
+  <h2>Pravidla, která se vyplatí dodržet</h2>
+  <ul class="rules">
+    <li>Lístky předávej <b>až po kliknutí na „Zaplaceno“</b>, ne dřív.</li>
+    <li>Kliknout na „Zaplaceno“ smíš jen tehdy, když jsi <b>viděl(a) potvrzení platby</b> v bance kupujícího.</li>
+    <li>Ke každé vstupence zapiš <b>přesně</b> číslo lístku, který opravdu dáváš.</li>
+    <li class="no">Nezavírej okénko s QR kódem, dokud nákup nedokončíš – zavření nákup zruší.</li>
+    <li class="no">Nikomu nedávej své přihlašovací údaje a na cizím zařízení se nakonec <b>odhlas</b>.</li>
+    <li>Cena vstupenky je <b>450 Kč</b> – u stolu i na stání.</li>
+  </ul>
+
+  <footer>Maturitní ples tříd 4. F a 4. H · Gymnázium Pardubice, Dašická 1083 · Při problému piš Arnoštovi.</footer>
+</div>
+</body>
+</html>
