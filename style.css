@@ -552,3 +552,7 @@ footer .mark { font-family: "Archivo Black", sans-serif; color: var(--gold); let
 .t-qr svg { display: block; width: 100%; height: auto; }
 .t-details { color: var(--muted); font-size: .88rem; margin-top: .4rem; }
 .t-details b { color: var(--text); }
+
+/* odpočet rezervace v okénku */
+.t-timer { font-family: "Archivo Black", sans-serif; font-size: 1.05rem; color: var(--gold-mid); margin-bottom: .3rem; text-transform: uppercase; letter-spacing: .04em; }
+.t-timer.low { color: #ff6b6b; }

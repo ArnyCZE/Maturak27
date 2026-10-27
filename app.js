@@ -162,21 +162,35 @@
   showTime("18:00", "Otevření sálu");
   steps[0].classList.add("active");
 
-  /* --- zasedací pořádek: schéma z plan.js, obsazenost z veřejné Google tabulky --- */
+  /* --- zasedací pořádek: schéma z plan.js, obsazenost a 5min rezervace přes skript v tabulce --- */
+  var API = "https://script.google.com/macros/s/AKfycbx7L9CU3hWushwT64_68LStj0bExc-EG0p7Olrz4UfP0_SR4mtykNh-YACTf1-HLlq4Gw/exec";
   var SHEET_CSV = "https://docs.google.com/spreadsheets/d/18tbTqbiRGQaAFtXcp2peYWdz93SIBP-x7r0L-sKOW_0/gviz/tq?tqx=out:csv&sheet=Web";
   var SEATS = window.IDEON_PLAN.seats;
   var HALLS = window.IDEON_PLAN.halls;
   var FLOORS = window.IDEON_PLAN.floors;
-
-  /* platba: plesový účet a cena; VS v QR kódu nese stůl a vybraná místa (viz skript v tabulce) */
   var PAY = { iban: "CZ7820100000002203629553", account: "2203629553/2010", price: 450 };
-  var HALL_DIGIT = { VS: 1, LS: 2, PS: 3, G: 4 };
 
-  var taken = {};     // "VS 12" -> { count: počet obsazených míst, seats: [čísla obsazených židlí] }
-  var loaded = false;
+  var taken = {};       // "VS 12" -> [čísla obsazených nebo právě držených židlí]
+  var loaded = false;   // máme aktuální obsazenost?
+  var live = false;     // běží rezervační skript (jde držet místa)?
   var currentFloor = "ground";
   var planEl = document.getElementById("plan");
   var infoEl = document.getElementById("table-info");
+
+  /* Volání skriptu přes <script> (JSONP) – funguje z GitHub Pages bez potíží s prohlížeči. */
+  function api(params) {
+    return new Promise(function (resolve) {
+      var cb = "__ples" + Date.now() + Math.floor(Math.random() * 1e4);
+      var s = document.createElement("script");
+      var timer = setTimeout(function () { done({ ok: false, error: "Rezervační systém neodpovídá, zkus to prosím znovu." }); }, 20000);
+      function done(data) { clearTimeout(timer); delete window[cb]; s.remove(); resolve(data); }
+      window[cb] = done;
+      s.onerror = function () { done({ ok: false, error: "Rezervační systém je teď nedostupný." }); };
+      var q = Object.keys(params).map(function (k) { return k + "=" + encodeURIComponent(params[k]); }).join("&");
+      s.src = API + "?" + q + "&callback=" + cb;
+      document.head.appendChild(s);
+    });
+  }
 
   function pct(v, of) { return (v / of * 100) + "%"; }
   function place(el, x, y, w, h, f) {
@@ -193,14 +207,9 @@
     return el;
   }
 
-  /* Obsazené židle u stolu. Ručně zapsané prodeje bez čísel židlí obsadí nejnižší volná místa. */
   function tableState(id) {
     var cap = SEATS[id.split(" ")[0]];
-    var t = taken[id] || { count: 0, seats: [] };
-    var seats = t.seats.filter(function (s) { return s >= 1 && s <= cap; });
-    for (var s = 1; seats.length < Math.min(t.count, cap) && s <= cap; s++) {
-      if (seats.indexOf(s) === -1) seats.push(s);
-    }
+    var seats = (taken[id] || []).filter(function (s) { return s >= 1 && s <= cap; });
     return { cap: cap, used: seats.length, free: cap - seats.length, seats: seats };
   }
 
@@ -209,7 +218,6 @@
     var f = FLOORS[key];
     planEl.innerHTML = "";
     planEl.style.aspectRatio = f.w + " / " + f.h;
-    infoEl.textContent = "";
 
     (f.rooms || []).forEach(function (r) { add("room", "", r.x, r.y, r.w, r.h, f); });
     (f.zones || []).forEach(function (z) { add("zone " + (z.cls || ""), z.t, z.x, z.y, z.w, z.h, f); });
@@ -223,12 +231,75 @@
       el.setAttribute("role", "button");
       el.setAttribute("tabindex", "0");
       el.innerHTML = "<span>" + id.split(" ")[1] + "</span>";
+      if (id === openId) el.classList.add("sel");
       el.addEventListener("click", function () { openTable(id, el); });
       el.addEventListener("keydown", function (e) { if (e.key === "Enter") openTable(id, el); });
     });
   }
 
-  /* --- okénko stolu: výběr míst a QR platba --- */
+  function updateStats() {
+    var total = 0, free = 0;
+    Object.keys(FLOORS).forEach(function (k) {
+      FLOORS[k].tables.forEach(function (t) { var s = tableState(t[0]); total += s.cap; free += s.free; });
+    });
+    set("st-free", free);
+    set("st-total", total);
+    document.getElementById("st-bar").style.width = (free / total * 100) + "%";
+  }
+
+  function applyState(tables) {
+    taken = {};
+    Object.keys(tables).forEach(function (id) { taken[id] = tables[id].seats || []; });
+    loaded = true;
+    updateStats();
+    renderFloor(currentFloor);
+    if (openId && !hold) drawSeats();
+  }
+
+  /* Obsazenost: přednostně živě ze skriptu, jinak ze sdílené tabulky (bez možnosti rezervace). */
+  function refresh() {
+    return api({ action: "state" }).then(function (res) {
+      if (res.ok) {
+        live = true;
+        applyState(res.tables);
+        set("seat-msg", "Obsazenost se aktualizuje automaticky.");
+        return;
+      }
+      live = false;
+      return fetch(SHEET_CSV, { cache: "no-store" })
+        .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
+        .then(function (text) {
+          var rows = parseCSV(text), header = rows.shift() || [], tables = {};
+          if (header[0] !== "Stůl") throw new Error("tabulka není propojená");
+          rows.forEach(function (r) {
+            if (!r[0]) return;
+            var cap = SEATS[r[0].split(" ")[0]] || 0, count = parseInt(r[3], 10) || 0;
+            var seats = String(r[5] || "").split(",").map(function (x) { return parseInt(x, 10); }).filter(function (n) { return n > 0; });
+            for (var s = 1; seats.length < Math.min(count, cap) && s <= cap; s++) if (seats.indexOf(s) === -1) seats.push(s);
+            tables[r[0].trim()] = { seats: seats };
+          });
+          applyState(tables);
+          set("seat-msg", "Rezervační systém je teď nedostupný – obsazenost může být pár minut stará.");
+        })
+        .catch(function () { set("seat-msg", "Aktuální obsazenost zveřejníme se spuštěním prodeje vstupenek."); });
+    });
+  }
+
+  function parseCSV(text) {
+    return text.trim().split(/\r?\n/).map(function (line) {
+      var out = [], cur = "", q = false;
+      for (var i = 0; i < line.length; i++) {
+        var c = line[i];
+        if (c === '"') { if (q && line[i + 1] === '"') { cur += '"'; i++; } else q = !q; }
+        else if (c === "," && !q) { out.push(cur); cur = ""; }
+        else cur += c;
+      }
+      out.push(cur);
+      return out;
+    });
+  }
+
+  /* --- okénko stolu: výběr míst, 5min rezervace a QR platba --- */
   var modal = document.createElement("div");
   modal.className = "tmodal";
   modal.hidden = true;
@@ -244,30 +315,34 @@
         '<button class="pill t-buy" id="t-buy" disabled>Vyber místa</button>' +
       '</div>' +
       '<div id="t-pay" hidden>' +
+        '<div class="t-timer" id="t-timer"></div>' +
         '<div class="t-qr" id="t-qr"></div>' +
         '<div class="t-free" id="t-amount"></div>' +
         '<p class="t-details" id="t-details"></p>' +
-        '<p class="t-note">Naskenuj QR kód v aplikaci své banky a platbu odešli. Místa se zarezervují automaticky, ' +
-          'jakmile platba dorazí na účet – u okamžité platby obvykle do pár minut, u běžného převodu až další pracovní den. ' +
-          'Do té doby je může zaplatit i někdo jiný – v tom případě ti peníze vrátíme.</p>' +
-        '<button class="pill secondary" id="t-back">Zpět k výběru míst</button>' +
+        '<p class="t-note" id="t-paynote"></p>' +
+        '<button class="pill" id="t-paid">✓ Zaplatil(a) jsem</button>' +
+        '<button class="pill secondary" id="t-back">Zrušit a vybrat jiná místa</button>' +
       '</div>' +
     '</div>';
   document.body.appendChild(modal);
+
   var lastTable = null, openId = null, selected = [];
+  var hold = null;          // { vs, token, expiresAt, amount, seats } – právě podržená místa
+  var timerId = null;
 
   function seatPositions(cap) {
     // obdélníkový stůl: polovina míst nahoře, polovina dole
     var half = Math.ceil(cap / 2), pos = [];
     for (var i = 0; i < cap; i++) {
       var top = i < half, k = top ? i : i - half, n = top ? half : cap - half;
-      pos.push({ x: 50 + (140 / (n + 1)) * (k + 1) + 0, y: top ? 26 : 134 });
+      pos.push({ x: 50 + (140 / (n + 1)) * (k + 1), y: top ? 26 : 134 });
     }
     return pos;
   }
 
   function drawSeats() {
     var svg = document.getElementById("t-seats"), s = tableState(openId);
+    selected = selected.filter(function (n) { return s.seats.indexOf(n) === -1; });
     svg.innerHTML = "";
     var table = document.createElementNS(NS, "rect");
     table.setAttribute("x", 40); table.setAttribute("y", 52); table.setAttribute("width", 160); table.setAttribute("height", 56);
@@ -289,7 +364,7 @@
       t.setAttribute("x", p.x); t.setAttribute("y", p.y + 4.5);
       t.textContent = num;
       g.appendChild(c); g.appendChild(t);
-      if (!isTaken && loaded) {
+      if (!isTaken && live) {
         g.setAttribute("role", "button");
         g.setAttribute("tabindex", "0");
         g.setAttribute("aria-label", "Místo " + num);
@@ -305,67 +380,134 @@
     var i = selected.indexOf(num);
     if (i === -1) selected.push(num); else selected.splice(i, 1);
     selected.sort(function (a, b) { return a - b; });
+    set("t-note", "");
     drawSeats();
   }
 
-  function updatePick() {
+  function updatePick(errorText) {
     var s = tableState(openId), btn = document.getElementById("t-buy");
-    if (!loaded) {
-      set("t-free", s.cap + " míst u stolu");
-      set("t-note", "Aktuální obsazenost se nepodařilo načíst – prodej spustíme, jakmile bude k dispozici.");
-      btn.disabled = true; btn.textContent = "Prodej zatím neběží";
+    btn.hidden = false;
+    if (!loaded || !live) {
+      set("t-free", loaded ? "Volno " + s.free + " z " + s.cap + " míst" : s.cap + " míst u stolu");
+      set("t-note", "Online rezervace teď nefunguje – zkus to prosím za chvíli.");
+      btn.disabled = true; btn.textContent = "Rezervace nedostupná";
       return;
     }
     set("t-free", s.free === 0 ? "Obsazeno" : "Volno " + s.free + " z " + s.cap + " míst");
     if (s.free === 0) {
-      set("t-note", "Tento stůl je už celý obsazený. Zkus jiný.");
+      set("t-note", errorText || "Tento stůl je už celý obsazený. Zkus jiný.");
       btn.hidden = true;
       return;
     }
-    btn.hidden = false;
     if (!selected.length) {
-      set("t-note", "Klepni na volná (zlatá) místa, která chceš koupit.");
+      set("t-note", errorText || "Klepni na volná (zlatá) místa, která chceš koupit.");
       btn.disabled = true; btn.textContent = "Vyber místa";
     } else {
-      set("t-note", "Vybráno: místo " + selected.join(", ") + " · " + selected.length * PAY.price + " Kč");
+      set("t-note", errorText || "Vybráno: místo " + selected.join(", ") + " · " + selected.length * PAY.price + " Kč");
       btn.disabled = false; btn.textContent = "Zaplatit QR kódem (" + selected.length * PAY.price + " Kč)";
     }
   }
 
-  function paymentVs(id, seats) {
-    var parts = id.split(" "), mask = 0;
-    seats.forEach(function (s) { mask |= 1 << (s - 1); });
-    var mask3 = ("00" + mask).slice(-3), table2 = ("0" + parts[1]).slice(-2);
-    return String(HALL_DIGIT[parts[0]]) + table2 + mask3;
-  }
+  /* Klik na „Zaplatit“: podrží místa na 5 minut a ukáže QR kód s odpočtem. */
+  document.getElementById("t-buy").addEventListener("click", function () {
+    var btn = document.getElementById("t-buy");
+    btn.disabled = true; btn.textContent = "Rezervuji místa…";
+    var seats = selected.slice();
+    api({ action: "hold", table: openId, seats: seats.join(",") }).then(function (res) {
+      if (!res.ok) {
+        if (res.tables) applyState(res.tables);
+        selected = [];
+        drawSeats();
+        updatePick(res.error);
+        return;
+      }
+      hold = { vs: res.vs, token: res.token, expiresAt: res.expiresAt, amount: res.amount, seats: seats };
+      showPayment();
+      refresh();
+    });
+  });
 
   function showPayment() {
-    var amount = selected.length * PAY.price, vs = paymentVs(openId, selected);
-    var message = "PLES 4FH STUL " + openId + " MISTA " + selected.join(" ");
+    var message = "PLES 4FH STUL " + openId + " MISTA " + hold.seats.join(" ");
     var qr = qrcode(0, "M");
-    qr.addData("SPD*1.0*ACC:" + PAY.iban + "*AM:" + amount.toFixed(2) + "*CC:CZK*X-VS:" + vs + "*MSG:" + message);
+    qr.addData("SPD*1.0*ACC:" + PAY.iban + "*AM:" + hold.amount.toFixed(2) + "*CC:CZK*X-VS:" + hold.vs + "*MSG:" + message);
     qr.make();
     document.getElementById("t-qr").innerHTML = qr.createSvgTag({ cellSize: 6, margin: 2, scalable: true });
-    set("t-amount", amount + " Kč");
+    set("t-amount", hold.amount + " Kč");
     document.getElementById("t-details").innerHTML =
-      "Stůl <b>" + openId + "</b> · místa <b>" + selected.join(", ") + "</b><br>" +
-      "Účet <b>" + PAY.account + "</b> · VS <b>" + vs + "</b>";
+      "Stůl <b>" + openId + "</b> · místa <b>" + hold.seats.join(", ") + "</b><br>" +
+      "Účet <b>" + PAY.account + "</b> · VS <b>" + hold.vs + "</b>";
+    set("t-paynote", "Místa jsou pro tebe podržená. Naskenuj QR kód v aplikaci banky a zaplať – ideálně okamžitou platbou.");
+    document.getElementById("t-paid").hidden = false;
+    document.getElementById("t-back").textContent = "Zrušit a vybrat jiná místa";
     document.getElementById("t-pick").hidden = true;
     document.getElementById("t-pay").hidden = false;
+    startTimer();
   }
-  document.getElementById("t-buy").addEventListener("click", showPayment);
+
+  function startTimer() {
+    clearInterval(timerId);
+    var el = document.getElementById("t-timer");
+    function tick() {
+      var left = Math.max(0, hold.expiresAt - Date.now());
+      var m = Math.floor(left / 60000), s = Math.floor(left / 1000) % 60;
+      el.textContent = "Rezervace platí ještě " + m + ":" + pad(s);
+      el.classList.toggle("low", left < 60000);
+      if (left === 0) {
+        clearInterval(timerId);
+        el.textContent = "Rezervace vypršela";
+        set("t-paynote", "Čas na zaplacení vypršel a místa se uvolnila. Pokud jsi platbu už odeslal(a), " +
+                         "místa ti po jejím připsání zapíšeme – pokud je mezitím nezaplatí někdo jiný.");
+        document.getElementById("t-qr").innerHTML = "";
+        document.getElementById("t-paid").hidden = true;
+        document.getElementById("t-back").textContent = "Zpět k výběru míst";
+        hold = null;
+        refresh();
+      }
+    }
+    tick();
+    timerId = setInterval(tick, 1000);
+  }
+
+  /* Zrušení: místa se hned uvolní (jen pokud jsme je ještě drželi a kupující nezaplatil). */
+  function releaseHold() {
+    clearInterval(timerId);
+    if (hold) {
+      api({ action: "release", vs: hold.vs, token: hold.token }).then(refresh);
+      hold = null;
+    }
+  }
+
   document.getElementById("t-back").addEventListener("click", function () {
+    releaseHold();
+    selected = [];
     document.getElementById("t-pay").hidden = true;
     document.getElementById("t-pick").hidden = false;
+    drawSeats();
+  });
+
+  /* Po zaplacení místa neuvolňujeme – drží se do konce odpočtu, pak je trvale zapíše platba. */
+  document.getElementById("t-paid").addEventListener("click", function () {
+    clearInterval(timerId);
+    hold = null;
+    set("t-timer", "Díky!");
+    document.getElementById("t-qr").innerHTML = "";
+    set("t-paynote", "Jakmile platba dorazí na účet, místa se trvale zapíšou a na plánku zešednou. " +
+                     "U běžného (ne okamžitého) převodu to může trvat do dalšího pracovního dne – " +
+                     "pokud by místa mezitím zaplatil někdo jiný, peníze ti vrátíme.");
+    document.getElementById("t-paid").hidden = true;
+    document.getElementById("t-back").textContent = "Zpět na plánek";
+    document.getElementById("t-back").onclick = function () { closeTable(); };
   });
 
   function openTable(id, el) {
     planEl.querySelectorAll(".table.sel").forEach(function (x) { x.classList.remove("sel"); });
     el.classList.add("sel");
-    lastTable = el; openId = id; selected = [];
+    lastTable = el; openId = id; selected = []; hold = null;
     var s = tableState(id);
     set("t-hall", HALLS[id.split(" ")[0]] + " · stůl pro " + s.cap);
     set("t-title", "Stůl " + id);
+    document.getElementById("t-back").onclick = null;
     document.getElementById("t-pay").hidden = true;
     document.getElementById("t-pick").hidden = false;
     drawSeats();
@@ -376,6 +518,8 @@
     modal.querySelector(".tclose").focus();
   }
   function closeTable() {
+    releaseHold();
+    openId = null;
     modal.classList.remove("open");
     setTimeout(function () { modal.hidden = true; }, 250);
     if (lastTable) lastTable.focus();
@@ -383,34 +527,7 @@
   modal.addEventListener("click", function (e) { if (e.target === modal) closeTable(); });
   modal.querySelector(".tclose").addEventListener("click", closeTable);
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !modal.hidden) closeTable(); });
-
-  function updateStats() {
-    var total = 0, free = 0;
-    Object.keys(FLOORS).forEach(function (k) {
-      FLOORS[k].tables.forEach(function (t) {
-        var s = tableState(t[0]);
-        total += s.cap;
-        free += s.free;
-      });
-    });
-    set("st-free", free);
-    set("st-total", total);
-    document.getElementById("st-bar").style.width = (free / total * 100) + "%";
-  }
-
-  function parseCSV(text) {
-    return text.trim().split(/\r?\n/).map(function (line) {
-      var out = [], cur = "", q = false;
-      for (var i = 0; i < line.length; i++) {
-        var c = line[i];
-        if (c === '"') { if (q && line[i + 1] === '"') { cur += '"'; i++; } else q = !q; }
-        else if (c === "," && !q) { out.push(cur); cur = ""; }
-        else cur += c;
-      }
-      out.push(cur);
-      return out;
-    });
-  }
+  // když kupující zavře stránku s otevřeným QR kódem, místa se uvolní nejpozději po 5 minutách (časovač ve skriptu)
 
   document.querySelectorAll(".floor-tabs button").forEach(function (b) {
     b.addEventListener("click", function () {
@@ -419,28 +536,8 @@
     });
   });
   renderFloor("ground");
-
-  fetch(SHEET_CSV, { cache: "no-store" })
-    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
-    .then(function (text) {
-      var rows = parseCSV(text);
-      var header = rows.shift() || [];
-      if (header[0] !== "Stůl") throw new Error("tabulka ještě není propojená");
-      rows.forEach(function (r) {
-        if (!r[0]) return;
-        taken[r[0].trim()] = {
-          count: parseInt(r[3], 10) || 0,
-          seats: String(r[5] || "").split(",").map(function (s) { return parseInt(s, 10); }).filter(function (n) { return n > 0; })
-        };
-      });
-      loaded = true;
-      document.getElementById("seat-msg").textContent = "Obsazenost se aktualizuje automaticky.";
-      updateStats();
-      renderFloor(currentFloor);
-    })
-    .catch(function () {
-      document.getElementById("seat-msg").textContent = "Aktuální obsazenost zveřejníme se spuštěním prodeje vstupenek.";
-    });
+  refresh();
+  setInterval(function () { if (!hold) refresh(); }, 30000);
 
   /* --- ozubená kola --- */
   function gearPath(teeth, rOut, rIn) {

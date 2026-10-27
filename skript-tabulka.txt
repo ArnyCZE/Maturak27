@@ -1,27 +1,199 @@
 /*
- * Maturák 2027 – automatické zapisování zaplacených vstupenek
+ * Maturák 2027 – rezervace míst na 5 minut a automatické zapisování zaplacených vstupenek
  *
- * Jak to funguje: na webu si kupující vybere místa u stolu a zaplatí QR kódem.
- * Variabilní symbol v QR kódu říká, který stůl a která místa platí.
- * Tenhle skript každých 5 minut projde e-maily od Fio o příchozích platbách
- * a zaplacená místa zapíše do listu Prodej – web je pak ukáže jako obsazená.
+ * Jak to funguje:
+ *  - Na webu si kupující vybere místa u stolu a klikne „Zaplatit QR kódem“.
+ *    Web přes tenhle skript místa na 5 minut podrží (stav „drženo“) a ukáže QR kód s odpočtem.
+ *  - Když platba nedorazí, místa se po 5 minutách sama uvolní (stav „vypršelo“).
+ *  - Skript každých 5 minut projde e-maily od Fio o příchozích platbách a zaplacená místa
+ *    označí jako „zaplaceno“ – podle variabilního symbolu, ve kterém je stůl i čísla židlí.
  *
- * Instalace (jednou):
- *   Rozšíření → Apps Script → smaž, co tam je, a vlož tohle → Uložit
- *   → nahoře vyber funkci „setup“ → Spustit → povolit přístup.
- *   Implementace (webová aplikace) ani PIN už nejsou potřeba.
+ * Instalace / aktualizace:
+ *   1. Rozšíření → Apps Script → smaž starý kód, vlož tenhle → Uložit.
+ *   2. Nahoře vyber funkci „setup“ → Spustit → povolit přístup.
+ *   3. Implementovat → Spravovat implementace → tužka → Verze: „Nová verze“ → Implementovat.
+ *      (Adresa …/exec zůstane stejná.)
  */
 
 var PRICE = 450;                       // cena jedné vstupenky v Kč
+var HOLD_MINUTES = 5;                  // jak dlouho QR kód drží místa
 var ACCOUNT_NUMBER = "2203629553";     // účet Plesy 4FH (Fio)
 var PAID_LABEL = "ples-zpracovano";    // štítek v Gmailu pro už zpracované platby
 var HALL_BY_DIGIT = { "1": "VS", "2": "LS", "3": "PS", "4": "G" };
+var DIGIT_BY_HALL = { VS: "1", LS: "2", PS: "3", G: "4" };
 
 // sloupce v listu Prodej (1 = A)
 var COL = { name: 1, contact: 2, table: 3, count: 4, status: 5, note: 6, vs: 7, amount: 8, created: 9, paid: 10, seats: 11 };
 var INACTIVE = { "vypršelo": 1, "zrušeno": 1 };
 
+/* ---------- veřejné rozhraní pro web (JSONP přes GET, funguje i z GitHub Pages) ---------- */
+
+function doGet(e) {
+  var p = (e && e.parameter) || {};
+  var result;
+  var lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    expireHolds();
+    if (p.action === "state") result = { ok: true, tables: state_() };
+    else if (p.action === "hold") result = hold_(p.table, p.seats);
+    else if (p.action === "release") result = release_(p.vs, p.token);
+    else result = { ok: true, info: "Maturák 2027 – rezervace běží." };
+  } catch (err) {
+    result = { ok: false, error: "Chyba skriptu: " + err.message };
+  } finally {
+    lock.releaseLock();
+  }
+  var json = JSON.stringify(result);
+  if (p.callback && /^[\w.]+$/.test(p.callback)) {
+    return ContentService.createTextOutput(p.callback + "(" + json + ")").setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
+  return ContentService.createTextOutput(json).setMimeType(ContentService.MimeType.JSON);
+}
+
+/* Kapacita a obsazené (zaplacené, rezervované i právě držené) židle u každého stolu. */
+function state_() {
+  var stoly = sheet_("Stoly").getDataRange().getValues();
+  var out = {};
+  for (var i = 1; i < stoly.length; i++) {
+    if (stoly[i][0]) out[stoly[i][0]] = { cap: Number(stoly[i][2]) || 0, seats: [] };
+  }
+  var data = sheet_("Prodej").getDataRange().getValues();
+  for (var j = 1; j < data.length; j++) {
+    var r = data[j], t = out[r[COL.table - 1]];
+    if (!t || INACTIVE[r[COL.status - 1]]) continue;
+    var seats = parseSeats_(r[COL.seats - 1]);
+    // ručně zapsané prodeje bez čísel židlí obsadí nejnižší volná místa
+    for (var s = 1; seats.length < Number(r[COL.count - 1]) && s <= t.cap; s++) {
+      if (t.seats.indexOf(s) === -1 && seats.indexOf(s) === -1) seats.push(s);
+    }
+    t.seats = t.seats.concat(seats);
+  }
+  return out;
+}
+
+function hold_(table, seatsParam) {
+  var seats = parseSeats_(seatsParam);
+  var tables = state_(), t = tables[table];
+  if (!t) return { ok: false, error: "Stůl neexistuje." };
+  if (!seats.length) return { ok: false, error: "Vyber aspoň jedno místo." };
+  if (seats.some(function (s) { return s < 1 || s > t.cap; })) return { ok: false, error: "Neplatné číslo místa." };
+  var clash = seats.filter(function (s) { return t.seats.indexOf(s) !== -1; });
+  if (clash.length) return { ok: false, error: "Místa " + clash.join(", ") + " si právě někdo zabral. Vyber jiná.", tables: tables };
+
+  var vs = encodeVs_(table, seats);
+  var token = Utilities.getUuid().slice(0, 8);
+  var now = new Date();
+  sheet_("Prodej").appendRow(["", "", table, seats.length, "drženo", "web " + token, vs, seats.length * PRICE, now, "", seats.join(",")]);
+  return { ok: true, vs: vs, token: token, amount: seats.length * PRICE, expiresAt: now.getTime() + HOLD_MINUTES * 60 * 1000 };
+}
+
+/* Uvolní podržená místa, když kupující zavře QR kód (jen ten, kdo je podržel – podle tokenu). */
+function release_(vs, token) {
+  var sh = sheet_("Prodej"), data = sh.getDataRange().getValues();
+  for (var i = data.length - 1; i >= 1; i--) {
+    var r = data[i];
+    if (String(r[COL.vs - 1]) === String(vs) && r[COL.status - 1] === "drženo" && r[COL.note - 1] === "web " + token) {
+      sh.getRange(i + 1, COL.status).setValue("zrušeno");
+      return { ok: true };
+    }
+  }
+  return { ok: true };
+}
+
+/* ---------- automatika (časovače z funkce setup) ---------- */
+
+/* Uvolní místa, která někdo podržel, ale platba do HOLD_MINUTES nedorazila. */
+function expireHolds() {
+  var sh = sheet_("Prodej"), data = sh.getDataRange().getValues();
+  var limit = Date.now() - HOLD_MINUTES * 60 * 1000;
+  for (var i = 1; i < data.length; i++) {
+    var created = data[i][COL.created - 1];
+    if (data[i][COL.status - 1] === "drženo" && created instanceof Date && created.getTime() < limit) {
+      sh.getRange(i + 1, COL.status).setValue("vypršelo");
+    }
+  }
+}
+
+/* Projde e-maily od Fio o příchozích platbách na plesový účet a označí zaplacená místa. */
+function checkPayments() {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    var label = GmailApp.getUserLabelByName(PAID_LABEL) || GmailApp.createLabel(PAID_LABEL);
+    var threads = GmailApp.search("from:fio.cz newer_than:30d -label:" + PAID_LABEL);
+    var sh = sheet_("Prodej");
+
+    threads.forEach(function (thread) {
+      thread.getMessages().forEach(function (msg) {
+        var body = msg.getPlainBody();
+        if (body.indexOf(ACCOUNT_NUMBER) === -1) return;                    // platba na jiný účet
+
+        var vsMatch = body.match(/(?:VS|variabiln\S* symbol)\s*:?\s*(\d{6})\b/i);
+        if (!vsMatch) return;
+        var vs = vsMatch[1], order = decodeVs_(vs);
+        if (!order) return;
+
+        var amountMatch = body.match(/(?:částka|objem)\s*:?\s*([\d\s .]+,?\d*)/i);
+        var amount = amountMatch ? parseFloat(amountMatch[1].replace(/[\s .]/g, "").replace(",", ".")) : NaN;
+        var payerMatch = body.match(/(?:název protiúčtu|protiúčet|plátce)\s*:?\s*([^\n\r]+)/i);
+        var notes = [];
+        var expected = order.seats.length * PRICE;
+        if (isNaN(amount)) notes.push("POZOR: nepodařilo se přečíst částku – zkontroluj.");
+        else if (amount < expected) notes.push("POZOR: zaplaceno " + amount + " Kč místo " + expected + " Kč.");
+
+        var data = sh.getDataRange().getValues(), row = -1;
+        // nejnovější podržení se stejným VS (platba v čase nebo i po vypršení)
+        for (var i = data.length - 1; i >= 1; i--) {
+          var st = data[i][COL.status - 1];
+          if (String(data[i][COL.vs - 1]) === vs && (st === "drženo" || st === "vypršelo" || st === "zrušeno")) { row = i; break; }
+          if (String(data[i][COL.vs - 1]) === vs && st === "zaplaceno" && data[i][COL.paid - 1] instanceof Date &&
+              data[i][COL.paid - 1].getTime() === msg.getDate().getTime()) return;   // už zapsáno
+        }
+
+        // nepřekrývá se platba s místy, která mezitím prodal někdo jiný?
+        var others = state_()[order.table] || { seats: [] };
+        var mine = row > 0 && !INACTIVE[data[row][COL.status - 1]] ? parseSeats_(data[row][COL.seats - 1]) : [];
+        var clash = order.seats.filter(function (s) { return others.seats.indexOf(s) !== -1 && mine.indexOf(s) === -1; });
+        if (clash.length) notes.push("KONFLIKT: místa " + clash.join(",") + " už prodaná – vrátit peníze nebo nabídnout jiná místa.");
+        var status = clash.length ? "zrušeno" : "zaplaceno";
+        var payer = payerMatch ? payerMatch[1].trim() : "";
+
+        if (row > 0) {
+          sh.getRange(row + 1, COL.name).setValue(payer);
+          sh.getRange(row + 1, COL.status).setValue(status);
+          sh.getRange(row + 1, COL.note).setValue(notes.join(" "));
+          sh.getRange(row + 1, COL.paid).setValue(msg.getDate());
+          if (!isNaN(amount)) sh.getRange(row + 1, COL.amount).setValue(amount);
+        } else {
+          sh.appendRow([payer, "", order.table, order.seats.length, status, notes.join(" "), vs,
+                        isNaN(amount) ? "" : amount, msg.getDate(), msg.getDate(), order.seats.join(",")]);
+        }
+      });
+      thread.addLabel(label);
+    });
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/* Spusť jednou ručně: nastaví časovače a štítek v Gmailu. */
+function setup() {
+  ScriptApp.getProjectTriggers().forEach(function (t) { ScriptApp.deleteTrigger(t); });
+  ScriptApp.newTrigger("expireHolds").timeBased().everyMinutes(1).create();
+  ScriptApp.newTrigger("checkPayments").timeBased().everyMinutes(5).create();
+  if (!GmailApp.getUserLabelByName(PAID_LABEL)) GmailApp.createLabel(PAID_LABEL);
+}
+
+/* ---------- pomocné funkce ---------- */
+
 /* VS = číslice sálu + 2 číslice stolu + 3 číslice „masky“ míst (bit 1 = místo 1 …), např. 112005 = VS 12, místa 1 a 3. */
+function encodeVs_(table, seats) {
+  var parts = table.split(" "), mask = 0;
+  seats.forEach(function (s) { mask |= 1 << (s - 1); });
+  return DIGIT_BY_HALL[parts[0]] + ("0" + parts[1]).slice(-2) + ("00" + mask).slice(-3);
+}
+
 function decodeVs_(vs) {
   var m = String(vs).match(/^([1-4])(\d{2})(\d{3})$/);
   if (!m) return null;
@@ -31,70 +203,10 @@ function decodeVs_(vs) {
   return { table: HALL_BY_DIGIT[m[1]] + " " + parseInt(m[2], 10), seats: seats };
 }
 
-/* Projde e-maily od Fio o příchozích platbách na plesový účet a zapíše zaplacená místa. */
-function checkPayments() {
-  var label = GmailApp.getUserLabelByName(PAID_LABEL) || GmailApp.createLabel(PAID_LABEL);
-  var threads = GmailApp.search("from:fio.cz newer_than:30d -label:" + PAID_LABEL);
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Prodej");
-
-  threads.forEach(function (thread) {
-    thread.getMessages().forEach(function (msg) {
-      var body = msg.getPlainBody();
-      if (body.indexOf(ACCOUNT_NUMBER) === -1) return;                      // platba na jiný účet
-
-      var vsMatch = body.match(/(?:VS|variabiln\S* symbol)\s*:?\s*(\d{6})\b/i);
-      if (!vsMatch) return;
-      var order = decodeVs_(vsMatch[1]);
-      if (!order) return;
-      if (alreadyRecorded_(sheet, vsMatch[1], msg.getDate())) return;
-
-      var amountMatch = body.match(/(?:částka|objem)\s*:?\s*([\d\s .]+,?\d*)/i);
-      var amount = amountMatch ? parseFloat(amountMatch[1].replace(/[\s .]/g, "").replace(",", ".")) : NaN;
-      var payerMatch = body.match(/(?:název protiúčtu|protiúčet|plátce|od)\s*:?\s*([^\n\r]+)/i);
-      var noteMatch = body.match(/(?:zpráva pro příjemce|zpráva)\s*:?\s*([^\n\r]+)/i);
-
-      var expected = order.seats.length * PRICE;
-      var notes = [];
-      if (isNaN(amount)) notes.push("POZOR: nepodařilo se přečíst částku – zkontroluj.");
-      else if (amount < expected) notes.push("POZOR: zaplaceno " + amount + " Kč místo " + expected + " Kč.");
-      var clash = takenSeats_(sheet, order.table).filter(function (s) { return order.seats.indexOf(s) !== -1; });
-      if (clash.length) notes.push("KONFLIKT: místa " + clash.join(",") + " už někdo zaplatil – vrátit peníze nebo nabídnout jiná místa.");
-      if (noteMatch) notes.push("Zpráva: " + noteMatch[1].trim());
-
-      sheet.appendRow([
-        payerMatch ? payerMatch[1].trim() : "", "", order.table, order.seats.length,
-        clash.length ? "zrušeno" : "zaplaceno", notes.join(" "), vsMatch[1],
-        isNaN(amount) ? "" : amount, msg.getDate(), msg.getDate(), order.seats.join(",")
-      ]);
-    });
-    thread.addLabel(label);
-  });
+function parseSeats_(v) {
+  return String(v || "").split(",").map(function (s) { return parseInt(s, 10); }).filter(function (n) { return n > 0; });
 }
 
-/* Místa u stolu, která už jsou obsazená (zaplacená nebo zapsaná ručně). */
-function takenSeats_(sheet, table) {
-  var data = sheet.getDataRange().getValues(), seats = [];
-  for (var i = 1; i < data.length; i++) {
-    var r = data[i];
-    if (r[COL.table - 1] !== table || INACTIVE[r[COL.status - 1]]) continue;
-    String(r[COL.seats - 1] || "").split(",").forEach(function (s) { if (s.trim()) seats.push(parseInt(s, 10)); });
-  }
-  return seats;
-}
-
-/* Ochrana proti dvojímu zápisu stejné platby. */
-function alreadyRecorded_(sheet, vs, date) {
-  var data = sheet.getDataRange().getValues();
-  for (var i = 1; i < data.length; i++) {
-    var r = data[i], paid = r[COL.paid - 1];
-    if (String(r[COL.vs - 1]) === String(vs) && paid instanceof Date && paid.getTime() === date.getTime()) return true;
-  }
-  return false;
-}
-
-/* Spusť jednou ručně: nastaví časovač (každých 5 minut) a štítek v Gmailu. */
-function setup() {
-  ScriptApp.getProjectTriggers().forEach(function (t) { ScriptApp.deleteTrigger(t); });
-  ScriptApp.newTrigger("checkPayments").timeBased().everyMinutes(5).create();
-  if (!GmailApp.getUserLabelByName(PAID_LABEL)) GmailApp.createLabel(PAID_LABEL);
+function sheet_(name) {
+  return SpreadsheetApp.getActiveSpreadsheet().getSheetByName(name);
 }
