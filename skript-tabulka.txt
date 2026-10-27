@@ -7,14 +7,15 @@
  *  - Když platba nedorazí, místa se po 5 minutách sama uvolní (stav „vypršelo“).
  *  - Skript každých 5 minut projde e-maily od Fio o příchozích platbách a zaplacená místa
  *    označí jako „zaplaceno“ – podle variabilního symbolu, ve kterém je stůl i čísla židlí.
+ *  - Tabulku „Maturák 2027 – vstupenky (soukromé)“ si skript najde sám podle ID níže.
  *
  * Instalace / aktualizace:
- *   1. Rozšíření → Apps Script → smaž starý kód, vlož tenhle → Uložit.
+ *   1. V Apps Scriptu smaž starý kód, vlož tenhle → Uložit.
  *   2. Nahoře vyber funkci „setup“ → Spustit → povolit přístup.
  *   3. Implementovat → Spravovat implementace → tužka → Verze: „Nová verze“ → Implementovat.
- *      (Adresa …/exec zůstane stejná.)
  */
 
+var SPREADSHEET_ID = "1O-i3_C3p2RyKldJzpj98r_GLJsaVL6VH0yNoLWV0-v0";   // Maturák 2027 – vstupenky (soukromé)
 var PRICE = 450;                       // cena jedné vstupenky v Kč
 var HOLD_MINUTES = 5;                  // jak dlouho QR kód drží místa
 var ACCOUNT_NUMBER = "2203629553";     // účet Plesy 4FH (Fio)
@@ -183,6 +184,7 @@ function setup() {
   ScriptApp.newTrigger("expireHolds").timeBased().everyMinutes(1).create();
   ScriptApp.newTrigger("checkPayments").timeBased().everyMinutes(5).create();
   if (!GmailApp.getUserLabelByName(PAID_LABEL)) GmailApp.createLabel(PAID_LABEL);
+  sheet_("Stoly");   // ověří, že je tabulka dostupná
 }
 
 /* ---------- pomocné funkce ---------- */
@@ -207,6 +209,10 @@ function parseSeats_(v) {
   return String(v || "").split(",").map(function (s) { return parseInt(s, 10); }).filter(function (n) { return n > 0; });
 }
 
+var spreadsheet_ = null;
 function sheet_(name) {
-  return SpreadsheetApp.getActiveSpreadsheet().getSheetByName(name);
+  spreadsheet_ = spreadsheet_ || SpreadsheetApp.openById(SPREADSHEET_ID);
+  var sh = spreadsheet_.getSheetByName(name);
+  if (!sh) throw new Error("V tabulce chybí list „" + name + "“.");
+  return sh;
 }
