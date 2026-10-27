@@ -24,9 +24,23 @@
   .lead { color: var(--muted); margin-top: .8rem; max-width: 640px; }
   a { color: var(--gold-mid); }
 
+  /* STRIKTNÍ ZÁKAZ */
+  .stop {
+    margin-top: 1.6rem; border: 3px solid #ff5a4a; border-radius: 18px; padding: 1.1rem 1.2rem;
+    background: rgba(255,90,74,.1);
+  }
+  .stop h3 { font-family: "Archivo Black", sans-serif; font-weight: 400; text-transform: uppercase; color: #ff5a4a; font-size: 1.15rem; line-height: 1.2; margin-bottom: .5rem; }
+  .stop p { font-size: .95rem; }
+  .stop ol { margin: .5rem 0 .5rem 1.3rem; font-size: .95rem; }
+  .stop li { margin: .25rem 0; }
+  .stop .small { color: var(--muted); font-size: .82rem; margin-top: .4rem; }
+  .stop.inline { margin-top: .8rem; padding: .7rem .9rem; border-width: 2px; }
+  .stop.inline p { font-size: .88rem; }
+
   /* rychlý přehled */
   .flow { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.6rem; align-items: center; }
   .flow span { border: 1px solid var(--gold); border-radius: 999px; padding: .35rem .8rem; font-weight: 800; font-size: .78rem; color: var(--gold-hi); background: rgba(230,184,79,.08); }
+  .flow span.red { border-color: #ff5a4a; color: #ff8a7a; background: rgba(255,90,74,.1); }
   .flow i { color: var(--gold); font-style: normal; }
   .nocash { margin-top: 1.2rem; display: inline-block; border: 1px solid var(--red); color: var(--red); border-radius: 12px; padding: .5rem .9rem; font-weight: 800; font-size: .85rem; }
 
@@ -45,7 +59,6 @@
   .mock .row { display: flex; gap: .5rem; }
   .mock .row > div { flex: 1; }
   .mock .note { color: var(--muted); font-size: .78rem; margin: .3rem 0 .6rem; }
-  .mock .warn { color: var(--red); }
   .ok { color: var(--green); font-weight: 800; }
   .btn { display: inline-block; background: var(--butter); color: #1a1406; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; font-size: .72rem; border-radius: 999px; padding: .55rem 1.1rem; }
   .btn.sec { background: transparent; color: var(--gold); border: 1px solid rgba(230,184,79,.5); }
@@ -91,9 +104,11 @@
     .mock { border-color: #c9a64a; }
     .mock .input, .tickets b, .stepper em { background: #fff; }
     .num, .btn { background: #f2d98c !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .seat { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .seat, .stop { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .stop { border-color: #b3261e; background: #fdecea; }
+    .stop h3 { color: #b3261e; }
     .case { background: #fff; }
-    .step, .case, .mock { break-inside: avoid; }
+    .step, .case, .mock, .stop { break-inside: avoid; }
     .print { display: none; }
     h2 { break-after: avoid; }
   }
@@ -104,13 +119,26 @@
 
   <p class="eyebrow">Maturitní ples 4.F a 4.H · 30. 1. 2027</p>
   <h1>Návod pro pokladní</h1>
-  <p class="lead">Jak prodat vstupenku za pár minut: vyber místa, napiš jméno, nech kupujícího zaplatit QR kódem, zapiš čísla lístků a hotovo.
+  <p class="lead">Jak prodat vstupenku za pár minut: vyber místa, napiš jméno, nech kupujícího zaplatit QR kódem, ověř platbu, zapiš čísla lístků a hotovo.
     Prodej běží na webu <a href="https://arnycze.github.io/Maturak27/#mista">arnycze.github.io/Maturak27</a>, funguje na mobilu i na počítači.</p>
+
+  <div class="stop">
+    <h3>⛔ Přísný zákaz: žádné lístky bez ověřené platby</h3>
+    <p>Papírové lístky <b>NIKDY nepředávej</b> a na <b>„Zaplaceno“ neklikej</b>, dokud <b>na vlastní oči neuvidíš</b>, že je zaplaceno – a to jedním z těchto dvou způsobů:</p>
+    <ol>
+      <li><b>Příchozí platba v aplikaci Fio banky u Arnošta</b> (na plesovém účtu 2203629553/2010, se správnou částkou a variabilním symbolem), <b>nebo</b></li>
+      <li><b>Potvrzení o provedené platbě v bankovní aplikaci kupujícího</b> – na jeho displeji musí být vidět, že platba byla <b>odeslána / provedena</b>, se správnou <b>částkou</b>, účtem <b>2203629553/2010</b> a <b>variabilním symbolem</b> z okénka.</li>
+    </ol>
+    <p>Nestačí slovo „už jsem to poslal“, rozpracovaná platba, screenshot odněkud ani „pošlu to večer“. <b>Bez potvrzení = bez lístků.</b></p>
+    <p class="small">Když si nejsi jistý/á, lístky nedávej a napiš Arnoštovi. Za lístky vydané bez ověřené platby odpovídá pokladní, která je vydala.</p>
+  </div>
+
   <p class="nocash">✕ Hotovost nebereme – vstupenky se platí jen převodem (QR kódem).</p>
 
   <div class="flow">
     <span>1 Přihlásit</span><i>→</i><span>2 Jméno</span><i>→</i><span>3 Místa / stání</span><i>→</i>
-    <span>4 QR kód</span><i>→</i><span>5 Platba</span><i>→</i><span>6 Čísla lístků</span><i>→</i><span>7 Zaplaceno ✓</span>
+    <span>4 QR kód</span><i>→</i><span>5 Platba</span><i>→</i><span class="red">6 Ověřit platbu ⛔</span><i>→</i>
+    <span>7 Čísla lístků</span><i>→</i><span>8 Zaplaceno ✓ + lístky</span>
   </div>
 
   <div class="print"><button class="btn sec" onclick="window.print()">🖨️ Vytisknout / uložit jako PDF</button></div>
@@ -192,16 +220,31 @@
     <div class="num">5</div>
     <div>
       <h3>Kupující zaplatí</h3>
-      <p>Kupující otevře <b>aplikaci své banky</b>, zvolí platbu QR kódem a naskenuje kód z tvého displeje. Částka, účet i variabilní symbol se vyplní samy. Počkej, až ti <b>ukáže potvrzení platby</b> (odesláno / provedeno).</p>
+      <p>Kupující otevře <b>aplikaci své banky</b>, zvolí platbu QR kódem a naskenuje kód z tvého displeje. Částka, účet i variabilní symbol se vyplní samy a kupující platbu odešle.</p>
       <p class="why">Na displeji běží odpočet. Pod minutu zčervená – pokud to nestihne, viz „Co když…“ níže.</p>
     </div>
   </div>
 
   <div class="step">
-    <div class="num">6</div>
+    <div class="num" style="background:#ff5a4a;color:#fff">6</div>
+    <div>
+      <h3>⛔ Ověř platbu – bez toho dál nepokračuj</h3>
+      <p>Musíš <b>sám/sama vidět</b> jedno z tohoto:</p>
+      <ul>
+        <li><b>v aplikaci Fio banky u Arnošta</b> příchozí platbu se správnou částkou a variabilním symbolem, <b>nebo</b></li>
+        <li><b>v bankovní aplikaci kupujícího</b> potvrzení, že platba je <b>odeslaná / provedená</b> – zkontroluj <b>částku</b>, účet <b>2203629553/2010</b> a <b>variabilní symbol</b> (musí sedět s okénkem).</li>
+      </ul>
+      <div class="stop inline">
+        <p><b>Neověřeno = žádné lístky a žádné „Zaplaceno“.</b> Nestačí „už jsem to poslal“, platba ve stavu „čeká na podpis / k odeslání“ ani screenshot.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">7</div>
     <div>
       <h3>Zapiš čísla papírových lístků</h3>
-      <p>Ke každé vstupence je v okénku políčko. Vezmi papírové lístky, které kupujícímu dáš, a do každého políčka napiš <b>číslo z lístku</b> (1, 2, 70, 400…). Po zapsání čísla můžeš klepnout na Enter – skočí to do dalšího políčka.</p>
+      <p>Až je platba ověřená: ke každé vstupence je v okénku políčko. Vezmi papírové lístky, které kupujícímu dáš, a do každého políčka napiš <b>číslo z lístku</b> (1, 2, 70, 400…). Po zapsání čísla můžeš klepnout na Enter – skočí to do dalšího políčka.</p>
       <div class="mock">
         <div class="lbl" style="text-align:center">Čísla papírových vstupenek</div>
         <div class="tickets">
@@ -217,27 +260,31 @@
   </div>
 
   <div class="step">
-    <div class="num">7</div>
+    <div class="num">8</div>
     <div>
-      <h3>Klepni na „✓ Zaplaceno“ a předej lístky</h3>
-      <p>Klepni na <span class="btn">✓ Zaplaceno</span>. Objeví se <span class="ok">✓ Zaplaceno</span> – vstupenky jsou prodané a zapsané v tabulce i s čísly lístků. Teprve <b>teď předej papírové lístky</b> kupujícímu. Pak <span class="btn sec">Zpět na plánek</span> a můžeš obsloužit dalšího.</p>
-      <p class="why">Platbu potom ještě automaticky ověří banka (Fio) – to už řešit nemusíš.</p>
+      <h3>Klepni na „✓ Zaplaceno“ a teprve pak předej lístky</h3>
+      <p>Klepni na <span class="btn">✓ Zaplaceno</span>. Objeví se <span class="ok">✓ Zaplaceno</span> – vstupenky jsou prodané a zapsané v tabulce i s čísly lístků. <b>Teprve teď předej papírové lístky</b> kupujícímu. Pak <span class="btn sec">Zpět na plánek</span> a můžeš obsloužit dalšího.</p>
+      <p class="why">Platbu potom ještě automaticky ověří banka (Fio) a Arnošt uvidí, kdyby něco nesedělo.</p>
     </div>
   </div>
 
   <h2>Co když…</h2>
   <div class="cases">
     <div class="case">
+      <h4>…kupující tvrdí, že zaplatil, ale potvrzení neukáže?</h4>
+      <p><b>Lístky nedávej.</b> Požádej ho, ať platbu najde v aplikaci (Historie / Odeslané platby), nebo ať Arnošt zkontroluje Fio. Do té doby buď nákup zruš, nebo počkej – po 5 minutách se místa samy uvolní.</p>
+    </div>
+    <div class="case">
       <h4>…si to kupující rozmyslí nebo chce jiná místa?</h4>
       <p>Klepni na <b>Zrušit nákup</b>. Vstupenky se hned uvolní, ale zůstanou vybrané v rámečku Nákup i se jménem – můžeš je upravit a vygenerovat nový QR, nebo dát <b>Vyprázdnit nákup</b>.</p>
     </div>
     <div class="case">
       <h4>…to nestihne za 5 minut?</h4>
-      <p>Rezervace vyprší a místa se uvolní. Pokud kupující <b>přesto zaplatil</b>, zapiš čísla lístků a dej <b>Zaplaceno</b> – zapíše se to, pokud místa mezitím nikdo nekoupil. Jinak vygeneruj nový QR.</p>
+      <p>Rezervace vyprší a místa se uvolní. Pokud kupující <b>přesto zaplatil a ty jsi platbu ověřil(a)</b>, zapiš čísla lístků a dej <b>Zaplaceno</b> – zapíše se to, pokud místa mezitím nikdo nekoupil. Jinak vygeneruj nový QR.</p>
     </div>
     <div class="case">
       <h4>…chce kupující platit hotově?</h4>
-      <p><b>Hotovost nebereme vůbec.</b> Za kupujícího může zaplatit kdokoli jiný (kamarád, rodič) – stačí naskenovat QR kód, vstupenky zůstanou na jméno kupujícího.</p>
+      <p><b>Hotovost nebereme vůbec.</b> Za kupujícího může zaplatit kdokoli jiný (kamarád, rodič) – stačí naskenovat QR kód, vstupenky zůstanou na jméno kupujícího. I tady platí: lístky až po ověření platby.</p>
     </div>
     <div class="case">
       <h4>…kupující nemá bankovní aplikaci?</h4>
@@ -267,9 +314,9 @@
 
   <h2>Pravidla, která se vyplatí dodržet</h2>
   <ul class="rules">
+    <li class="no"><b>Žádné lístky bez ověřené platby</b> – buď příchozí platba v aplikaci Fio banky u Arnošta, nebo potvrzení o provedené platbě v bankovní aplikaci kupujícího.</li>
     <li class="no"><b>Hotovost nebereme</b> – vstupenky se platí jen převodem (QR kódem).</li>
-    <li>Lístky předávej <b>až po kliknutí na „Zaplaceno“</b>, ne dřív.</li>
-    <li>Kliknout na „Zaplaceno“ smíš jen tehdy, když jsi <b>viděl(a) potvrzení platby</b> v bance kupujícího.</li>
+    <li>Na „Zaplaceno“ klikni <b>až po ověření platby</b> a lístky předej <b>až po kliknutí na „Zaplaceno“</b>.</li>
     <li>Ke každé vstupence zapiš <b>přesně</b> číslo lístku, který opravdu dáváš.</li>
     <li class="no">Nezavírej okénko s QR kódem, dokud nákup nedokončíš – zavření nákup zruší.</li>
     <li class="no">Nikomu nedávej své přihlašovací údaje a na cizím zařízení se nakonec <b>odhlas</b>.</li>
