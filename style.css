@@ -570,3 +570,12 @@ footer .mark { font-family: "Archivo Black", sans-serif; color: var(--gold); let
 }
 .login-card .pill { display: block; width: 100%; margin-top: .4rem; }
 .t-seat.readonly { cursor: default; }
+
+/* jméno kupujícího v okénku stolu */
+.t-buyer { text-align: left; margin: .2rem 0 .4rem; }
+.t-buyer label { display: block; font-weight: 800; font-size: .64rem; letter-spacing: .18em; text-transform: uppercase; color: var(--gold); margin-bottom: .35rem; }
+.t-buyer input {
+  width: 100%; font: inherit; font-size: 1rem; color: var(--text);
+  background: #000; border: 1px solid rgba(230,184,79,.35); border-radius: 12px; padding: .7rem .9rem;
+}
+.tcard .pill:disabled { opacity: .5; cursor: default; }
