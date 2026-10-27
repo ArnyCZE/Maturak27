@@ -777,3 +777,11 @@ footer .mark { font-family: "Archivo Black", sans-serif; color: var(--gold); let
 .plan.mobile .table span { font-size: .7rem; }
 .plan.mobile .table { border-radius: 4px; }
 @media (max-width: 380px) { .plan.mobile .table span { font-size: .62rem; } }
+
+/* čísla židlí v okénku stolu: bez obrysu (dřív se rozmazávala), tmavá a tučná; kroužky o kousek menší, aby se nedotýkaly */
+.t-seat text { stroke: none; font: 800 14px "Montserrat", sans-serif; letter-spacing: 0; }
+.t-seat.free text, .t-seat.sel text { fill: #120d03; }
+.t-seat.taken text { fill: #b9ae98; }
+.t-seat circle { r: 13px; }
+.t-seat.free circle { stroke: #fff1b8; stroke-width: 1.5; }
+.t-table-label { font-size: 14px; }
