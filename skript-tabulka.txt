@@ -1,12 +1,13 @@
 /*
  * Maturák 2027 – prodej vstupenek přes pokladní, 5min rezervace, QR platby a jejich záznam
- * (verze 6 – vstupenky na stání, nákup z více stolů, jméno a příjmení kupujícího)
+ * (verze 7 – nejvýš 10 vstupenek na osobu, vstupenky na stání, nákup z více stolů)
  *
  * Jak to funguje:
  *  - Plánek s obsazeností na webu vidí všichni.
  *  - Místa rezervovat a generovat QR kód smí jen přihlášená pokladní (list „Pokladní“).
  *  - Pokladní vybere místa (klidně u více stolů) a/nebo počet vstupenek na stání, vyplní jméno
  *    a příjmení kupujícího a vygeneruje jeden QR kód na celý nákup → vše je 5 minut „drženo“.
+ *  - Jeden člověk (stejné jméno a příjmení) může mít dohromady nejvýš 10 vstupenek (u stolu i na stání).
  *  - Když kupující zaplatí, pokladní klikne „Zaplaceno“ → vstupenky jsou natrvalo „zaplaceno“.
  *    Když pokladní nákup zruší nebo do 5 minut nepotvrdí, vstupenky se uvolní.
  *  - Vstupenky na stání jsou v listu „Stoly“ jako řádek „Stání“ (kapacita = 1100 minus místa u stolů).
@@ -23,6 +24,7 @@
 
 var SPREADSHEET_ID = "1O-i3_C3p2RyKldJzpj98r_GLJsaVL6VH0yNoLWV0-v0";   // Maturák 2027 – vstupenky (soukromé)
 var PRICE = 450;                       // cena jedné vstupenky v Kč (u stolu i na stání)
+var MAX_PER_PERSON = 10;               // nejvýš tolik vstupenek dohromady na jedno jméno a příjmení
 var STANDING = "Stání";                // řádek v listu Stoly pro vstupenky na stání
 var HOLD_MINUTES = 5;                  // jak dlouho QR kód drží místa
 var SESSION_HOURS = 6;                 // jak dlouho platí přihlášení pokladní
@@ -57,7 +59,7 @@ function doGet(e) {
         return release_(p.vs, p.token);
       });
     }
-    else result = { ok: true, info: "Maturák 2027 – rezervace běží (verze 6)." };
+    else result = { ok: true, info: "Maturák 2027 – rezervace běží (verze 7)." };
   } catch (err) {
     result = { ok: false, error: "Chyba skriptu: " + err.message };
   }
@@ -147,6 +149,21 @@ function state_() {
   return out;
 }
 
+/* Jméno pro porovnání: bez diakritiky, velkých písmen a nadbytečných mezer („JAn  Novák“ = „jan novak“). */
+var ACCENTS_ = new RegExp("[" + String.fromCharCode(0x300) + "-" + String.fromCharCode(0x36f) + "]", "g");
+function personKey_(name) {
+  return String(name || "").normalize("NFD").replace(ACCENTS_, "").toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+/* Kolik vstupenek už má člověk s tímto jménem (zaplacené, rezervované i právě držené). */
+function ticketsOf_(buyer) {
+  var key = personKey_(buyer), data = sheet_("Prodej").getDataRange().getValues(), now = Date.now(), n = 0;
+  for (var i = 1; i < data.length; i++) {
+    if (personKey_(data[i][COL.name - 1]) === key && isActive_(data[i], now)) n += Number(data[i][COL.count - 1]) || 0;
+  }
+  return n;
+}
+
 /* items = "VS 12:1,2;LS 50:3" – místa u stolů, standing = počet vstupenek na stání; jeden QR kód na celý nákup. */
 function hold_(itemsParam, standingParam, firstName, lastName, cashier) {
   firstName = String(firstName || "").trim();
@@ -171,6 +188,14 @@ function hold_(itemsParam, standingParam, firstName, lastName, cashier) {
     if (!st) return { ok: false, error: "V listu Stoly chybí řádek „Stání“." };
     var left = st.cap - st.seats.length;
     if (standing > left) return { ok: false, error: left ? "Na stání zbývá už jen " + left + " vstupenek." : "Vstupenky na stání jsou vyprodané.", tables: tables };
+  }
+
+  // limit na osobu
+  var already = ticketsOf_(buyer), allowed = Math.max(0, MAX_PER_PERSON - already);
+  if (already + count > MAX_PER_PERSON) {
+    return { ok: false, limit: true, error: "⚠️ Jeden člověk si může koupit nejvýš " + MAX_PER_PERSON + " vstupenek. " +
+      (already ? buyer + " už má " + already + (allowed ? ", takže může dokoupit nejvýš " + allowed + "." : " – další už koupit nemůže.")
+               : "Tento nákup má " + count + " – uber prosím " + (count - MAX_PER_PERSON) + ".") };
   }
 
   var vs = nextOrderVs_();
