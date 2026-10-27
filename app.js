@@ -261,6 +261,67 @@
       el.addEventListener("click", function () { openTable(id, el); });
       el.addEventListener("keydown", function (e) { if (e.key === "Enter") openTable(id, el); });
     });
+    renderList(key);
+  }
+
+  /* --- zobrazení „Seznam“: stoly jako dlaždice po sálech (na mobilu přehlednější než plánek) --- */
+  var planWrap = document.querySelector(".plan-wrap"), swipeHint = document.querySelector(".swipe-hint");
+  var listEl = document.createElement("div");
+  listEl.className = "tlist";
+  planWrap.insertAdjacentElement("afterend", listEl);
+  var viewTabs = document.createElement("div");
+  viewTabs.className = "view-tabs";
+  viewTabs.setAttribute("role", "tablist");
+  viewTabs.innerHTML = '<button role="tab" data-view="list">Seznam stolů</button><button role="tab" data-view="plan">Plánek</button>';
+  document.querySelector(".floor-tabs").insertAdjacentElement("afterend", viewTabs);
+  var viewMode = localStorage.getItem("ples-view") || (window.matchMedia("(max-width: 700px)").matches ? "list" : "plan");
+
+  function applyView() {
+    var list = viewMode === "list";
+    planWrap.hidden = list;
+    swipeHint.classList.toggle("off", list);
+    listEl.hidden = !list;
+    viewTabs.querySelectorAll("button").forEach(function (b) { b.setAttribute("aria-selected", b.dataset.view === viewMode); });
+  }
+  viewTabs.querySelectorAll("button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      viewMode = b.dataset.view;
+      localStorage.setItem("ples-view", viewMode);
+      applyView();
+    });
+  });
+
+  function renderList(key) {
+    var f = FLOORS[key], groups = [], byHall = {};
+    f.tables.forEach(function (t) {
+      var hall = t[0].split(" ")[0];
+      if (!byHall[hall]) { byHall[hall] = []; groups.push(hall); }
+      byHall[hall].push(t[0]);
+    });
+    listEl.innerHTML = "";
+    groups.forEach(function (hall) {
+      var ids = byHall[hall].slice().sort(function (a, b) { return parseInt(a.split(" ")[1], 10) - parseInt(b.split(" ")[1], 10); });
+      var free = 0, cap = 0;
+      ids.forEach(function (id) { var s = tableState(id); free += s.free; cap += s.cap; });
+      var sec = document.createElement("section");
+      sec.className = "tlist-hall";
+      var head = document.createElement("h4");
+      head.innerHTML = HALLS[hall] + " <small>stoly po " + SEATS[hall] + (loaded ? " · volno " + free + " z " + cap : "") + "</small>";
+      var grid = document.createElement("div");
+      grid.className = "tlist-grid";
+      ids.forEach(function (id) {
+        var s = tableState(id), num = id.split(" ")[1];
+        var b = document.createElement("button");
+        b.className = "tchip" + (!loaded ? " unknown" : s.free === 0 ? " full" : "") + (cart[id] && cart[id].length ? " incart" : "") + (id === openId ? " sel" : "");
+        b.style.setProperty("--p", Math.round(s.used / s.cap * 100));
+        b.innerHTML = "<b>" + num + "</b><small>" + (!loaded ? s.cap + " míst" : s.free === 0 ? "plno" : s.free + "/" + s.cap) + "</small>";
+        b.setAttribute("aria-label", "Stůl " + id + (loaded ? ", volno " + s.free + " z " + s.cap : ""));
+        b.addEventListener("click", function () { openTable(id, b); });
+        grid.appendChild(b);
+      });
+      sec.appendChild(head); sec.appendChild(grid);
+      listEl.appendChild(sec);
+    });
   }
 
   /* počítadlo vstupenek na stání vedle počtu volných míst u stolů */
@@ -476,9 +537,6 @@
   function cartCount() { return itemsCount(cartItems()) + cartStanding; }
 
   /* Kolik vstupenek smí být v nákupu: 10 minus to, co už kupující má (zjistí se po napsání jména). */
-  function buyerName() {
-    return (document.getElementById("c-first").value.trim() + " " + document.getElementById("c-last").value.trim()).trim();
-  }
   function cartLimit() { return quota ? quota.left : MAX_PER_PERSON; }
   function limitText(count) {
     var lim = cartLimit();
@@ -521,7 +579,7 @@
     if (!items.length) {
       var empty = document.createElement("li");
       empty.className = "c-empty";
-      empty.textContent = "Místa u stolů: zatím nic – klikni v plánku na stůl a vyber místa. Můžeš přidat místa u více stolů.";
+      empty.textContent = "Místa u stolů: zatím nic – klikni na stůl a vyber místa. Můžeš přidat místa u více stolů.";
       list.appendChild(empty);
     }
     items.forEach(function (it) {
@@ -724,7 +782,7 @@
   }
 
   function openTable(id, el) {
-    planEl.querySelectorAll(".table.sel").forEach(function (x) { x.classList.remove("sel"); });
+    document.querySelectorAll(".plan .table.sel, .tchip.sel").forEach(function (x) { x.classList.remove("sel"); });
     el.classList.add("sel");
     lastTable = el; openId = id;
     var s = tableState(id);
@@ -740,7 +798,6 @@
     openId = null;
     hideModal(modal);
     renderFloor(currentFloor);
-    if (lastTable) lastTable.focus();
   }
   modal.addEventListener("click", function (e) { if (e.target === modal) closeTable(); });
   modal.querySelector(".tclose").addEventListener("click", closeTable);
@@ -922,6 +979,7 @@
       renderFloor(b.dataset.floor);
     });
   });
+  applyView();
   renderCashierBar();
   renderCart();
   renderFloor("ground");

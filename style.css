@@ -700,3 +700,45 @@ footer .mark { font-family: "Archivo Black", sans-serif; color: var(--gold); let
   .t-ticket input { width: 100%; }
 }
 .tcard [hidden], .cart [hidden] { display: none !important; }
+
+/* ---------- přepínač Seznam / Plánek a seznam stolů (hlavně pro mobil) ---------- */
+.seat-head { align-items: center; }
+.view-tabs { display: flex; gap: .5rem; }
+.view-tabs button {
+  font: inherit; font-weight: 800; font-size: .7rem; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--muted); background: transparent;
+  border: 1px solid rgba(230,184,79,.25); border-radius: 999px;
+  padding: .55rem 1rem; cursor: pointer;
+}
+.view-tabs button[aria-selected="true"] { color: var(--gold-hi); border-color: var(--gold); background: rgba(230,184,79,.12); }
+.plan-wrap[hidden], .tlist[hidden] { display: none; }
+.swipe-hint.off { display: none !important; }
+.tlist { margin-top: 1.4rem; display: grid; gap: 1.2rem; }
+.tlist-hall { border: 1px solid var(--line); border-radius: 18px; padding: 1rem; background: #050403; }
+.tlist-hall h4 { font-weight: 800; font-size: .74rem; letter-spacing: .25em; text-transform: uppercase; color: var(--gold); margin-bottom: .8rem; }
+.tlist-hall h4 small { display: block; letter-spacing: .05em; text-transform: none; font-weight: 400; color: var(--muted); font-size: .8rem; margin-top: .2rem; }
+.tlist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(62px, 1fr)); gap: .5rem; }
+.tchip {
+  --p: 0;
+  font: inherit; color: var(--text); cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .1rem;
+  min-height: 58px; padding: .4rem .2rem;
+  border: 1px solid rgba(230,184,79,.55); border-radius: 12px;
+  background: linear-gradient(90deg, rgba(120,110,95,.55) calc(var(--p) * 1%), rgba(230,184,79,.14) 0);
+  transition: transform .2s var(--ease);
+}
+.tchip b { font-family: "Archivo Black", sans-serif; font-weight: 400; font-size: 1.15rem; line-height: 1; color: var(--gold-hi); }
+.tchip small { font-size: .72rem; color: var(--muted); }
+.tchip.full { opacity: .45; border-color: rgba(120,110,95,.6); }
+.tchip.full b { color: var(--muted); }
+.tchip.unknown { background: rgba(230,184,79,.08); }
+.tchip.incart { box-shadow: 0 0 0 2px #fff; }
+.tchip.sel, .tchip:active { transform: scale(1.06); }
+@media (max-width: 560px) {
+  .seat-head { gap: .8rem; }
+  .seat-total .v { font-size: 1.8rem; }
+  .bar { width: 160px; }
+  .floor-tabs, .view-tabs { width: 100%; }
+  .floor-tabs button, .view-tabs button { flex: 1; }
+  .plan { min-width: 760px; }
+}
