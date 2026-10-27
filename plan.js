@@ -114,7 +114,7 @@ window.IDEON_PLAN = (function () {
     /* Na výšku pro mobil: podium nahoře, Levý a Pravý sál vlevo pod sebou, bar a šatna maturantů pod velkým sálem. */
     mobile: {
       ground: {
-        w: 100, h: 150, d: 5,
+        w: 100, h: 150, d: 5.6,
         rooms: [
           { x: 34, y: 13, w: 65, h: 85 },    // Velký sál
           { x: 1, y: 13, w: 31, h: 49 },     // Levý sál
@@ -126,8 +126,8 @@ window.IDEON_PLAN = (function () {
           { t: "Šatna 1", x: 38, y: 1, w: 18, h: 9 },
           { t: "WC účink.", x: 58, y: 1, w: 18, h: 9 },
           { t: "Schody", x: 78, y: 1, w: 21, h: 9, cls: "stairs" },
-          { t: "Podium · kapela", x: 45, y: 15.5, w: 38, h: 7, cls: "solid" },
-          { t: "Taneční parket", x: 45, y: 24, w: 38, h: 33, cls: "floor-dance" },
+          { t: "Podium · kapela", x: 45, y: 15.5, w: 37, h: 7, cls: "solid" },
+          { t: "Taneční parket", x: 45, y: 24, w: 37, h: 33, cls: "floor-dance" },
           { t: "WC", x: 6, y: 65, w: 21, h: 9 },
           { t: "Bar", x: 36, y: 101, w: 20, h: 13 },
           { t: "Šatna maturantů", x: 58, y: 101, w: 22, h: 20 },
@@ -141,13 +141,13 @@ window.IDEON_PLAN = (function () {
         ],
         tables: [].concat(
           // pravý okraj velkého sálu: VS 1–9 a 10–13
-          colAt("VS", [1, 2, 3, 4, 5, 6, 7, 8, 9], 94, spread(18, 90, 9)),
-          colAt("VS", [10, 11, 12, 13], 87.5, [42, 52, 64, 78].map(vsY)),
+          colAt("VS", [1, 2, 3, 4, 5, 6, 7, 8, 9], 94.6, spread(18, 90, 9)),
+          colAt("VS", [10, 11, 12, 13], 86.6, [42, 52, 64, 78].map(vsY)),
           // blok u baru – 4 sloupce po 4, pod parketem
-          colAt("VS", [14, 15, 16, 17], 79, [65, 71.5, 78, 84.5].map(vsY)),
-          colAt("VS", [18, 19, 20, 21], 71, [65, 71.5, 78, 84.5].map(vsY)),
+          colAt("VS", [14, 15, 16, 17], 78.6, [65, 71.5, 78, 84.5].map(vsY)),
+          colAt("VS", [18, 19, 20, 21], 70.8, [65, 71.5, 78, 84.5].map(vsY)),
           colAt("VS", [22, 23, 24, 25], 63, [65, 71.5, 78, 84.5].map(vsY)),
-          colAt("VS", [26, 27, 28, 29], 55, [65, 71.5, 78, 84.5].map(vsY)),
+          colAt("VS", [26, 27, 28, 29], 55.2, [65, 71.5, 78, 84.5].map(vsY)),
           // levý okraj velkého sálu: VS 43–30
           colAt("VS", [43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30], 39.5, spread(17, 91, 14)),
           // Levý sál
@@ -157,12 +157,12 @@ window.IDEON_PLAN = (function () {
           colAt("LS", [47, 48, 49, 50], 28, [18, 26, 34, 42]),
           // Pravý sál
           colAt("PS", [77, 78, 79, 80, 81, 82, 83, 73], 5.5, spread(82, 138, 8)),
-          colAt("PS", [74, 75, 76, 71, 72], 14.5, spread(82, 118, 5)),
+          colAt("PS", [74, 75, 76, 71, 72], 15, spread(82, 118, 5)),
           colAt("PS", [66, 67, 68, 69], 26, spread(82, 103, 4))
         )
       },
       gallery: {
-        w: 80, h: 110, d: 5,
+        w: 80, h: 110, d: 5.4,
         rooms: [
           { x: 1, y: 1, w: 78, h: 108 }
         ],
