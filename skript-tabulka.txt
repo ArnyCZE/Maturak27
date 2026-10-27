@@ -1,6 +1,6 @@
 /*
  * Maturák 2027 – prodej vstupenek přes pokladní, 5min rezervace, QR platby a jejich záznam
- * (verze 7 – nejvýš 10 vstupenek na osobu, vstupenky na stání, nákup z více stolů)
+ * (verze 8 – čísla papírových vstupenek, nejvýš 10 vstupenek na osobu, stání, nákup z více stolů)
  *
  * Jak to funguje:
  *  - Plánek s obsazeností na webu vidí všichni.
@@ -8,11 +8,12 @@
  *  - Pokladní vybere místa (klidně u více stolů) a/nebo počet vstupenek na stání, vyplní jméno
  *    a příjmení kupujícího a vygeneruje jeden QR kód na celý nákup → vše je 5 minut „drženo“.
  *  - Jeden člověk (stejné jméno a příjmení) může mít dohromady nejvýš 10 vstupenek (u stolu i na stání).
- *  - Když kupující zaplatí, pokladní klikne „Zaplaceno“ → vstupenky jsou natrvalo „zaplaceno“.
+ *  - Když kupující zaplatí, pokladní ke každé vstupence zapíše číslo papírového lístku, který mu dá,
+ *    a klikne „Zaplaceno“ → vstupenky jsou natrvalo „zaplaceno“. Stejné číslo lístku nejde použít dvakrát.
  *    Když pokladní nákup zruší nebo do 5 minut nepotvrdí, vstupenky se uvolní.
  *  - Vstupenky na stání jsou v listu „Stoly“ jako řádek „Stání“ (kapacita = 1100 minus místa u stolů).
  *  - V listu „Prodej“ je za každý stůl nákupu (a za stání) jeden řádek se stejným VS, v listu
- *    „QR kódy“ je za každý QR kód jeden řádek (kdo, komu, kdy, stoly, místa, VS, stav).
+ *    „QR kódy“ je za každý QR kód jeden řádek (kdo, komu, kdy, stoly, místa, VS, stav, čísla lístků).
  *  - Skript každých 5 minut projde e-maily od Fio o příchozích platbách a k zaplaceným nákupům
  *    doplní „Ověřeno bankou“ – podle variabilního symbolu (číslo nákupu 27xxxxx).
  *
@@ -33,11 +34,11 @@ var PAID_LABEL = "ples-zpracovano";    // štítek v Gmailu pro už zpracované 
 var HALL_BY_DIGIT = { "1": "VS", "2": "LS", "3": "PS", "4": "G" };
 
 // sloupce v listu Prodej (1 = A)
-var COL = { name: 1, contact: 2, table: 3, count: 4, status: 5, note: 6, vs: 7, amount: 8, created: 9, paid: 10, seats: 11, bank: 12 };
+var COL = { name: 1, contact: 2, table: 3, count: 4, status: 5, note: 6, vs: 7, amount: 8, created: 9, paid: 10, seats: 11, bank: 12, tickets: 13 };
 // sloupce v listu QR kódy
-var LOG = { created: 1, cashier: 2, buyer: 3, table: 4, seats: 5, count: 6, amount: 7, vs: 8, status: 9, confirmed: 10, bank: 11, payer: 12, token: 13 };
+var LOG = { created: 1, cashier: 2, buyer: 3, table: 4, seats: 5, count: 6, amount: 7, vs: 8, status: 9, confirmed: 10, bank: 11, payer: 12, token: 13, tickets: 14 };
 var LOG_HEADER = ["Vygenerováno", "Pokladní", "Kupující", "Stoly", "Místa", "Počet", "Částka (Kč)", "VS", "Stav",
-                  "Potvrzeno pokladní", "Ověřeno bankou (Fio)", "Plátce (z banky)", "Kód"];
+                  "Potvrzeno pokladní", "Ověřeno bankou (Fio)", "Plátce (z banky)", "Kód", "Čísla vstupenek (papírových)"];
 var CASHIER_HEADER = ["Jméno", "Přihlašovací jméno", "Heslo", "Aktivní (ano/ne)"];
 var INACTIVE = { "vypršelo": 1, "zrušeno": 1 };
 
@@ -49,17 +50,18 @@ function doGet(e) {
   try {
     if (p.action === "state") result = { ok: true, tables: state_() };
     else if (p.action === "login") result = login_(p.login, p.password);
-    else if (p.action === "hold" || p.action === "release" || p.action === "confirm" || p.action === "check") {
+    else if (p.action === "hold" || p.action === "release" || p.action === "confirm" || p.action === "check" || p.action === "quota") {
       var cashier = cashierFromSession_(p.session);
       if (!cashier) result = { ok: false, error: "Přihlášení vypršelo – přihlas se prosím znovu.", loggedOut: true };
       else if (p.action === "check") result = { ok: true, name: cashier };
+      else if (p.action === "quota") result = quota_(p.firstName, p.lastName);
       else result = withLock_(function () {
         if (p.action === "hold") return hold_(p.items, p.standing, p.firstName, p.lastName, cashier);
-        if (p.action === "confirm") return confirm_(p.vs, p.token);
+        if (p.action === "confirm") return confirm_(p.vs, p.token, p.tickets);
         return release_(p.vs, p.token);
       });
     }
-    else result = { ok: true, info: "Maturák 2027 – rezervace běží (verze 7)." };
+    else result = { ok: true, info: "Maturák 2027 – rezervace běží (verze 8)." };
   } catch (err) {
     result = { ok: false, error: "Chyba skriptu: " + err.message };
   }
@@ -164,6 +166,14 @@ function ticketsOf_(buyer) {
   return n;
 }
 
+/* Pro web: kolik vstupenek už kupující má a kolik si ještě může koupit. */
+function quota_(firstName, lastName) {
+  var buyer = String(firstName || "").trim() + " " + String(lastName || "").trim();
+  if (!personKey_(buyer)) return { ok: false, error: "Chybí jméno." };
+  var has = ticketsOf_(buyer);
+  return { ok: true, has: has, left: Math.max(0, MAX_PER_PERSON - has), max: MAX_PER_PERSON };
+}
+
 /* items = "VS 12:1,2;LS 50:3" – místa u stolů, standing = počet vstupenek na stání; jeden QR kód na celý nákup. */
 function hold_(itemsParam, standingParam, firstName, lastName, cashier) {
   firstName = String(firstName || "").trim();
@@ -193,9 +203,10 @@ function hold_(itemsParam, standingParam, firstName, lastName, cashier) {
   // limit na osobu
   var already = ticketsOf_(buyer), allowed = Math.max(0, MAX_PER_PERSON - already);
   if (already + count > MAX_PER_PERSON) {
-    return { ok: false, limit: true, error: "⚠️ Jeden člověk si může koupit nejvýš " + MAX_PER_PERSON + " vstupenek. " +
-      (already ? buyer + " už má " + already + (allowed ? ", takže může dokoupit nejvýš " + allowed + "." : " – další už koupit nemůže.")
-               : "Tento nákup má " + count + " – uber prosím " + (count - MAX_PER_PERSON) + ".") };
+    return { ok: false, limit: true, has: already, left: allowed,
+      error: "⚠️ Jeden člověk si může koupit nejvýš " + MAX_PER_PERSON + " vstupenek. " +
+        (already ? buyer + " už má " + already + (allowed ? ", takže může dokoupit nejvýš " + allowed + " – uber z nákupu " + (count - allowed) + "." : " – další už koupit nemůže.")
+                 : "Tento nákup má " + count + " – uber prosím " + (count - MAX_PER_PERSON) + ".") };
   }
 
   var vs = nextOrderVs_();
@@ -235,7 +246,7 @@ function findOrder_(vs, token) {
       rows.push({ row: i + 1, values: r });
     }
   }
-  return { sheet: sh, rows: rows };
+  return { sheet: sh, rows: rows, data: data };
 }
 
 /* Místa z nákupu, která mezitím zabral někdo jiný (jen u propadlého podržení). */
@@ -255,19 +266,53 @@ function orderClashes_(rows) {
   return msgs;
 }
 
-/* Pokladní potvrdil(a), že kupující zaplatil → vstupenky jsou prodané natrvalo. */
-function confirm_(vs, token) {
+/* Pokladní potvrdil(a), že kupující zaplatil, a zapsal(a) čísla papírových vstupenek → prodáno natrvalo.
+   tickets = "VS 12:15,16;Stání:400" – čísla lístků pro každý stůl/stání nákupu, ve stejném pořadí jako místa. */
+function confirm_(vs, token, ticketsParam) {
   var o = findOrder_(vs, token);
   if (!o.rows.length) return { ok: false, error: "Rezervace nenalezena." };
+  if (o.rows.every(function (h) { return h.values[COL.status - 1] === "zaplaceno"; })) return { ok: true };
+
+  // čísla papírových vstupenek: ke každé vstupence jedno, kladné celé číslo, žádné dvakrát
+  var given = {};
+  String(ticketsParam || "").split(";").forEach(function (part) {
+    var i = part.lastIndexOf(":");
+    if (i > 0) given[part.slice(0, i).trim()] = part.slice(i + 1).split(",").map(function (s) { return s.trim(); });
+  });
+  var mine = {}, all = [];
+  for (var k = 0; k < o.rows.length; k++) {
+    var h = o.rows[k], table = h.values[COL.table - 1], need = Number(h.values[COL.count - 1]) || 0;
+    var nums = given[table] || [];
+    if (nums.length !== need || nums.some(function (s) { return !/^\d{1,6}$/.test(s) || !parseInt(s, 10); })) {
+      return { ok: false, error: "Zapiš číslo papírové vstupenky ke každé vstupence (jen číslice)." };
+    }
+    nums = nums.map(function (s) { return String(parseInt(s, 10)); });
+    mine[h.row] = nums;
+    all = all.concat(nums);
+  }
+  var dup = all.filter(function (n, i) { return all.indexOf(n) !== i; });
+  if (dup.length) return { ok: false, error: "Číslo vstupenky " + dup[0] + " je v nákupu zapsané dvakrát." };
+  var now = Date.now(), used = {};
+  for (var j = 1; j < o.data.length; j++) {
+    if (mine[j + 1] || !isActive_(o.data[j], now)) continue;
+    String(o.data[j][COL.tickets - 1] || "").replace(/^'/, "").split(",").forEach(function (s) {
+      s = s.trim(); if (s) used[String(parseInt(s, 10))] = o.data[j][COL.name - 1] || "jiný nákup";
+    });
+  }
+  var taken = all.filter(function (n) { return used[n]; });
+  if (taken.length) return { ok: false, error: "Vstupenka č. " + taken.join(", ") + " už je zapsaná u jiného nákupu (" + used[taken[0]] + "). Zkontroluj číslo." };
+
   var clash = orderClashes_(o.rows);
   if (clash.length) return { ok: false, error: "Rezervace vypršela a mezitím se prodalo i tohle – " + clash.join("; ") + "." };
-  var now = new Date();
+  var paidAt = new Date(), logText = [];
   o.rows.forEach(function (h) {
+    o.sheet.getRange(h.row, COL.tickets).setValue("'" + mine[h.row].join(","));
+    logText.push(h.values[COL.table - 1] + ": " + mine[h.row].join(","));
     if (h.values[COL.status - 1] === "zaplaceno") return;
     o.sheet.getRange(h.row, COL.status).setValue("zaplaceno");
-    o.sheet.getRange(h.row, COL.paid).setValue(now);
+    o.sheet.getRange(h.row, COL.paid).setValue(paidAt);
   });
-  updateLog_(token, { status: "zaplaceno", confirmed: now });
+  updateLog_(token, { status: "zaplaceno", confirmed: paidAt, tickets: logText.join(" · ") });
   return { ok: true };
 }
 
@@ -365,6 +410,7 @@ function processPayment_(sh, msg) {
     var clash = orderClashes_(unpaid);
     unpaid.forEach(function (h) { sh.getRange(h.row, COL.status).setValue(clash.length ? "zrušeno" : "zaplaceno"); });
     if (clash.length) sh.getRange(unpaid[0].row, COL.note).setValue(note + " KONFLIKT: " + clash.join("; ") + " – už prodané, vrátit peníze.");
+    else sh.getRange(unpaid[0].row, COL.note).setValue(note + " – zaplaceno bez potvrzení pokladní, doplnit čísla vstupenek");
   }
   if (note.indexOf("web ") === 0) updateLog_(note.slice(4, 12), { bank: bankNote, payer: payer });
 }
@@ -393,6 +439,7 @@ function updateLog_(token, fields) {
     if (fields.confirmed) sh.getRange(i + 1, LOG.confirmed).setValue(fields.confirmed);
     if (fields.bank) sh.getRange(i + 1, LOG.bank).setValue(fields.bank);
     if (fields.payer) sh.getRange(i + 1, LOG.payer).setValue(fields.payer);
+    if (fields.tickets) sh.getRange(i + 1, LOG.tickets).setValue(fields.tickets);
     return;
   }
 }

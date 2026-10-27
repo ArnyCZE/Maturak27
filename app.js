@@ -166,6 +166,7 @@
   var CFG = window.PLES_CONFIG;
   var API = CFG.api;
   var PAY = { iban: CFG.iban, account: CFG.account, price: CFG.price };
+  var MAX_PER_PERSON = CFG.maxPerPerson || 10;
   var SHEET_CSV = "https://docs.google.com/spreadsheets/d/18tbTqbiRGQaAFtXcp2peYWdz93SIBP-x7r0L-sKOW_0/gviz/tq?tqx=out:csv&sheet=Web";
   var SEATS = window.IDEON_PLAN.seats;
   var HALLS = window.IDEON_PLAN.halls;
@@ -185,8 +186,10 @@
 
   var cart = {};            // rozpracovaný nákup pokladní: "VS 12" -> [1, 2], klidně u více stolů
   var cartStanding = 0;     // … a k tomu počet vstupenek na stání
+  var quota = null;         // { name, has, left } – kolik vstupenek už kupující má / ještě smí koupit
   var hold = null;          // { vs, token, expiresAt, amount, items, standing, first, last } – právě podržený nákup
   var finished = false;     // QR je vyřízený (zaplaceno / vypršelo) – tlačítko dole jen zavře okénko
+  var paidDone = false;     // pokladní už potvrdil(a) zaplacení
   var timerId = null;
   var lastTable = null, openId = null;
 
@@ -428,7 +431,7 @@
     session = ""; cashierName = "";
     localStorage.removeItem("ples-session");
     localStorage.removeItem("ples-name");
-    cart = {}; cartStanding = 0;
+    cart = {}; cartStanding = 0; quota = null;
     renderCashierBar();
     renderCart();
     renderFloor(currentFloor);
@@ -441,6 +444,11 @@
   cartEl.hidden = true;
   cartEl.innerHTML =
     '<div class="t-hall">Nákup</div>' +
+    '<div class="c-names">' +
+      '<div><label for="c-first">Jméno kupujícího</label><input id="c-first" autocomplete="off" placeholder="Jan"></div>' +
+      '<div><label for="c-last">Příjmení kupujícího</label><input id="c-last" autocomplete="off" placeholder="Novák"></div>' +
+    '</div>' +
+    '<p class="c-quota" id="c-quota"></p>' +
     '<ul class="c-items" id="c-items"></ul>' +
     '<div class="c-standing">' +
       '<div><b>Vstupenky na stání</b><small id="c-sfree"></small></div>' +
@@ -451,10 +459,6 @@
       '</div>' +
     '</div>' +
     '<div class="c-total" id="c-total"></div>' +
-    '<div class="c-names">' +
-      '<div><label for="c-first">Jméno kupujícího</label><input id="c-first" autocomplete="off" placeholder="Jan"></div>' +
-      '<div><label for="c-last">Příjmení kupujícího</label><input id="c-last" autocomplete="off" placeholder="Novák"></div>' +
-    '</div>' +
     '<p class="t-note" id="c-msg"></p>' +
     '<div class="c-actions">' +
       '<button class="pill" id="c-buy">Vygenerovat QR kód</button>' +
@@ -471,10 +475,48 @@
   function itemsCount(items) { return items.reduce(function (n, it) { return n + it.seats.length; }, 0); }
   function cartCount() { return itemsCount(cartItems()) + cartStanding; }
 
+  /* Kolik vstupenek smí být v nákupu: 10 minus to, co už kupující má (zjistí se po napsání jména). */
+  function buyerName() {
+    return (document.getElementById("c-first").value.trim() + " " + document.getElementById("c-last").value.trim()).trim();
+  }
+  function cartLimit() { return quota ? quota.left : MAX_PER_PERSON; }
+  function limitText(count) {
+    var lim = cartLimit();
+    if (quota && !lim) return "⚠️ " + quota.name + " už má " + quota.has + " " + ticketsWord(quota.has) + " – víc než " + MAX_PER_PERSON + " si koupit nemůže.";
+    return "⚠️ " + (quota ? quota.name + " si může koupit už jen " + lim : "Jeden člověk si může koupit nejvýš " + lim) +
+           " " + ticketsWord(lim) + " – uber z nákupu " + (count - lim) + ".";
+  }
+  function quotaText() {
+    if (!quota) return "Napiš jméno a příjmení – ukážu, kolik vstupenek si ještě může koupit (nejvýš " + MAX_PER_PERSON + " na osobu).";
+    if (!quota.has) return quota.name + " zatím nemá žádnou vstupenku – může koupit až " + MAX_PER_PERSON + ".";
+    return quota.name + " už má " + quota.has + " " + ticketsWord(quota.has) + (quota.left ? " – může koupit ještě " + quota.left + "." : " – další už koupit nemůže.");
+  }
+
+  var quotaTimer = null, quotaSeq = 0;
+  function checkQuota() {
+    clearTimeout(quotaTimer);
+    var first = document.getElementById("c-first").value.trim(), last = document.getElementById("c-last").value.trim();
+    if (!first || !last) { quota = null; renderCart(); return; }
+    quotaTimer = setTimeout(function () {
+      var seq = ++quotaSeq, name = first + " " + last;
+      set("c-quota", "Ověřuji, kolik vstupenek už má…");
+      cashierApi({ action: "quota", firstName: first, lastName: last }).then(function (res) {
+        if (seq !== quotaSeq) return;
+        quota = res.ok ? { name: name, has: res.has, left: res.left } : null;
+        renderCart();
+      });
+    }, 500);
+  }
+  document.getElementById("c-first").addEventListener("input", checkQuota);
+  document.getElementById("c-last").addEventListener("input", checkQuota);
+
   function renderCart(msg) {
     cartEl.hidden = !session;
     if (!session) return;
-    var items = cartItems(), count = itemsCount(items) + cartStanding, list = document.getElementById("c-items");
+    var items = cartItems(), count = itemsCount(items) + cartStanding, lim = cartLimit(), list = document.getElementById("c-items");
+    var quotaEl = document.getElementById("c-quota");
+    quotaEl.textContent = quotaText();
+    quotaEl.classList.toggle("warn", !!quota && !quota.left);
     list.innerHTML = "";
     if (!items.length) {
       var empty = document.createElement("li");
@@ -494,23 +536,29 @@
     });
     document.getElementById("c-scount").value = cartStanding;
     document.getElementById("c-sminus").disabled = cartStanding <= 0;
-    document.getElementById("c-splus").disabled = !live || cartStanding >= standingFree();
+    document.getElementById("c-splus").disabled = !live || cartStanding >= standingFree() || count >= lim;
     set("c-sfree", loaded ? (standingFree() ? "zbývá " + standingFree() + " z " + standing.cap : "vyprodáno") : "");
     set("c-total", count ? count + " " + ticketsWord(count) + " · " + count * PAY.price + " Kč" : "");
+    var over = count > lim;
     var btn = document.getElementById("c-buy");
-    btn.disabled = !count || !live;
+    btn.disabled = !count || !live || over;
     btn.textContent = count ? "Vygenerovat QR kód (" + count * PAY.price + " Kč)" : "Vygenerovat QR kód";
     document.getElementById("c-clear").hidden = !count;
     var msgEl = document.getElementById("c-msg");
+    msgEl.classList.toggle("warn", over);
     if (!live && loaded) msgEl.textContent = OFFLINE;
+    else if (over) msgEl.textContent = limitText(count);
     else if (msg !== undefined) msgEl.textContent = msg;
-    else if (msgEl.textContent === OFFLINE) msgEl.textContent = "";
+    else if (msgEl.textContent === OFFLINE || msgEl.textContent.indexOf("⚠️") === 0) msgEl.textContent = "";
   }
 
   function setStanding(n) {
-    n = Math.max(0, Math.min(standingFree(), parseInt(n, 10) || 0));
-    cartStanding = n;
-    renderCart("");
+    var max = Math.min(standingFree(), Math.max(0, cartLimit() - itemsCount(cartItems())));
+    n = Math.max(0, parseInt(n, 10) || 0);
+    var capped = n > max;
+    cartStanding = Math.min(n, max);
+    renderCart(capped ? "Víc vstupenek na stání přidat nejde – " +
+      (cartStanding >= standingFree() ? "víc jich nezbývá." : "jeden člověk může mít nejvýš " + MAX_PER_PERSON + " vstupenek.") : "");
   }
   document.getElementById("c-sminus").addEventListener("click", function () { setStanding(cartStanding - 1); });
   document.getElementById("c-splus").addEventListener("click", function () { setStanding(cartStanding + 1); });
@@ -540,12 +588,13 @@
       firstName: first, lastName: last
     }).then(function (res) {
       if (!res.ok) {
+        if (res.limit) quota = { name: first + " " + last, has: res.has, left: res.left };
         if (res.tables) applyState(res.tables);
         renderCart(res.error);
         return;
       }
       hold = { vs: res.vs, token: res.token, expiresAt: res.expiresAt, amount: res.amount, items: items, standing: stand, first: first, last: last };
-      cart = {}; cartStanding = 0;
+      cart = {}; cartStanding = 0; quota = null;
       firstEl.value = ""; lastEl.value = "";
       renderCart("");
       showPayment();
@@ -570,7 +619,7 @@
     '</div>';
   document.body.appendChild(modal);
 
-  /* --- okénko s QR kódem nákupu --- */
+  /* --- okénko s QR kódem nákupu a čísly papírových vstupenek --- */
   var payModal = document.createElement("div");
   payModal.className = "tmodal";
   payModal.hidden = true;
@@ -583,6 +632,7 @@
       '<div class="t-qr" id="t-qr"></div>' +
       '<div class="t-free" id="t-amount"></div>' +
       '<p class="t-details" id="t-details"></p>' +
+      '<div class="t-tickets" id="t-tickets"></div>' +
       '<p class="t-note" id="t-paynote"></p>' +
       '<button class="pill" id="t-paid">✓ Zaplaceno</button>' +
       '<button class="pill secondary" id="t-back">Zrušit nákup</button>' +
@@ -601,7 +651,7 @@
     return pos;
   }
 
-  function drawSeats() {
+  function drawSeats(note) {
     var svg = document.getElementById("t-seats"), s = tableState(openId), mine = session ? (cart[openId] || []) : [];
     svg.innerHTML = "";
     var table = document.createElementNS(NS, "rect");
@@ -635,23 +685,32 @@
     });
 
     set("t-free", !loaded ? s.cap + " míst u stolu" : s.free === 0 ? "Obsazeno" : "Volno " + s.free + " z " + s.cap + " míst");
+    var noteEl = document.getElementById("t-note");
+    noteEl.classList.toggle("warn", !!note);
     if (!session) {
-      set("t-note", !loaded ? "Aktuální obsazenost zatím nemáme načtenou." :
+      noteEl.textContent = !loaded ? "Aktuální obsazenost zatím nemáme načtenou." :
         s.free === 0 ? "Tento stůl je už celý obsazený." :
         "Volná místa: " + seatPositions(s.cap).map(function (p, i) { return i + 1; })
-          .filter(function (n) { return s.seats.indexOf(n) === -1; }).join(", ") + ".");
+          .filter(function (n) { return s.seats.indexOf(n) === -1; }).join(", ") + ".";
       return;
     }
     var total = cartCount();
-    if (!live) set("t-note", OFFLINE);
-    else if (s.free === 0) set("t-note", "Tento stůl je už celý obsazený.");
-    else set("t-note", (mine.length ? "U tohoto stolu v nákupu: místo " + mine.slice().sort(function (a, b) { return a - b; }).join(", ") + ". "
-                                    : "Klepni na volná (zlatá) místa – přidají se do nákupu. ") +
-                       (total ? "V nákupu celkem " + total + " " + ticketsWord(total) + " · " + total * PAY.price + " Kč." : ""));
+    if (note) noteEl.textContent = note;
+    else if (!live) noteEl.textContent = OFFLINE;
+    else if (s.free === 0) noteEl.textContent = "Tento stůl je už celý obsazený.";
+    else noteEl.textContent = (mine.length ? "U tohoto stolu v nákupu: místo " + mine.slice().sort(function (a, b) { return a - b; }).join(", ") + ". "
+                                           : "Klepni na volná (zlatá) místa – přidají se do nákupu. ") +
+                              (total ? "V nákupu celkem " + total + " " + ticketsWord(total) + " · " + total * PAY.price + " Kč." : "");
   }
 
   function toggleSeat(num) {
-    var mine = cart[openId] || (cart[openId] = []), i = mine.indexOf(num);
+    var mine = cart[openId] || [], i = mine.indexOf(num);
+    if (i === -1 && cartCount() >= cartLimit()) {
+      drawSeats(quota && !quota.left ? "⚠️ " + quota.name + " už má " + quota.has + " " + ticketsWord(quota.has) + " – další si koupit nemůže."
+                                     : "⚠️ Víc vstupenek přidat nejde – " + (quota ? quota.name + " si může koupit nejvýš " + quota.left : "jeden člověk může mít nejvýš " + MAX_PER_PERSON) + ".");
+      return;
+    }
+    cart[openId] = mine;
     if (i === -1) mine.push(num); else mine.splice(i, 1);
     if (!mine.length) delete cart[openId];
     drawSeats();
@@ -693,6 +752,50 @@
     return s.normalize("NFD").replace(ACCENTS, "").replace(/[^A-Za-z0-9 ]/g, "").toUpperCase();
   }
 
+  /* Políčka pro čísla papírových vstupenek – jedno ke každé vstupence nákupu. */
+  function buildTicketInputs() {
+    var box = document.getElementById("t-tickets"), list = [];
+    hold.items.forEach(function (it) {
+      it.seats.forEach(function (s) { list.push({ table: it.table, label: "Stůl " + it.table + " · místo " + s }); });
+    });
+    for (var k = 1; k <= hold.standing; k++) list.push({ table: STANDING, label: "Stání · vstupenka " + k });
+    box.innerHTML = '<div class="t-hall">Čísla papírových vstupenek</div>' +
+      '<p class="t-tickets-hint">Ke každé vstupence zapiš číslo lístku, který kupujícímu dáváš.</p>';
+    list.forEach(function (t, i) {
+      var row = document.createElement("label");
+      row.className = "t-ticket";
+      var span = document.createElement("span");
+      span.textContent = t.label;
+      var input = document.createElement("input");
+      input.type = "text"; input.inputMode = "numeric"; input.autocomplete = "off"; input.placeholder = "č. lístku";
+      input.dataset.table = t.table;
+      input.addEventListener("keydown", function (e) {
+        if (e.key !== "Enter") return;
+        e.preventDefault();
+        var next = box.querySelectorAll("input")[i + 1];
+        if (next) next.focus(); else document.getElementById("t-paid").focus();
+      });
+      row.appendChild(span); row.appendChild(input);
+      box.appendChild(row);
+    });
+  }
+
+  /* Přečte čísla vstupenek; vrátí text pro skript, nebo chybu. */
+  function readTickets() {
+    var inputs = document.querySelectorAll("#t-tickets input"), byTable = {}, order = [], seen = {};
+    for (var i = 0; i < inputs.length; i++) {
+      var el = inputs[i], v = el.value.trim();
+      el.classList.remove("bad");
+      if (!/^\d{1,6}$/.test(v) || !parseInt(v, 10)) { el.classList.add("bad"); el.focus(); return { error: "Zapiš číslo papírové vstupenky ke každé vstupence (jen číslice)." }; }
+      v = String(parseInt(v, 10));
+      if (seen[v]) { el.classList.add("bad"); el.focus(); return { error: "Číslo vstupenky " + v + " je zapsané dvakrát." }; }
+      seen[v] = 1;
+      if (!byTable[el.dataset.table]) { byTable[el.dataset.table] = []; order.push(el.dataset.table); }
+      byTable[el.dataset.table].push(v);
+    }
+    return { text: order.map(function (t) { return t + ":" + byTable[t].join(","); }).join(";") };
+  }
+
   function showPayment() {
     var message = ("PLES 4FH " + asciiText(hold.first + " " + hold.last)).slice(0, 60);
     var qr = qrcode(0, "M");
@@ -706,9 +809,10 @@
     details.innerHTML = "Kupující <b></b><br>" + lines.join("<br>") +
       "<br>Účet <b>" + PAY.account + "</b> · VS <b>" + hold.vs + "</b>";
     details.querySelector("b").textContent = hold.first + " " + hold.last;
+    buildTicketInputs();
     set("t-paynote", "Vstupenky jsou podržené. Kupující naskenuje QR kód v aplikaci banky a zaplatí. " +
-                     "Až ti ukáže potvrzení platby, klikni na „Zaplaceno“.");
-    finished = false;
+                     "Až ti ukáže potvrzení platby, zapiš čísla papírových vstupenek a klikni na „Zaplaceno“.");
+    finished = false; paidDone = false;
     document.getElementById("t-paid").hidden = false;
     document.getElementById("t-paid").disabled = false;
     document.getElementById("t-back").disabled = false;
@@ -728,8 +832,8 @@
       if (left === 0) {
         clearInterval(timerId);
         el.textContent = "Rezervace vypršela";
-        set("t-paynote", "Čas vypršel a vstupenky se uvolnily. Pokud kupující přesto zaplatil, " +
-                         "klikni na „Zaplaceno“ – zapíšou se, pokud je mezitím nikdo jiný nekoupil.");
+        set("t-paynote", "Čas vypršel a vstupenky se uvolnily. Pokud kupující přesto zaplatil, zapiš čísla vstupenek " +
+                         "a klikni na „Zaplaceno“ – zapíšou se, pokud je mezitím nikdo jiný nekoupil.");
         document.getElementById("t-qr").innerHTML = "";
         document.getElementById("t-back").textContent = "Zpět na plánek";
         finished = true;
@@ -772,26 +876,30 @@
       finished = true;
       hideModal(payModal);
       renderFloor(currentFloor);
+      checkQuota();
       renderCart("Nákup zrušený, vstupenky jsou zase volné. Zůstaly tu vybrané – můžeš je upravit, nebo nákup vyprázdnit.");
       cartEl.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
     });
   });
 
-  /* Pokladní potvrdí zaplacení → vstupenky jsou prodané natrvalo (banka to později ověří). */
+  /* Pokladní zapíše čísla papírových vstupenek a potvrdí zaplacení → prodáno natrvalo (banka to později ověří). */
   document.getElementById("t-paid").addEventListener("click", function () {
-    if (!hold) return;
+    if (!hold || paidDone) return;
+    var tickets = readTickets();
+    if (tickets.error) { set("t-paynote", tickets.error); return; }
     var btn = this;
     btn.disabled = true;
     set("t-paynote", "Zapisuji platbu…");
-    cashierApi({ action: "confirm", vs: hold.vs, token: hold.token }).then(function (res) {
+    cashierApi({ action: "confirm", vs: hold.vs, token: hold.token, tickets: tickets.text }).then(function (res) {
       if (!res.ok) { btn.disabled = false; set("t-paynote", "Nepovedlo se: " + res.error); return; }
       clearInterval(timerId);
       hold = null;
-      finished = true;
+      finished = true; paidDone = true;
       set("t-timer", "✓ Zaplaceno");
       document.getElementById("t-timer").classList.remove("low");
       document.getElementById("t-qr").innerHTML = "";
-      set("t-paynote", "Vstupenky jsou prodané a zapsané v tabulce. Jakmile platba dorazí na účet, doplní se „Ověřeno bankou“.");
+      document.querySelectorAll("#t-tickets input").forEach(function (el) { el.disabled = true; });
+      set("t-paynote", "Vstupenky jsou prodané a zapsané v tabulce i s čísly lístků. Jakmile platba dorazí na účet, doplní se „Ověřeno bankou“.");
       btn.hidden = true;
       document.getElementById("t-back").textContent = "Zpět na plánek";
       refresh();

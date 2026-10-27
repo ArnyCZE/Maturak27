@@ -635,3 +635,18 @@ footer .mark { font-family: "Archivo Black", sans-serif; color: var(--gold); let
   width: 64px; text-align: center; font: inherit; font-size: 1.1rem; font-weight: 800; color: var(--text);
   background: #000; border: 1px solid rgba(230,184,79,.35); border-radius: 10px; padding: .45rem .3rem;
 }
+
+/* limit vstupenek na osobu a čísla papírových vstupenek */
+.c-quota { color: var(--muted); font-size: .88rem; margin: .6rem 0 .2rem; }
+.c-quota.warn, .t-note.warn, .cart .t-note.warn { color: #ff8a7a; }
+.t-tickets { text-align: left; margin: 1rem 0 .2rem; border-top: 1px solid var(--line); padding-top: .9rem; }
+.t-tickets:empty { display: none; }
+.t-tickets .t-hall { text-align: center; }
+.t-tickets-hint { color: var(--muted); font-size: .82rem; text-align: center; margin: .3rem 0 .6rem; }
+.t-ticket { display: flex; justify-content: space-between; align-items: center; gap: .8rem; padding: .3rem 0; font-size: .9rem; }
+.t-ticket input {
+  width: 110px; font: inherit; font-size: 1rem; font-weight: 800; color: var(--text); text-align: center;
+  background: #000; border: 1px solid rgba(230,184,79,.35); border-radius: 10px; padding: .5rem .4rem;
+}
+.t-ticket input.bad { border-color: #ff6b6b; box-shadow: 0 0 0 2px rgba(255,107,107,.3); }
+.t-ticket input:disabled { opacity: .7; }
