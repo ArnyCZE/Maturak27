@@ -579,3 +579,29 @@ footer .mark { font-family: "Archivo Black", sans-serif; color: var(--gold); let
   background: #000; border: 1px solid rgba(230,184,79,.35); border-radius: 12px; padding: .7rem .9rem;
 }
 .tcard .pill:disabled { opacity: .5; cursor: default; }
+
+/* ---------- nákup pokladní (místa z více stolů) ---------- */
+.cart[hidden] { display: none; }
+.cart {
+  margin-top: 1.2rem;
+  padding: 1.4rem clamp(1rem, 3vw, 1.8rem);
+  border: 1px solid rgba(230,184,79,.45); border-radius: 20px;
+  background: radial-gradient(ellipse at top right, rgba(230,184,79,.12), transparent 60%), #0b0905;
+}
+.c-items { list-style: none; margin: .7rem 0 .4rem; }
+.c-items li { display: flex; justify-content: space-between; gap: 1rem; align-items: center; padding: .45rem 0; border-bottom: 1px solid var(--line); }
+.c-items li b { color: var(--gold-mid); }
+.c-items .c-empty { color: var(--muted); font-size: .9rem; border: 0; }
+.c-total { font-family: "Archivo Black", sans-serif; font-size: 1.2rem; text-transform: uppercase; margin: .4rem 0 .2rem; }
+.c-names { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; margin-top: .8rem; }
+.c-names label { display: block; font-weight: 800; font-size: .64rem; letter-spacing: .18em; text-transform: uppercase; color: var(--gold); margin-bottom: .35rem; }
+.c-names input {
+  width: 100%; font: inherit; font-size: 1rem; color: var(--text);
+  background: #000; border: 1px solid rgba(230,184,79,.35); border-radius: 12px; padding: .7rem .9rem;
+}
+.cart .t-note { margin: .8rem 0; min-height: 1em; }
+.c-actions { display: flex; flex-wrap: wrap; gap: 1.2rem; align-items: center; }
+.cart .pill { animation: none; border: 0; cursor: pointer; font-family: inherit; }
+.cart .pill:disabled { opacity: .45; cursor: default; transform: none; }
+.plan .table.incart { box-shadow: 0 0 0 2px #fff, 0 0 16px rgba(255,255,255,.6); z-index: 2; }
+@media (max-width: 560px) { .c-names { grid-template-columns: 1fr; } }
