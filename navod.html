@@ -28,6 +28,7 @@
   .flow { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.6rem; align-items: center; }
   .flow span { border: 1px solid var(--gold); border-radius: 999px; padding: .35rem .8rem; font-weight: 800; font-size: .78rem; color: var(--gold-hi); background: rgba(230,184,79,.08); }
   .flow i { color: var(--gold); font-style: normal; }
+  .nocash { margin-top: 1.2rem; display: inline-block; border: 1px solid var(--red); color: var(--red); border-radius: 12px; padding: .5rem .9rem; font-weight: 800; font-size: .85rem; }
 
   /* kroky */
   .step { display: grid; grid-template-columns: 56px 1fr; gap: 1rem; padding: 1.4rem 0; border-top: 1px solid var(--line); }
@@ -45,7 +46,7 @@
   .mock .row > div { flex: 1; }
   .mock .note { color: var(--muted); font-size: .78rem; margin: .3rem 0 .6rem; }
   .mock .warn { color: var(--red); }
-  .mock .ok { color: var(--green); }
+  .ok { color: var(--green); font-weight: 800; }
   .btn { display: inline-block; background: var(--butter); color: #1a1406; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; font-size: .72rem; border-radius: 999px; padding: .55rem 1.1rem; }
   .btn.sec { background: transparent; color: var(--gold); border: 1px solid rgba(230,184,79,.5); }
   .link { color: var(--gold); text-decoration: underline; font-weight: 600; }
@@ -86,7 +87,7 @@
 
   @media print {
     body { background: #fff; color: #111; padding: 0; }
-    :root { --text: #111; --muted: #555; --line: #ddd; --card: #fff; --gold: #8a6510; --gold-mid: #8a6510; --gold-hi: #111; }
+    :root { --text: #111; --muted: #555; --line: #ddd; --card: #fff; --gold: #8a6510; --gold-mid: #8a6510; --gold-hi: #111; --red: #b3261e; }
     .mock { border-color: #c9a64a; }
     .mock .input, .tickets b, .stepper em { background: #fff; }
     .num, .btn { background: #f2d98c !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -105,6 +106,7 @@
   <h1>Návod pro pokladní</h1>
   <p class="lead">Jak prodat vstupenku za pár minut: vyber místa, napiš jméno, nech kupujícího zaplatit QR kódem, zapiš čísla lístků a hotovo.
     Prodej běží na webu <a href="https://arnycze.github.io/Maturak27/#mista">arnycze.github.io/Maturak27</a>, funguje na mobilu i na počítači.</p>
+  <p class="nocash">✕ Hotovost nebereme – vstupenky se platí jen převodem (QR kódem).</p>
 
   <div class="flow">
     <span>1 Přihlásit</span><i>→</i><span>2 Jméno</span><i>→</i><span>3 Místa / stání</span><i>→</i>
@@ -234,6 +236,14 @@
       <p>Rezervace vyprší a místa se uvolní. Pokud kupující <b>přesto zaplatil</b>, zapiš čísla lístků a dej <b>Zaplaceno</b> – zapíše se to, pokud místa mezitím nikdo nekoupil. Jinak vygeneruj nový QR.</p>
     </div>
     <div class="case">
+      <h4>…chce kupující platit hotově?</h4>
+      <p><b>Hotovost nebereme vůbec.</b> Za kupujícího může zaplatit kdokoli jiný (kamarád, rodič) – stačí naskenovat QR kód, vstupenky zůstanou na jméno kupujícího.</p>
+    </div>
+    <div class="case">
+      <h4>…kupující nemá bankovní aplikaci?</h4>
+      <p>Může zaplatit převodem z internetového bankovnictví na účet <b>2203629553/2010</b> s částkou a variabilním symbolem z okénka – musí to stihnout během 5 minut rezervace. Nebo za něj zaplatí někdo jiný QR kódem.</p>
+    </div>
+    <div class="case">
       <q>Místa 2, 3 si právě někdo zabral. Vyber jiná.</q>
       <p>Jiná pokladní byla rychlejší. Vyber s kupujícím jiná místa.</p>
     </div>
@@ -253,14 +263,11 @@
       <q>Rezervační systém teď neodpovídá.</q>
       <p>Zkontroluj internet (Wi-Fi / data) a zkus to za chvíli. Nic neprodávej „na papír“ mimo aplikaci.</p>
     </div>
-    <div class="case">
-      <h4>…kupující nemá bankovní aplikaci?</h4>
-      <p>Může zaplatit převodem na účet <b>2203629553/2010</b> s variabilním symbolem z okénka – ale musí to stihnout během rezervace. Hotovost aplikace neřeší – domluv se s Arnoštem.</p>
-    </div>
   </div>
 
   <h2>Pravidla, která se vyplatí dodržet</h2>
   <ul class="rules">
+    <li class="no"><b>Hotovost nebereme</b> – vstupenky se platí jen převodem (QR kódem).</li>
     <li>Lístky předávej <b>až po kliknutí na „Zaplaceno“</b>, ne dřív.</li>
     <li>Kliknout na „Zaplaceno“ smíš jen tehdy, když jsi <b>viděl(a) potvrzení platby</b> v bance kupujícího.</li>
     <li>Ke každé vstupence zapiš <b>přesně</b> číslo lístku, který opravdu dáváš.</li>
