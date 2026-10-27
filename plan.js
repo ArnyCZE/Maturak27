@@ -1,7 +1,8 @@
-/* Rozmístění stolů v Ideonu – podle plánku od p. Vašíčka (PLESOVÉ USPOŘÁDÁNÍ IDEON.xls)
-   a podle Arnoštova náčrtu skutečného tvaru sálu:
-   - Velký sál: podium vlevo, parket vpravo od podia, stoly kolem parketu do „U“ (nahoře, vpravo, dole),
-   - Galerie: ochoz do „U“ kolem velkého sálu (vlevo, vpravo, dole), schody v horních rozích,
+/* Rozmístění stolů v Ideonu – podle plánku od p. Vašíčka (PLESOVÉ USPOŘÁDÁNÍ IDEON.xls),
+   Arnoštova náčrtu a fotky z galerie nad barem:
+   - Velký sál: podium s kapelou podél celé levé stěny, parket hned před ním,
+     stoly kolem parketu do „U“ (nahoře, vpravo u baru, dole),
+   - Galerie: ochoz do „U“ kolem velkého sálu (nad podiem, nad barem, dole), schody v horních rozích,
    - Levý a Pravý sál pod velkým sálem, mezi nimi WC.
    Souřadnice jsou v jednotkách plánku, stůl = [označení, x, y]. Označení musí sedět se sloupcem „Stůl“ v tabulce.
    cls u zón: solid (podium), floor-dance (parket), void (prostor nad sálem), stairs (schody), faded (vidět zdola). */
@@ -30,8 +31,8 @@ window.IDEON_PLAN = (function () {
           { x: 80, y: 62, w: 39, h: 28 }     // Pravý sál
         ],
         zones: [
-          { t: "Taneční parket", x: 18, y: 13, w: 43, h: 33, cls: "floor-dance" },
-          { t: "Podium · kapela", x: 20, y: 18, w: 18, h: 18, cls: "solid" },
+          { t: "Taneční parket", x: 27, y: 13, w: 34, h: 33, cls: "floor-dance" },
+          { t: "Podium · kapela", x: 17.5, y: 13, w: 9.5, h: 33, cls: "solid" },
           { t: "Schody na galerii", x: 1, y: 1, w: 14, h: 7, cls: "stairs" },
           { t: "Toalety", x: 1, y: 12, w: 14, h: 7 },
           { t: "Šatna 1", x: 1, y: 22, w: 14, h: 9 },
@@ -52,7 +53,7 @@ window.IDEON_PLAN = (function () {
           // horní pás nad parketem
           row("VS", [1, 2, 3, 4, 5, 6, 7, 8, 9], spread(21, 85, 9), 5),
           row("VS", [10, 11, 12, 13], [42, 52, 64, 78], 10.5),
-          // blok vpravo od parketu, 4 řady po 4
+          // blok vpravo od parketu (u baru), 4 řady po 4
           row("VS", [14, 15, 16, 17], [65, 71.5, 78, 84.5], 17),
           row("VS", [18, 19, 20, 21], [65, 71.5, 78, 84.5], 25),
           row("VS", [22, 23, 24, 25], [65, 71.5, 78, 84.5], 33),
@@ -77,8 +78,8 @@ window.IDEON_PLAN = (function () {
         ],
         zones: [
           { t: "", x: 17, y: 1, w: 73, h: 57, cls: "void" },
-          { t: "Taneční parket (dole)", x: 19, y: 13, w: 43, h: 33, cls: "floor-dance faded" },
-          { t: "Podium", x: 21, y: 18, w: 18, h: 18, cls: "solid faded" },
+          { t: "Taneční parket (dole)", x: 28, y: 13, w: 34, h: 33, cls: "floor-dance faded" },
+          { t: "Podium", x: 18.5, y: 13, w: 9.5, h: 33, cls: "solid faded" },
           { t: "Stoly velkého sálu (dole)", x: 63, y: 13, w: 25, h: 33, cls: "faded" },
           { t: "Schody", x: 2, y: 2, w: 13, h: 5, cls: "stairs" },
           { t: "Schody", x: 92, y: 2, w: 18, h: 5, cls: "stairs" }
