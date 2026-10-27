@@ -260,8 +260,8 @@
   function standingFree() { return Math.max(0, standing.cap - standing.used); }
   function ticketsWord(n) { return n === 1 ? "vstupenka" : n > 1 && n < 5 ? "vstupenky" : "vstupenek"; }
 
-  /* Plánek. Na mobilu se kreslí verze na výšku z plan.js (mobile) – podium nahoře, celé se vejde bez posouvání do stran.
-     Když pro patro mobilní verze není, plánek se jen otočí o 90°. */
+  /* Plánek. Přízemí se na mobilu otočí o 90° (podium nahoře), aby se vešlo celé bez posouvání do stran;
+     když má patro v plan.js vlastní verzi na výšku (mobile), použije se ta. Stoly jsou nastojato / naležato jako na plánku. */
   function renderFloor(key) {
     currentFloor = key;
     var small = mobileMQ.matches, mob = small ? MOBILE_FLOORS[key] : null;
@@ -274,17 +274,24 @@
     planEl.style.aspectRatio = frame.w + " / " + frame.h;
 
     (f.rooms || []).forEach(function (r) { var b = box(r.x, r.y, r.w, r.h); add("room", "", b[0], b[1], b[2], b[3], frame); });
-    (f.zones || []).forEach(function (z) { var b = box(z.x, z.y, z.w, z.h); add("zone " + (z.cls || ""), z.t, b[0], b[1], b[2], b[3], frame); });
+    (f.zones || []).forEach(function (z) {
+      var b = box(z.x, z.y, z.w, z.h);
+      add("zone " + (z.cls || ""), small && z.s !== undefined ? z.s : z.t, b[0], b[1], b[2], b[3], frame);
+    });
     (f.names || []).forEach(function (n) {
       if (turned) add("hall-name", n.t, f.h - n.y - 2.4, n.x, 0, 0, frame);
       else add("hall-name", n.t, n.x, n.y, 0, 0, frame);
     });
 
     f.tables.forEach(function (t) {
-      var id = t[0], s = tableState(id);
+      var id = t[0], s = tableState(id), o = t[3];
       var cx = turned ? f.h - t[2] : t[1], cy = turned ? t[1] : t[2];
-      var el = add("table" + (!loaded ? " unknown" : s.free === 0 ? " full" : "") + (cart[id] && cart[id].length ? " incart" : ""),
-                   "", cx, cy, f.d * 1.15, f.d * .7, frame);
+      var tw = o === "v" ? f.vw : o === "h" ? f.hw : f.d * 1.15;
+      var th = o === "v" ? f.vh : o === "h" ? f.hh : f.d * .7;
+      if (turned && o) { var tmp = tw; tw = th; th = tmp; }
+      var el = add("table" + (o === "v" ? " tall" : o === "h" ? " wide" : "") +
+                   (!loaded ? " unknown" : s.free === 0 ? " full" : "") + (cart[id] && cart[id].length ? " incart" : ""),
+                   "", cx, cy, tw, th, frame);
       el.style.setProperty("--p", Math.round(s.used / s.cap * 100));
       el.title = loaded ? id + " · volno " + s.free + " z " + s.cap : id;
       el.setAttribute("role", "button");
