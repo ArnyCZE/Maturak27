@@ -459,3 +459,62 @@ footer .mark { font-family: "Archivo Black", sans-serif; color: var(--gold); let
   *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0s !important; transition-duration: .01ms !important; }
   .reveal { opacity: 1; transform: none; }
 }
+
+/* ---------- plánek: další typy zón ---------- */
+.plan .zone.stairs {
+  background: repeating-linear-gradient(90deg, rgba(230,184,79,.22) 0 2px, transparent 2px 7px);
+  border-style: solid;
+}
+.plan .zone.faded { opacity: .35; }
+.plan .zone.void { display: block; }
+
+/* ---------- okénko s detailem stolu ---------- */
+.tmodal {
+  position: fixed; inset: 0; z-index: 200;
+  display: grid; place-items: center;
+  padding: 1.5rem;
+  background: rgba(0,0,0,.7);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity .25s var(--ease);
+}
+.tmodal[hidden] { display: none; }
+.tmodal.open { opacity: 1; }
+.tcard {
+  position: relative;
+  width: min(360px, 100%);
+  text-align: center;
+  padding: 2.2rem 1.8rem 1.8rem;
+  border: 1px solid rgba(230,184,79,.5);
+  border-radius: 24px;
+  background: radial-gradient(ellipse at top, rgba(230,184,79,.16), transparent 65%), #0b0905;
+  box-shadow: 0 30px 90px rgba(0,0,0,.8), 0 0 40px rgba(230,184,79,.15);
+  transform: translateY(16px) scale(.96);
+  transition: transform .3s var(--ease);
+}
+.tmodal.open .tcard { transform: none; }
+.tclose {
+  position: absolute; top: .8rem; right: .9rem;
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 1px solid rgba(230,184,79,.4); background: transparent;
+  color: var(--gold); font-size: 1.3rem; line-height: 1; cursor: pointer;
+}
+.t-hall { font-weight: 800; font-size: .66rem; letter-spacing: .3em; text-transform: uppercase; color: var(--gold); }
+.tcard h3 {
+  font-family: "Archivo Black", sans-serif; font-weight: 400; text-transform: uppercase;
+  font-size: 2rem; margin: .3rem 0 .8rem;
+  background: var(--metal); -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.t-seats { width: 170px; height: 170px; margin: 0 auto; display: block; }
+.t-table { fill: #120e06; stroke: url(#rim2); stroke: var(--gold); stroke-width: 2; }
+.t-seat { stroke-width: 2; animation: seatIn .4s var(--ease) both; transform-origin: center; transform-box: fill-box; }
+.t-seat.free { fill: var(--gold-mid); stroke: #fff1b8; }
+.t-seat.taken { fill: #3a342a; stroke: #6b6253; }
+@keyframes seatIn { from { opacity: 0; transform: scale(.3); } to { opacity: 1; transform: none; } }
+.t-free { font-family: "Archivo Black", sans-serif; font-size: 1.3rem; margin-top: .8rem; text-transform: uppercase; }
+.t-bar { height: 4px; background: rgba(255,255,255,.08); border-radius: 4px; margin: .7rem auto 0; width: 70%; overflow: hidden; }
+.t-bar i { display: block; height: 100%; width: 0; background: var(--metal); transition: width .8s var(--ease); }
+.t-note { color: var(--muted); font-size: .9rem; margin: .8rem 0 1.3rem; }
+.tcard .pill { animation: none; }
+.table:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 3px; }

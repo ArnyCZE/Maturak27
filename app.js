@@ -165,6 +165,7 @@
   /* --- zasedací pořádek: schéma z plan.js, obsazenost z veřejné Google tabulky --- */
   var SHEET_CSV = "https://docs.google.com/spreadsheets/d/18tbTqbiRGQaAFtXcp2peYWdz93SIBP-x7r0L-sKOW_0/gviz/tq?tqx=out:csv&sheet=Web";
   var SEATS = window.IDEON_PLAN.seats;
+  var HALLS = window.IDEON_PLAN.halls;
   var FLOORS = window.IDEON_PLAN.floors;
 
   var taken = {};     // "VS 12" -> počet obsazených míst
@@ -187,6 +188,11 @@
     planEl.appendChild(el);
     return el;
   }
+  function tableState(id) {
+    var cap = SEATS[id.split(" ")[0]];
+    var used = Math.min(taken[id] || 0, cap);
+    return { cap: cap, used: used, free: cap - used };
+  }
 
   function renderFloor(key) {
     currentFloor = key;
@@ -196,35 +202,102 @@
     infoEl.textContent = "";
 
     (f.rooms || []).forEach(function (r) { add("room", "", r.x, r.y, r.w, r.h, f); });
-    (f.zones || []).forEach(function (z) {
-      var cls = "zone" + (z.solid ? " solid" : "") + (z.dance ? " floor-dance" : "") + (z.voidArea ? " void" : "");
-      add(cls, z.t, z.x, z.y, z.w, z.h, f);
-    });
+    (f.zones || []).forEach(function (z) { add("zone " + (z.cls || ""), z.t, z.x, z.y, z.w, z.h, f); });
     (f.names || []).forEach(function (n) { add("hall-name", n.t, n.x, n.y, 0, 0, f); });
 
     f.tables.forEach(function (t) {
-      var id = t[0], hall = id.split(" ")[0], num = id.split(" ")[1];
-      var cap = SEATS[hall];
-      var used = Math.min(taken[id] || 0, cap), free = cap - used;
-      var el = add("table" + (!loaded ? " unknown" : free === 0 ? " full" : ""), "", t[1], t[2], f.d, 0, f);
-      el.style.setProperty("--p", Math.round(used / cap * 100));
-      el.title = loaded ? id + " · volno " + free + " z " + cap : id;
-      el.innerHTML = "<span>" + num + "</span>";
-      el.addEventListener("click", function () {
-        planEl.querySelectorAll(".table.sel").forEach(function (x) { x.classList.remove("sel"); });
-        el.classList.add("sel");
-        infoEl.textContent = "Stůl " + id + (loaded ? " · volno " + free + " z " + cap + " míst" : " · " + cap + " míst");
-      });
+      var id = t[0], s = tableState(id);
+      var el = add("table" + (!loaded ? " unknown" : s.free === 0 ? " full" : ""), "", t[1], t[2], f.d, 0, f);
+      el.style.setProperty("--p", Math.round(s.used / s.cap * 100));
+      el.title = loaded ? id + " · volno " + s.free + " z " + s.cap : id;
+      el.setAttribute("role", "button");
+      el.setAttribute("tabindex", "0");
+      el.innerHTML = "<span>" + id.split(" ")[1] + "</span>";
+      el.addEventListener("click", function () { openTable(id, el); });
+      el.addEventListener("keydown", function (e) { if (e.key === "Enter") openTable(id, el); });
     });
   }
+
+  /* --- okénko s detailem stolu --- */
+  var modal = document.createElement("div");
+  modal.className = "tmodal";
+  modal.hidden = true;
+  modal.innerHTML =
+    '<div class="tcard" role="dialog" aria-modal="true" aria-labelledby="t-title">' +
+      '<button class="tclose" aria-label="Zavřít">×</button>' +
+      '<div class="t-hall" id="t-hall"></div>' +
+      '<h3 id="t-title"></h3>' +
+      '<svg class="t-seats" id="t-seats" viewBox="0 0 200 200" aria-hidden="true"></svg>' +
+      '<div class="t-free" id="t-free"></div>' +
+      '<div class="t-bar"><i id="t-bar"></i></div>' +
+      '<p class="t-note" id="t-note"></p>' +
+      '<a class="pill" href="#vstupenky" id="t-cta">Mám zájem o místa</a>' +
+    '</div>';
+  document.body.appendChild(modal);
+  var lastTable = null;
+
+  function drawSeats(svg, cap, used) {
+    svg.innerHTML = "";
+    var table = document.createElementNS(NS, "circle");
+    table.setAttribute("cx", 100); table.setAttribute("cy", 100); table.setAttribute("r", 46);
+    table.setAttribute("class", "t-table");
+    svg.appendChild(table);
+    for (var i = 0; i < cap; i++) {
+      var a = (i / cap) * Math.PI * 2 - Math.PI / 2;
+      var c = document.createElementNS(NS, "circle");
+      c.setAttribute("cx", 100 + Math.cos(a) * 74);
+      c.setAttribute("cy", 100 + Math.sin(a) * 74);
+      c.setAttribute("r", 15);
+      c.setAttribute("class", i < used ? "t-seat taken" : "t-seat free");
+      c.style.animationDelay = (i * 60) + "ms";
+      svg.appendChild(c);
+    }
+  }
+
+  function openTable(id, el) {
+    var s = tableState(id), hall = id.split(" ")[0];
+    planEl.querySelectorAll(".table.sel").forEach(function (x) { x.classList.remove("sel"); });
+    el.classList.add("sel");
+    lastTable = el;
+
+    set("t-hall", HALLS[hall] + " · stůl pro " + s.cap);
+    set("t-title", "Stůl " + id);
+    drawSeats(document.getElementById("t-seats"), s.cap, loaded ? s.used : 0);
+    if (loaded) {
+      set("t-free", s.free === 0 ? "Obsazeno" : "Volno " + s.free + " z " + s.cap + " míst");
+      set("t-note", s.free === 0 ? "Tento stůl je už celý obsazený. Zkus jiný." :
+                    s.used === 0 ? "Celý stůl je volný." :
+                    "Obsazeno " + s.used + " " + (s.used === 1 ? "místo" : s.used < 5 ? "místa" : "míst") + ".");
+      document.getElementById("t-bar").style.width = (s.free / s.cap * 100) + "%";
+    } else {
+      set("t-free", s.cap + " míst u stolu");
+      set("t-note", "Aktuální obsazenost zveřejníme se spuštěním prodeje vstupenek.");
+      document.getElementById("t-bar").style.width = "0";
+    }
+    document.getElementById("t-cta").hidden = loaded && s.free === 0;
+    infoEl.textContent = "Stůl " + id + (loaded ? " · volno " + s.free + " z " + s.cap : "");
+
+    modal.hidden = false;
+    requestAnimationFrame(function () { modal.classList.add("open"); });
+    modal.querySelector(".tclose").focus();
+  }
+  function closeTable() {
+    modal.classList.remove("open");
+    setTimeout(function () { modal.hidden = true; }, 250);
+    if (lastTable) lastTable.focus();
+  }
+  modal.addEventListener("click", function (e) { if (e.target === modal) closeTable(); });
+  modal.querySelector(".tclose").addEventListener("click", closeTable);
+  document.getElementById("t-cta").addEventListener("click", closeTable);
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !modal.hidden) closeTable(); });
 
   function updateStats() {
     var total = 0, free = 0;
     Object.keys(FLOORS).forEach(function (k) {
       FLOORS[k].tables.forEach(function (t) {
-        var cap = SEATS[t[0].split(" ")[0]];
-        total += cap;
-        free += cap - Math.min(taken[t[0]] || 0, cap);
+        var s = tableState(t[0]);
+        total += s.cap;
+        free += s.free;
       });
     });
     set("st-free", free);
