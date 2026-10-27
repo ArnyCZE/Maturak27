@@ -338,62 +338,76 @@
   .quote blockquote span { background: var(--metal); -webkit-background-clip: text; background-clip: text; color: transparent; }
   .quote cite { display: block; margin-top: 1.5rem; font-style: normal; color: var(--muted); letter-spacing: .3em; font-size: .72rem; text-transform: uppercase; font-weight: 600; }
 
-  /* ---------- zasedací pořádek ---------- */
+  /* ---------- zasedací pořádek (schéma sálu podle plánku Ideonu) ---------- */
   .seating { background: linear-gradient(180deg, transparent, var(--bg2) 15%, var(--bg2) 85%, transparent); }
-  .seat-stats {
-    margin-top: 2.5rem;
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;
-  }
-  .stat { border: 1px solid var(--line); border-radius: 16px; padding: 1.2rem 1.3rem; background: var(--panel); }
-  .stat .k { font-weight: 800; font-size: .64rem; letter-spacing: .3em; text-transform: uppercase; color: var(--gold); }
-  .stat .v { font-family: "Archivo Black", sans-serif; font-size: 1.9rem; line-height: 1.2; margin-top: .3rem; }
-  .stat .v small { font-family: "Montserrat", sans-serif; font-size: .85rem; color: var(--muted); font-weight: 400; }
-  .bar { height: 4px; background: rgba(255,255,255,.08); border-radius: 4px; margin-top: .7rem; overflow: hidden; }
+  .seat-head { margin-top: 2.5rem; display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 1.2rem; }
+  .seat-total .k { font-weight: 800; font-size: .64rem; letter-spacing: .3em; text-transform: uppercase; color: var(--gold); }
+  .seat-total .v { font-family: "Archivo Black", sans-serif; font-size: 2.2rem; line-height: 1.15; }
+  .seat-total .v small { font-family: "Montserrat", sans-serif; font-size: .9rem; color: var(--muted); font-weight: 400; }
+  .bar { width: 220px; height: 4px; background: rgba(255,255,255,.08); border-radius: 4px; margin-top: .5rem; overflow: hidden; }
   .bar i { display: block; height: 100%; width: 0; background: var(--metal); transition: width 1.4s var(--ease); }
 
-  .hall-tabs { margin-top: 2.5rem; display: flex; flex-wrap: wrap; gap: .5rem; }
-  .hall-tabs button {
+  .floor-tabs { display: flex; gap: .5rem; }
+  .floor-tabs button {
     font: inherit; font-weight: 800; font-size: .74rem; letter-spacing: .15em; text-transform: uppercase;
     color: var(--gold); background: transparent;
     border: 1px solid rgba(230,184,79,.4); border-radius: 999px;
     padding: .65rem 1.2rem; cursor: pointer;
     transition: background .3s, color .3s;
   }
-  .hall-tabs button[aria-selected="true"] { background: var(--gold); color: #000; }
-  .hall {
-    margin-top: 1.5rem;
+  .floor-tabs button[aria-selected="true"] { background: var(--gold); color: #000; }
+
+  .plan-wrap {
+    margin-top: 1.4rem;
     border: 1px solid var(--line); border-radius: 22px;
-    padding: clamp(1.2rem, 3vw, 2rem);
-    background: radial-gradient(ellipse at top, rgba(230,184,79,.08), transparent 60%), #050403;
+    background: radial-gradient(ellipse at 35% 35%, rgba(230,184,79,.07), transparent 60%), #050403;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
-  .stage {
-    text-align: center; font-weight: 800; letter-spacing: .4em; font-size: .68rem; text-transform: uppercase;
-    color: #1a1406; background: var(--metal);
-    border-radius: 8px; padding: .55rem; margin-bottom: 1.6rem;
+  .plan { position: relative; min-width: 760px; margin: 0 auto; }
+  .plan .zone {
+    position: absolute;
+    display: grid; place-items: center; text-align: center;
+    font-weight: 800; font-size: .62rem; letter-spacing: .25em; text-transform: uppercase;
+    color: rgba(230,184,79,.75);
+    border: 1px dashed rgba(230,184,79,.35); border-radius: 10px;
+    line-height: 1.3;
   }
-  .tables { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 1rem .6rem; }
+  .plan .zone.solid { background: var(--metal); color: #1a1406; border: 0; }
+  .plan .zone.floor-dance { background: repeating-linear-gradient(45deg, rgba(230,184,79,.07) 0 10px, transparent 10px 20px); }
+  .plan .hall-name {
+    position: absolute;
+    font-weight: 800; font-size: .6rem; letter-spacing: .3em; text-transform: uppercase;
+    color: var(--muted);
+  }
+  .plan .divider { position: absolute; border-top: 1px solid var(--line); }
+
   .table {
     --p: 0;
-    position: relative;
-    width: 62px; height: 62px; margin: 0 auto;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    aspect-ratio: 1;
     border-radius: 50%;
     background: conic-gradient(rgba(120,110,95,.75) calc(var(--p) * 1%), var(--gold-mid) 0);
     display: grid; place-items: center;
-    transition: transform .3s var(--ease);
-    cursor: default;
+    cursor: pointer;
+    transition: transform .25s var(--ease), box-shadow .25s;
   }
-  .table::before { content: ""; position: absolute; inset: 5px; border-radius: 50%; background: #0b0905; }
-  .table span { position: relative; font-weight: 800; font-size: .78rem; text-align: center; line-height: 1.1; }
-  .table span small { display: block; font-weight: 400; font-size: .62rem; color: var(--muted); }
+  .table::before { content: ""; position: absolute; inset: 12%; border-radius: 50%; background: #0b0905; }
+  .table span { position: relative; font-weight: 800; font-size: clamp(.6rem, 1.15vw, .74rem); line-height: 1; }
   .table.full { background: rgba(120,110,95,.6); }
   .table.full span { color: var(--muted); }
-  .table:hover { transform: scale(1.08); }
   .table.unknown { background: rgba(230,184,79,.35); }
-  .legend { margin-top: 1.4rem; display: flex; flex-wrap: wrap; gap: 1.4rem; font-size: .82rem; color: var(--muted); }
+  .table:hover, .table.sel { transform: translate(-50%, -50%) scale(1.18); box-shadow: 0 0 18px rgba(244,207,99,.5); z-index: 2; }
+
+  .seat-foot { margin-top: 1.2rem; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; align-items: center; }
+  .legend { display: flex; flex-wrap: wrap; gap: 1.4rem; font-size: .82rem; color: var(--muted); }
   .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: .45rem; vertical-align: -1px; }
   .legend .free { background: var(--gold-mid); }
   .legend .taken { background: rgba(120,110,95,.75); }
-  .seat-msg { margin-top: 1rem; font-size: .85rem; color: var(--muted); font-style: italic; }
+  .table-info { font-weight: 600; color: var(--gold-mid); min-height: 1.5em; }
+  .seat-msg { margin-top: .6rem; font-size: .85rem; color: var(--muted); font-style: italic; }
+  .swipe-hint { display: none; margin-top: .6rem; font-size: .78rem; color: var(--muted); }
 
   /* ---------- vstupenky ---------- */
   .tickets-box {
@@ -436,12 +450,11 @@
     .prog-clock svg { max-width: 120px; }
     .prog-now { margin-top: 0; }
     .tickets-box { grid-template-columns: 1fr; }
+    .swipe-hint { display: block; }
   }
   @media (max-width: 560px) {
     .countdown { grid-template-columns: repeat(2, 1fr); }
     .scroll-clock { width: 48px; height: 48px; right: 14px; bottom: 14px; }
-    .tables { grid-template-columns: repeat(auto-fill, minmax(58px, 1fr)); }
-    .table { width: 54px; height: 54px; }
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0s !important; transition-duration: .01ms !important; }
@@ -648,32 +661,33 @@
     <div class="wrap">
       <p class="eyebrow reveal">Zasedací pořádek</p>
       <h2 class="reveal d1">Volná <em>místa</em></h2>
-      <p class="lead reveal d2">Aktuální obsazenost stolů v Ideonu. Zlatá část kroužku ukazuje volná místa u stolu.</p>
+      <p class="lead reveal d2">Plánek stolů v Ideonu s aktuální obsazeností. Zlatá část kroužku ukazuje volná místa u stolu – klikni na stůl pro detail.</p>
 
-      <div class="seat-stats reveal d2">
-        <div class="stat"><div class="k">Volných míst</div><div class="v"><span id="st-free">–</span> <small>z <span id="st-total">786</span></small></div><div class="bar"><i id="st-bar"></i></div></div>
-        <div class="stat"><div class="k">Velký sál</div><div class="v"><span data-hall-free="VS">–</span> <small>volných</small></div></div>
-        <div class="stat"><div class="k">Levý sál</div><div class="v"><span data-hall-free="LS">–</span> <small>volných</small></div></div>
-        <div class="stat"><div class="k">Pravý sál</div><div class="v"><span data-hall-free="PS">–</span> <small>volných</small></div></div>
-        <div class="stat"><div class="k">Galerie</div><div class="v"><span data-hall-free="G">–</span> <small>volných</small></div></div>
+      <div class="seat-head reveal d2">
+        <div class="seat-total">
+          <div class="k">Volných míst</div>
+          <div class="v"><span id="st-free">–</span> <small>z <span id="st-total">786</span></small></div>
+          <div class="bar"><i id="st-bar"></i></div>
+        </div>
+        <div class="floor-tabs" role="tablist">
+          <button role="tab" data-floor="ground" aria-selected="true">Přízemí</button>
+          <button role="tab" data-floor="gallery" aria-selected="false">Galerie</button>
+        </div>
       </div>
 
-      <div class="hall-tabs" role="tablist">
-        <button role="tab" data-hall="VS" aria-selected="true">Velký sál</button>
-        <button role="tab" data-hall="LS" aria-selected="false">Levý sál</button>
-        <button role="tab" data-hall="PS" aria-selected="false">Pravý sál</button>
-        <button role="tab" data-hall="G" aria-selected="false">Galerie</button>
+      <div class="plan-wrap reveal d3">
+        <div class="plan" id="plan"></div>
       </div>
+      <p class="swipe-hint">↔ Plánek můžeš posouvat do stran.</p>
 
-      <div class="hall">
-        <div class="stage" id="stage">Podium · taneční parket</div>
-        <div class="tables" id="tables"></div>
+      <div class="seat-foot">
         <div class="legend">
           <span><i class="free"></i>volná místa</span>
           <span><i class="taken"></i>obsazeno</span>
         </div>
-        <p class="seat-msg" id="seat-msg">Načítám aktuální obsazenost…</p>
+        <div class="table-info" id="table-info"></div>
       </div>
+      <p class="seat-msg" id="seat-msg">Načítám aktuální obsazenost…</p>
     </div>
   </section>
 
@@ -710,6 +724,7 @@
   <p>Maturitní ples tříd 4. F a 4. H · Gymnázium Pardubice, Dašická 1083</p>
 </footer>
 
+<script src="plan.js"></script>
 <script>
 (function () {
   var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -875,47 +890,79 @@
   showTime("18:00", "Otevření sálu");
   steps[0].classList.add("active");
 
-  /* --- zasedací pořádek: stoly podle plánku Ideonu, obsazenost z veřejné Google tabulky --- */
+  /* --- zasedací pořádek: schéma z plan.js, obsazenost z veřejné Google tabulky --- */
   var SHEET_CSV = "https://docs.google.com/spreadsheets/d/18tbTqbiRGQaAFtXcp2peYWdz93SIBP-x7r0L-sKOW_0/gviz/tq?tqx=out:csv&sheet=Web";
-  var HALLS = {
-    VS: { name: "Velký sál", stage: "Podium · taneční parket", seats: 6, nums: range(1, 43) },
-    LS: { name: "Levý sál", stage: "Levý sál", seats: 8, nums: range(47, 65) },
-    PS: { name: "Pravý sál", stage: "Pravý sál", seats: 8, nums: range(66, 69).concat(range(71, 83)) },
-    G:  { name: "Galerie", stage: "Galerie · výhled na parket", seats: 8, nums: range(1, 30) }
-  };
-  function range(a, b) { var r = []; for (var i = a; i <= b; i++) r.push(i); return r; }
+  var SEATS = window.IDEON_PLAN.seats;
+  var FLOORS = window.IDEON_PLAN.floors;
 
   var taken = {};     // "VS 12" -> počet obsazených míst
   var loaded = false;
-  var currentHall = "VS";
+  var currentFloor = "ground";
+  var planEl = document.getElementById("plan");
+  var infoEl = document.getElementById("table-info");
 
-  function renderHall(code) {
-    currentHall = code;
-    var hall = HALLS[code];
-    document.getElementById("stage").textContent = hall.stage;
-    var box = document.getElementById("tables");
-    box.innerHTML = "";
-    hall.nums.forEach(function (n) {
-      var id = code + " " + n;
-      var used = Math.min(taken[id] || 0, hall.seats);
-      var free = hall.seats - used;
+  function pct(v, of) { return (v / of * 100) + "%"; }
+  function place(el, x, y, w, h, f) {
+    el.style.left = pct(x, f.w); el.style.top = pct(y, f.h);
+    if (w) el.style.width = pct(w, f.w);
+    if (h) el.style.height = pct(h, f.h);
+  }
+
+  function renderFloor(key) {
+    currentFloor = key;
+    var f = FLOORS[key];
+    planEl.innerHTML = "";
+    planEl.style.aspectRatio = f.w + " / " + f.h;
+    infoEl.textContent = "";
+
+    (f.zones || []).forEach(function (z) {
+      var el = document.createElement("div");
+      el.className = "zone" + (z.solid ? " solid" : "") + (z.dance ? " floor-dance" : "");
+      place(el, z.x, z.y, z.w, z.h, f);
+      el.textContent = z.t;
+      planEl.appendChild(el);
+    });
+    (f.names || []).forEach(function (n) {
+      var el = document.createElement("div");
+      el.className = "hall-name";
+      place(el, n.x, n.y, 0, 0, f);
+      el.textContent = n.t;
+      planEl.appendChild(el);
+    });
+    if (f.divider) {
+      var dv = document.createElement("div");
+      dv.className = "divider";
+      place(dv, f.divider.x, f.divider.y, f.divider.w, 0, f);
+      planEl.appendChild(dv);
+    }
+
+    f.tables.forEach(function (t) {
+      var id = t[0], hall = id.split(" ")[0], num = id.split(" ")[1];
+      var cap = SEATS[hall];
+      var used = Math.min(taken[id] || 0, cap), free = cap - used;
       var el = document.createElement("div");
       el.className = "table" + (!loaded ? " unknown" : free === 0 ? " full" : "");
-      el.style.setProperty("--p", Math.round(used / hall.seats * 100));
-      el.title = loaded ? id + " · volno " + free + " z " + hall.seats : id;
-      el.innerHTML = "<span>" + n + (loaded ? "<small>" + free + "/" + hall.seats + "</small>" : "") + "</span>";
-      box.appendChild(el);
+      place(el, t[1], t[2], f.d, 0, f);
+      el.style.setProperty("--p", Math.round(used / cap * 100));
+      el.title = loaded ? id + " · volno " + free + " z " + cap : id;
+      el.innerHTML = "<span>" + num + "</span>";
+      el.addEventListener("click", function () {
+        planEl.querySelectorAll(".table.sel").forEach(function (x) { x.classList.remove("sel"); });
+        el.classList.add("sel");
+        infoEl.textContent = "Stůl " + id + (loaded ? " · volno " + free + " z " + cap + " míst" : " · " + cap + " míst");
+      });
+      planEl.appendChild(el);
     });
   }
 
   function updateStats() {
     var total = 0, free = 0;
-    Object.keys(HALLS).forEach(function (code) {
-      var hall = HALLS[code], hallFree = 0;
-      hall.nums.forEach(function (n) { hallFree += hall.seats - Math.min(taken[code + " " + n] || 0, hall.seats); });
-      total += hall.nums.length * hall.seats;
-      free += hallFree;
-      document.querySelector('[data-hall-free="' + code + '"]').textContent = hallFree;
+    Object.keys(FLOORS).forEach(function (k) {
+      FLOORS[k].tables.forEach(function (t) {
+        var cap = SEATS[t[0].split(" ")[0]];
+        total += cap;
+        free += cap - Math.min(taken[t[0]] || 0, cap);
+      });
     });
     set("st-free", free);
     set("st-total", total);
@@ -936,13 +983,13 @@
     });
   }
 
-  document.querySelectorAll(".hall-tabs button").forEach(function (b) {
+  document.querySelectorAll(".floor-tabs button").forEach(function (b) {
     b.addEventListener("click", function () {
-      document.querySelectorAll(".hall-tabs button").forEach(function (x) { x.setAttribute("aria-selected", x === b); });
-      renderHall(b.dataset.hall);
+      document.querySelectorAll(".floor-tabs button").forEach(function (x) { x.setAttribute("aria-selected", x === b); });
+      renderFloor(b.dataset.floor);
     });
   });
-  renderHall("VS");
+  renderFloor("ground");
 
   fetch(SHEET_CSV, { cache: "no-store" })
     .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
@@ -954,7 +1001,7 @@
       loaded = true;
       document.getElementById("seat-msg").textContent = "Obsazenost se aktualizuje automaticky.";
       updateStats();
-      renderHall(currentHall);
+      renderFloor(currentFloor);
     })
     .catch(function () {
       document.getElementById("seat-msg").textContent = "Aktuální obsazenost zveřejníme se spuštěním prodeje vstupenek.";
