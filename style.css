@@ -785,3 +785,15 @@ footer .mark { font-family: "Archivo Black", sans-serif; color: var(--gold); let
 .t-seat circle { r: 13px; }
 .t-seat.free circle { stroke: #fff1b8; stroke-width: 1.5; }
 .t-table-label { font-size: 14px; }
+
+/* šipka dolů v úvodu místo nápisu „Scrolluj“ */
+.scroll-hint.arrow { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%;
+  border: 1px solid rgba(230,184,79,.55); background: rgba(0,0,0,.35); color: var(--gold-mid); letter-spacing: 0; text-decoration: none;
+  transition: opacity .4s var(--ease), transform .4s var(--ease); }
+.scroll-hint.arrow::after { display: none; }
+.scroll-hint.arrow svg { width: 24px; height: 24px; animation: nudge 1.8s ease-in-out infinite; }
+.scroll-hint.arrow:hover { background: rgba(230,184,79,.15); }
+.scroll-hint.arrow.gone { opacity: 0 !important; pointer-events: none; }
+@keyframes nudge { 0%, 100% { transform: translateY(-3px); } 50% { transform: translateY(4px); } }
+.step { cursor: pointer; }
+.scroll-hint.arrow { margin-left: -26px; }

@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Cinzel:wght@500;700&family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=14">
+<link rel="stylesheet" href="style.css?v=15">
 </head>
 <body>
 
@@ -66,7 +66,7 @@
     </div>
 
     <div class="big-clock">
-      <svg viewBox="0 0 400 400" id="hero-clock" role="img" aria-label="Hodiny ukazující 10:04">
+      <svg viewBox="0 0 400 400" id="hero-clock" role="img" aria-label="Hodiny ukazující aktuální čas">
         <defs>
           <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0" stop-color="#fff6c8"/>
@@ -88,12 +88,14 @@
     </div>
   </div>
 
-  <div class="scroll-hint">Scrolluj</div>
+  <a class="scroll-hint arrow" href="#odpocet" aria-label="Posunout dolů">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+  </a>
 </header>
 
 <main>
 
-  <section class="circuits">
+  <section class="circuits" id="odpocet">
     <div class="wrap">
       <p class="eyebrow reveal">Časové obvody aktivovány</p>
       <h2 class="reveal d1">Cíl cesty: <em>30. ledna 2027</em></h2>
@@ -275,8 +277,8 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
-<script src="config.js?v=13"></script>
-<script src="plan.js?v=13"></script>
-<script src="app.js?v=13"></script>
+<script src="config.js?v=15"></script>
+<script src="plan.js?v=15"></script>
+<script src="app.js?v=15"></script>
 </body>
 </html>

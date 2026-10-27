@@ -38,23 +38,35 @@
 
   function rot(el, deg) { el.style.transform = "rotate(" + deg + "deg)"; }
 
-  /* --- úvodní hodiny: přetočí se pozpátku a zastaví v 10:04 (jako hodiny na radnici ve filmu) --- */
+  /* --- úvodní hodiny: ukazují aktuální čas; při načtení se k němu ručičky přetočí pozpátku (jako stroj času) --- */
   var hh = hero.querySelector(".hand-h"), hm = hero.querySelector(".hand-m"), hs = hero.querySelector(".hand-s");
-  var targetH = 10 * 30 + 4 * 0.5, targetM = 4 * 6;
-  if (reduce) {
-    rot(hh, targetH); rot(hm, targetM);
-  } else {
-    rot(hh, targetH + 720); rot(hm, targetM + 8640);
+  function nowAngles() {
+    var d = new Date(), h = d.getHours() % 12, m = d.getMinutes(), s = d.getSeconds();
+    return { h: h * 30 + m * 0.5 + s / 120, m: m * 6 + s * 0.1, s: s * 6 };
+  }
+  var spinning = !reduce;
+  function tickClock() {
+    var a = nowAngles();
+    rot(hs, a.s);
+    if (!spinning) { rot(hh, a.h); rot(hm, a.m); }
+  }
+  if (!reduce) {
+    var start = nowAngles();
+    rot(hh, start.h + 720); rot(hm, start.m + 8640);
     requestAnimationFrame(function () {
       requestAnimationFrame(function () {
         hh.classList.add("spin"); hm.classList.add("spin");
-        rot(hh, targetH); rot(hm, targetM);
+        rot(hh, start.h); rot(hm, start.m);
       });
     });
     setTimeout(function () { document.getElementById("flash").classList.add("go"); }, 3150);
+    setTimeout(function () {
+      hh.classList.remove("spin"); hm.classList.remove("spin");
+      spinning = false;
+      tickClock();
+    }, 3400);
   }
-  function tickSeconds() { rot(hs, new Date().getSeconds() * 6); }
-  tickSeconds(); setInterval(tickSeconds, 1000);
+  tickClock(); setInterval(tickClock, 1000);
 
   /* --- zlatý prach v úvodu --- */
   var cvs = document.getElementById("dust"), ctx = cvs.getContext("2d");
@@ -137,7 +149,7 @@
   }, { threshold: .15, rootMargin: "0px 0px -8% 0px" });
   document.querySelectorAll(".reveal").forEach(function (el) { revealObs.observe(el); });
 
-  /* --- program: hodiny ukazují čas právě aktivního bodu --- */
+  /* --- program: hodiny ukazují čas právě aktivního bodu programu --- */
   var ph = prog.querySelector(".hand-h"), pm = prog.querySelector(".hand-m");
   var nowEl = document.getElementById("prog-now"), labelEl = document.getElementById("prog-label");
   function showTime(str, label) {
@@ -158,8 +170,16 @@
       showTime(e.target.dataset.time, e.target.querySelector("h3").textContent);
     });
   }, { rootMargin: "-45% 0px -50% 0px" });
-  steps.forEach(function (s) { stepObs.observe(s); });
-  showTime("18:00", "Otevření sálu");
+  steps.forEach(function (s) {
+    stepObs.observe(s);
+    // klepnutí na bod programu ho rovnou ukáže na hodinách
+    s.addEventListener("click", function () {
+      steps.forEach(function (x) { x.classList.remove("active"); });
+      s.classList.add("active");
+      showTime(s.dataset.time, s.querySelector("h3").textContent);
+    });
+  });
+  showTime(steps[0].dataset.time, steps[0].querySelector("h3").textContent);
   steps[0].classList.add("active");
 
   /* --- zasedací pořádek: veřejnost vidí obsazenost jednotlivých míst, nákupy a QR kódy jen přihlášené pokladní --- */
@@ -1020,9 +1040,10 @@
     g.appendChild(p);
   });
 
-  /* --- reakce na scrollování: kola a malé hodiny --- */
+  /* --- reakce na scrollování: kola, malé hodiny a šipka v úvodu --- */
   var sc = document.querySelector(".scroll-clock");
   var ring = document.getElementById("sc-ring"), scHand = document.getElementById("sc-hand");
+  var arrow = document.querySelector(".scroll-hint");
   var ticking = false;
   function onScroll() {
     var y = window.scrollY;
@@ -1032,6 +1053,7 @@
     ring.setAttribute("stroke-dashoffset", (138.2 * (1 - p)).toFixed(1));
     scHand.style.transform = "rotate(" + (p * 360) + "deg)";
     sc.classList.toggle("on", y > innerHeight * .6);
+    if (arrow) arrow.classList.toggle("gone", y > 60);
     ticking = false;
   }
   addEventListener("scroll", function () {
