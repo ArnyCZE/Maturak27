@@ -173,6 +173,7 @@
   var FLOORS = window.IDEON_PLAN.floors;
   var STANDING = "Stání";   // řádek v tabulce pro vstupenky na stání (bez místa u stolu)
   var OFFLINE = "Rezervační systém teď neodpovídá – zkus to prosím za chvíli.";
+  var mobileMQ = window.matchMedia("(max-width: 700px)");
 
   var taken = {};       // "VS 12" -> [čísla obsazených nebo právě držených židlí]
   var standing = { cap: 0, used: 0 };
@@ -238,20 +239,29 @@
   function standingFree() { return Math.max(0, standing.cap - standing.used); }
   function ticketsWord(n) { return n === 1 ? "vstupenka" : n > 1 && n < 5 ? "vstupenky" : "vstupenek"; }
 
+  /* Plánek. Na mobilu je otočený o 90° (podium nahoře), aby se vešel celý na výšku displeje bez posouvání do stran.
+     Otáčí se jen rozmístění – texty a stoly zůstávají vodorovně. */
   function renderFloor(key) {
     currentFloor = key;
-    var f = FLOORS[key];
+    var f = FLOORS[key], turned = mobileMQ.matches;
+    var frame = turned ? { w: f.h, h: f.w } : { w: f.w, h: f.h };
+    function box(x, y, w, h) { return turned ? [f.h - y - h, x, h, w] : [x, y, w, h]; }
     planEl.innerHTML = "";
-    planEl.style.aspectRatio = f.w + " / " + f.h;
+    planEl.classList.toggle("turned", turned);
+    planEl.style.aspectRatio = frame.w + " / " + frame.h;
 
-    (f.rooms || []).forEach(function (r) { add("room", "", r.x, r.y, r.w, r.h, f); });
-    (f.zones || []).forEach(function (z) { add("zone " + (z.cls || ""), z.t, z.x, z.y, z.w, z.h, f); });
-    (f.names || []).forEach(function (n) { add("hall-name", n.t, n.x, n.y, 0, 0, f); });
+    (f.rooms || []).forEach(function (r) { var b = box(r.x, r.y, r.w, r.h); add("room", "", b[0], b[1], b[2], b[3], frame); });
+    (f.zones || []).forEach(function (z) { var b = box(z.x, z.y, z.w, z.h); add("zone " + (z.cls || ""), z.t, b[0], b[1], b[2], b[3], frame); });
+    (f.names || []).forEach(function (n) {
+      if (turned) add("hall-name", n.t, f.h - n.y - 2.4, n.x, 0, 0, frame);
+      else add("hall-name", n.t, n.x, n.y, 0, 0, frame);
+    });
 
     f.tables.forEach(function (t) {
       var id = t[0], s = tableState(id);
+      var cx = turned ? f.h - t[2] : t[1], cy = turned ? t[1] : t[2];
       var el = add("table" + (!loaded ? " unknown" : s.free === 0 ? " full" : "") + (cart[id] && cart[id].length ? " incart" : ""),
-                   "", t[1], t[2], f.d * 1.15, f.d * .7, f);
+                   "", cx, cy, f.d * 1.15, f.d * .7, frame);
       el.style.setProperty("--p", Math.round(s.used / s.cap * 100));
       el.title = loaded ? id + " · volno " + s.free + " z " + s.cap : id;
       el.setAttribute("role", "button");
@@ -263,8 +273,9 @@
     });
     renderList(key);
   }
+  if (mobileMQ.addEventListener) mobileMQ.addEventListener("change", function () { renderFloor(currentFloor); });
 
-  /* --- zobrazení „Seznam“: stoly jako dlaždice po sálech (na mobilu přehlednější než plánek) --- */
+  /* --- zobrazení „Seznam“: stoly jako dlaždice po sálech --- */
   var planWrap = document.querySelector(".plan-wrap"), swipeHint = document.querySelector(".swipe-hint");
   var listEl = document.createElement("div");
   listEl.className = "tlist";
@@ -272,9 +283,9 @@
   var viewTabs = document.createElement("div");
   viewTabs.className = "view-tabs";
   viewTabs.setAttribute("role", "tablist");
-  viewTabs.innerHTML = '<button role="tab" data-view="list">Seznam stolů</button><button role="tab" data-view="plan">Plánek</button>';
+  viewTabs.innerHTML = '<button role="tab" data-view="plan">Plánek</button><button role="tab" data-view="list">Seznam stolů</button>';
   document.querySelector(".floor-tabs").insertAdjacentElement("afterend", viewTabs);
-  var viewMode = localStorage.getItem("ples-view") || (window.matchMedia("(max-width: 700px)").matches ? "list" : "plan");
+  var viewMode = localStorage.getItem("ples-view2") || "plan";
 
   function applyView() {
     var list = viewMode === "list";
@@ -286,7 +297,7 @@
   viewTabs.querySelectorAll("button").forEach(function (b) {
     b.addEventListener("click", function () {
       viewMode = b.dataset.view;
-      localStorage.setItem("ples-view", viewMode);
+      localStorage.setItem("ples-view2", viewMode);
       applyView();
     });
   });

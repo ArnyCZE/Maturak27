@@ -742,3 +742,16 @@ footer .mark { font-family: "Archivo Black", sans-serif; color: var(--gold); let
   .floor-tabs button, .view-tabs button { flex: 1; }
   .plan { min-width: 760px; }
 }
+
+/* ---------- plánek na mobilu: otočený na výšku, vejde se celý bez posouvání ---------- */
+.plan.turned { min-width: 0 !important; width: 100%; }
+.plan.turned .room { border-radius: 8px; border-width: 1.5px; }
+.plan.turned .zone { font-size: .44rem; letter-spacing: .06em; border-radius: 6px; padding: 1px; line-height: 1.15; word-break: break-word; }
+.plan.turned .hall-name { writing-mode: vertical-rl; font-size: .42rem; letter-spacing: .14em; }
+.plan.turned .table { border-radius: 3px; }
+.plan.turned .table span { font-size: .5rem; }
+.plan.turned .table:hover, .plan.turned .table.sel { transform: translate(-50%, -50%) scale(1.35); }
+@media (max-width: 700px) {
+  .plan-wrap { padding: .5rem; overflow: hidden; }
+  .swipe-hint { display: none !important; }
+}
