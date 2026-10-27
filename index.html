@@ -121,8 +121,6 @@
   }
   .title .line:nth-child(1) span { animation-delay: 2.5s; }
   .title .line:nth-child(2) span { animation-delay: 2.7s; padding-left: .6em; }
-  /* lesklý odlesk přejíždějící přes nápis */
-  .title .line span::after { content: none; }
 
   @keyframes up { to { transform: translateY(0); } }
   @keyframes rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
@@ -340,6 +338,63 @@
   .quote blockquote span { background: var(--metal); -webkit-background-clip: text; background-clip: text; color: transparent; }
   .quote cite { display: block; margin-top: 1.5rem; font-style: normal; color: var(--muted); letter-spacing: .3em; font-size: .72rem; text-transform: uppercase; font-weight: 600; }
 
+  /* ---------- zasedací pořádek ---------- */
+  .seating { background: linear-gradient(180deg, transparent, var(--bg2) 15%, var(--bg2) 85%, transparent); }
+  .seat-stats {
+    margin-top: 2.5rem;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;
+  }
+  .stat { border: 1px solid var(--line); border-radius: 16px; padding: 1.2rem 1.3rem; background: var(--panel); }
+  .stat .k { font-weight: 800; font-size: .64rem; letter-spacing: .3em; text-transform: uppercase; color: var(--gold); }
+  .stat .v { font-family: "Archivo Black", sans-serif; font-size: 1.9rem; line-height: 1.2; margin-top: .3rem; }
+  .stat .v small { font-family: "Montserrat", sans-serif; font-size: .85rem; color: var(--muted); font-weight: 400; }
+  .bar { height: 4px; background: rgba(255,255,255,.08); border-radius: 4px; margin-top: .7rem; overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 0; background: var(--metal); transition: width 1.4s var(--ease); }
+
+  .hall-tabs { margin-top: 2.5rem; display: flex; flex-wrap: wrap; gap: .5rem; }
+  .hall-tabs button {
+    font: inherit; font-weight: 800; font-size: .74rem; letter-spacing: .15em; text-transform: uppercase;
+    color: var(--gold); background: transparent;
+    border: 1px solid rgba(230,184,79,.4); border-radius: 999px;
+    padding: .65rem 1.2rem; cursor: pointer;
+    transition: background .3s, color .3s;
+  }
+  .hall-tabs button[aria-selected="true"] { background: var(--gold); color: #000; }
+  .hall {
+    margin-top: 1.5rem;
+    border: 1px solid var(--line); border-radius: 22px;
+    padding: clamp(1.2rem, 3vw, 2rem);
+    background: radial-gradient(ellipse at top, rgba(230,184,79,.08), transparent 60%), #050403;
+  }
+  .stage {
+    text-align: center; font-weight: 800; letter-spacing: .4em; font-size: .68rem; text-transform: uppercase;
+    color: #1a1406; background: var(--metal);
+    border-radius: 8px; padding: .55rem; margin-bottom: 1.6rem;
+  }
+  .tables { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 1rem .6rem; }
+  .table {
+    --p: 0;
+    position: relative;
+    width: 62px; height: 62px; margin: 0 auto;
+    border-radius: 50%;
+    background: conic-gradient(rgba(120,110,95,.75) calc(var(--p) * 1%), var(--gold-mid) 0);
+    display: grid; place-items: center;
+    transition: transform .3s var(--ease);
+    cursor: default;
+  }
+  .table::before { content: ""; position: absolute; inset: 5px; border-radius: 50%; background: #0b0905; }
+  .table span { position: relative; font-weight: 800; font-size: .78rem; text-align: center; line-height: 1.1; }
+  .table span small { display: block; font-weight: 400; font-size: .62rem; color: var(--muted); }
+  .table.full { background: rgba(120,110,95,.6); }
+  .table.full span { color: var(--muted); }
+  .table:hover { transform: scale(1.08); }
+  .table.unknown { background: rgba(230,184,79,.35); }
+  .legend { margin-top: 1.4rem; display: flex; flex-wrap: wrap; gap: 1.4rem; font-size: .82rem; color: var(--muted); }
+  .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: .45rem; vertical-align: -1px; }
+  .legend .free { background: var(--gold-mid); }
+  .legend .taken { background: rgba(120,110,95,.75); }
+  .seat-msg { margin-top: 1rem; font-size: .85rem; color: var(--muted); font-style: italic; }
+
   /* ---------- vstupenky ---------- */
   .tickets-box {
     margin-top: 3rem;
@@ -385,6 +440,8 @@
   @media (max-width: 560px) {
     .countdown { grid-template-columns: repeat(2, 1fr); }
     .scroll-clock { width: 48px; height: 48px; right: 14px; bottom: 14px; }
+    .tables { grid-template-columns: repeat(auto-fill, minmax(58px, 1fr)); }
+    .table { width: 54px; height: 54px; }
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0s !important; transition-duration: .01ms !important; }
@@ -587,6 +644,39 @@
     </div>
   </section>
 
+  <section class="seating" id="mista">
+    <div class="wrap">
+      <p class="eyebrow reveal">Zasedací pořádek</p>
+      <h2 class="reveal d1">Volná <em>místa</em></h2>
+      <p class="lead reveal d2">Aktuální obsazenost stolů v Ideonu. Zlatá část kroužku ukazuje volná místa u stolu.</p>
+
+      <div class="seat-stats reveal d2">
+        <div class="stat"><div class="k">Volných míst</div><div class="v"><span id="st-free">–</span> <small>z <span id="st-total">786</span></small></div><div class="bar"><i id="st-bar"></i></div></div>
+        <div class="stat"><div class="k">Velký sál</div><div class="v"><span data-hall-free="VS">–</span> <small>volných</small></div></div>
+        <div class="stat"><div class="k">Levý sál</div><div class="v"><span data-hall-free="LS">–</span> <small>volných</small></div></div>
+        <div class="stat"><div class="k">Pravý sál</div><div class="v"><span data-hall-free="PS">–</span> <small>volných</small></div></div>
+        <div class="stat"><div class="k">Galerie</div><div class="v"><span data-hall-free="G">–</span> <small>volných</small></div></div>
+      </div>
+
+      <div class="hall-tabs" role="tablist">
+        <button role="tab" data-hall="VS" aria-selected="true">Velký sál</button>
+        <button role="tab" data-hall="LS" aria-selected="false">Levý sál</button>
+        <button role="tab" data-hall="PS" aria-selected="false">Pravý sál</button>
+        <button role="tab" data-hall="G" aria-selected="false">Galerie</button>
+      </div>
+
+      <div class="hall">
+        <div class="stage" id="stage">Podium · taneční parket</div>
+        <div class="tables" id="tables"></div>
+        <div class="legend">
+          <span><i class="free"></i>volná místa</span>
+          <span><i class="taken"></i>obsazeno</span>
+        </div>
+        <p class="seat-msg" id="seat-msg">Načítám aktuální obsazenost…</p>
+      </div>
+    </div>
+  </section>
+
   <section class="tickets" id="vstupenky">
     <div class="wrap">
       <p class="eyebrow reveal">Vstupenky</p>
@@ -596,7 +686,7 @@
           <h3>Prodej brzy spustíme</h3>
           <p>Informace o cenách a prodeji vstupenek zveřejníme právě tady.</p>
         </div>
-        <a class="pill" href="#program">Program</a>
+        <a class="pill" href="#mista">Volná místa</a>
       </div>
     </div>
   </section>
@@ -784,6 +874,91 @@
   steps.forEach(function (s) { stepObs.observe(s); });
   showTime("18:00", "Otevření sálu");
   steps[0].classList.add("active");
+
+  /* --- zasedací pořádek: stoly podle plánku Ideonu, obsazenost z veřejné Google tabulky --- */
+  var SHEET_CSV = "https://docs.google.com/spreadsheets/d/18tbTqbiRGQaAFtXcp2peYWdz93SIBP-x7r0L-sKOW_0/gviz/tq?tqx=out:csv&sheet=Web";
+  var HALLS = {
+    VS: { name: "Velký sál", stage: "Podium · taneční parket", seats: 6, nums: range(1, 43) },
+    LS: { name: "Levý sál", stage: "Levý sál", seats: 8, nums: range(47, 65) },
+    PS: { name: "Pravý sál", stage: "Pravý sál", seats: 8, nums: range(66, 69).concat(range(71, 83)) },
+    G:  { name: "Galerie", stage: "Galerie · výhled na parket", seats: 8, nums: range(1, 30) }
+  };
+  function range(a, b) { var r = []; for (var i = a; i <= b; i++) r.push(i); return r; }
+
+  var taken = {};     // "VS 12" -> počet obsazených míst
+  var loaded = false;
+  var currentHall = "VS";
+
+  function renderHall(code) {
+    currentHall = code;
+    var hall = HALLS[code];
+    document.getElementById("stage").textContent = hall.stage;
+    var box = document.getElementById("tables");
+    box.innerHTML = "";
+    hall.nums.forEach(function (n) {
+      var id = code + " " + n;
+      var used = Math.min(taken[id] || 0, hall.seats);
+      var free = hall.seats - used;
+      var el = document.createElement("div");
+      el.className = "table" + (!loaded ? " unknown" : free === 0 ? " full" : "");
+      el.style.setProperty("--p", Math.round(used / hall.seats * 100));
+      el.title = loaded ? id + " · volno " + free + " z " + hall.seats : id;
+      el.innerHTML = "<span>" + n + (loaded ? "<small>" + free + "/" + hall.seats + "</small>" : "") + "</span>";
+      box.appendChild(el);
+    });
+  }
+
+  function updateStats() {
+    var total = 0, free = 0;
+    Object.keys(HALLS).forEach(function (code) {
+      var hall = HALLS[code], hallFree = 0;
+      hall.nums.forEach(function (n) { hallFree += hall.seats - Math.min(taken[code + " " + n] || 0, hall.seats); });
+      total += hall.nums.length * hall.seats;
+      free += hallFree;
+      document.querySelector('[data-hall-free="' + code + '"]').textContent = hallFree;
+    });
+    set("st-free", free);
+    set("st-total", total);
+    document.getElementById("st-bar").style.width = (free / total * 100) + "%";
+  }
+
+  function parseCSV(text) {
+    return text.trim().split(/\r?\n/).map(function (line) {
+      var out = [], cur = "", q = false;
+      for (var i = 0; i < line.length; i++) {
+        var c = line[i];
+        if (c === '"') { if (q && line[i + 1] === '"') { cur += '"'; i++; } else q = !q; }
+        else if (c === "," && !q) { out.push(cur); cur = ""; }
+        else cur += c;
+      }
+      out.push(cur);
+      return out;
+    });
+  }
+
+  document.querySelectorAll(".hall-tabs button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      document.querySelectorAll(".hall-tabs button").forEach(function (x) { x.setAttribute("aria-selected", x === b); });
+      renderHall(b.dataset.hall);
+    });
+  });
+  renderHall("VS");
+
+  fetch(SHEET_CSV, { cache: "no-store" })
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
+    .then(function (text) {
+      var rows = parseCSV(text);
+      var header = rows.shift() || [];
+      if (header[0] !== "Stůl") throw new Error("tabulka ještě není propojená");
+      rows.forEach(function (r) { if (r[0]) taken[r[0].trim()] = parseInt(r[3], 10) || 0; });
+      loaded = true;
+      document.getElementById("seat-msg").textContent = "Obsazenost se aktualizuje automaticky.";
+      updateStats();
+      renderHall(currentHall);
+    })
+    .catch(function () {
+      document.getElementById("seat-msg").textContent = "Aktuální obsazenost zveřejníme se spuštěním prodeje vstupenek.";
+    });
 
   /* --- ozubená kola --- */
   function gearPath(teeth, rOut, rIn) {
