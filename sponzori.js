@@ -2,7 +2,8 @@
    přes veřejnou tabulku (list Web, sloupec H – jen názvy, žádné kontakty). Firmy napsané přímo v index.html zůstanou
    taky; když se tabulka nenačte, zůstane jen ten seznam.
    Ke každé firmě patří odkaz na její web a logo (DATA níže). Každá karta má stejně velkou dlaždici:
-   s logem (bílá, u světlých log tmavá – dark: true), bez loga se v dlaždici ukáže název firmy. */
+   s logem (bílá, u světlých log tmavá – dark: true), bez loga se v dlaždici ukáže název firmy.
+   Logo, které firma poslala e-mailem, je v Arnoštově Google Drive sdílené odkazem (lh3.googleusercontent.com/d/<id>). */
 (function () {
   var URL = "https://docs.google.com/spreadsheets/d/18tbTqbiRGQaAFtXcp2peYWdz93SIBP-x7r0L-sKOW_0/gviz/tq?tqx=out:csv&sheet=Web&range=H2:H300";
 
@@ -20,7 +21,7 @@
     "leoexpress": { url: "https://www.leoexpress.com/cs", logo: "https://upload.wikimedia.org/wikipedia/commons/2/2f/Leo_Express.svg" },
     "město pardubice": { url: "https://pardubice.eu/", logo: "https://upload.wikimedia.org/wikipedia/commons/d/d6/Pardubice_logo.svg" },
     "vak": { url: "https://www.vakpce.cz/", logo: "https://www.vakpce.cz/data/filecache/90/vak-text-as-prave-logo-full-color-rgb-900px-w-72ppi.png" },
-    "ploty dobrý": { url: "https://www.levne-pletivo.cz/" },
+    "ploty dobrý": { url: "https://www.levne-pletivo.cz/", logo: "https://lh3.googleusercontent.com/d/1G5hiZfFL7Cz7-rysdKvkaveEGN3EFK9e=w600" },
     "2vv s r o": { url: "https://www.2vv.cz/" },
     "pivovar svijany": { url: "https://www.pivovarsvijany.cz/" }
   };
