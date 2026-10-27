@@ -1,0 +1,192 @@
+/*
+ * Maturák 2027 – prodej vstupenek
+ * Vlož celý tento kód do tabulky „Maturák 2027 – vstupenky (soukromé)“:
+ *   Rozšíření → Apps Script → smaž, co tam je, a vlož tohle → Uložit.
+ * PIN pro prodejní stránku NEPIŠ sem – nastav ho v editoru:
+ *   Nastavení projektu (ozubené kolečko) → Vlastnosti skriptu → přidat: PIN = tvůj PIN.
+ * Pak jednou spusť funkci „setup“ (nahoře vybrat setup → Spustit) a povol přístup.
+ * Nakonec: Nasadit → Nové nasazení → Webová aplikace, spouštět jako „Já“, přístup „Kdokoli“.
+ */
+
+var PRICE = 450;                                  // cena jedné vstupenky v Kč
+var HOLD_MINUTES = 5;                             // jak dlouho QR kód drží místa
+var ACCOUNT_NUMBER = "2203629553";                // účet Plesy 4FH (Fio)
+var ACCOUNT_IBAN = "CZ7820100000002203629553";    // tentýž účet ve tvaru IBAN pro QR platbu
+var PAID_LABEL = "ples-zpracovano";               // štítek v Gmailu pro už zpracované platby
+
+// sloupce v listu Prodej (1 = A)
+var COL = { name: 1, contact: 2, table: 3, count: 4, status: 5, note: 6, vs: 7, amount: 8, created: 9, paid: 10 };
+var ACTIVE = { "drženo": 1, "rezervace": 1, "zaplaceno": 1 };
+
+/* ---------- webová aplikace pro prodejní stránku ---------- */
+
+function doGet() {
+  return json_({ ok: true, info: "Maturák 2027 – prodej vstupenek běží." });
+}
+
+function doPost(e) {
+  var req = {};
+  try { req = JSON.parse(e.postData.contents || "{}"); } catch (err) { return json_({ ok: false, error: "Špatný požadavek." }); }
+
+  var pin = PropertiesService.getScriptProperties().getProperty("PIN");
+  if (!pin || String(req.pin) !== pin) return json_({ ok: false, error: "Špatný PIN." });
+
+  var lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    expireHolds();
+    switch (req.action) {
+      case "tables":  return json_({ ok: true, tables: freeSeats_() });
+      case "hold":    return json_(hold_(req));
+      case "confirm": return json_(changeStatus_(req.vs, "drženo", "rezervace"));
+      case "cancel":  return json_(changeStatus_(req.vs, "drženo", "zrušeno"));
+      case "status":  return json_(status_(req.vs));
+      default:        return json_({ ok: false, error: "Neznámá akce." });
+    }
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/* Podrží místa u stolu na HOLD_MINUTES a vrátí údaje pro QR platbu. */
+function hold_(req) {
+  var table = String(req.table || "").trim();
+  var count = parseInt(req.count, 10);
+  var name = String(req.name || "").trim();
+  if (!table || !(count > 0)) return { ok: false, error: "Vyber stůl a počet míst." };
+  if (!name) return { ok: false, error: "Vyplň jméno kupujícího." };
+
+  var free = freeSeats_()[table];
+  if (free === undefined) return { ok: false, error: "Stůl " + table + " neexistuje." };
+  if (count > free) return { ok: false, error: "U stolu " + table + " je volných jen " + free + " míst." };
+
+  var props = PropertiesService.getScriptProperties();
+  var vs = parseInt(props.getProperty("NEXT_VS") || "1001", 10);
+  props.setProperty("NEXT_VS", String(vs + 1));
+
+  var amount = count * PRICE;
+  var now = new Date();
+  sheet_("Prodej").appendRow([name, String(req.contact || ""), table, count, "drženo", "", vs, amount, now, ""]);
+
+  return {
+    ok: true, vs: vs, amount: amount, iban: ACCOUNT_IBAN, account: ACCOUNT_NUMBER + "/2010",
+    message: "PLES 4FH STUL " + table + " " + count + "X",
+    expiresAt: now.getTime() + HOLD_MINUTES * 60 * 1000
+  };
+}
+
+function changeStatus_(vs, from, to) {
+  var found = findRow_(vs);
+  if (!found) return { ok: false, error: "Objednávka " + vs + " nenalezena." };
+  var current = found.values[COL.status - 1];
+  if (current === to) return { ok: true, status: to };
+  if (current !== from) {
+    if (current === "vypršelo") return { ok: false, error: "Rezervace už vypršela – vytvoř novou." };
+    return { ok: false, error: "Objednávka je ve stavu „" + current + "“." };
+  }
+  found.sheet.getRange(found.row, COL.status).setValue(to);
+  return { ok: true, status: to };
+}
+
+function status_(vs) {
+  var found = findRow_(vs);
+  if (!found) return { ok: false, error: "Objednávka " + vs + " nenalezena." };
+  return { ok: true, status: found.values[COL.status - 1] };
+}
+
+/* Volná místa u každého stolu: kapacita z listu Stoly minus aktivní objednávky z listu Prodej. */
+function freeSeats_() {
+  var stoly = sheet_("Stoly").getDataRange().getValues();
+  var prodej = sheet_("Prodej").getDataRange().getValues();
+  var used = {};
+  for (var i = 1; i < prodej.length; i++) {
+    var r = prodej[i];
+    if (ACTIVE[r[COL.status - 1]]) used[r[COL.table - 1]] = (used[r[COL.table - 1]] || 0) + (Number(r[COL.count - 1]) || 0);
+  }
+  var free = {};
+  for (var j = 1; j < stoly.length; j++) {
+    var id = stoly[j][0];
+    if (id) free[id] = Math.max(0, (Number(stoly[j][2]) || 0) - (used[id] || 0));
+  }
+  return free;
+}
+
+/* ---------- automatika (spouští se sama podle časovačů z funkce setup) ---------- */
+
+/* Uvolní místa, která někdo podržel QR kódem, ale rezervaci nikdo nepotvrdil do HOLD_MINUTES. */
+function expireHolds() {
+  var sh = sheet_("Prodej");
+  var data = sh.getDataRange().getValues();
+  var limit = Date.now() - HOLD_MINUTES * 60 * 1000;
+  for (var i = 1; i < data.length; i++) {
+    var created = data[i][COL.created - 1];
+    if (data[i][COL.status - 1] === "drženo" && created instanceof Date && created.getTime() < limit) {
+      sh.getRange(i + 1, COL.status).setValue("vypršelo");
+    }
+  }
+}
+
+/* Projde e-maily od Fio o příchozích platbách na plesový účet a označí zaplacené objednávky podle VS. */
+function checkPayments() {
+  var label = GmailApp.getUserLabelByName(PAID_LABEL) || GmailApp.createLabel(PAID_LABEL);
+  var threads = GmailApp.search("from:fio.cz newer_than:14d -label:" + PAID_LABEL);
+  threads.forEach(function (thread) {
+    thread.getMessages().forEach(function (msg) {
+      var body = msg.getPlainBody();
+      if (body.indexOf(ACCOUNT_NUMBER) === -1) return;          // jiný účet
+
+      var vsMatch = body.match(/(?:VS|variabiln\S* symbol)\s*:?\s*(\d{3,10})/i);
+      var amountMatch = body.match(/(?:částka|objem)\s*:?\s*([\d\s .]+,?\d*)/i);
+      if (!vsMatch) return;
+
+      var vs = vsMatch[1];
+      var amount = amountMatch ? parseFloat(amountMatch[1].replace(/[\s .]/g, "").replace(",", ".")) : NaN;
+      var found = findRow_(vs);
+      if (!found) return;
+
+      var expected = Number(found.values[COL.amount - 1]);
+      var current = found.values[COL.status - 1];
+      var note = found.values[COL.note - 1];
+      if (!isNaN(amount) && amount < expected) {
+        note = "POZOR: zaplaceno jen " + amount + " Kč z " + expected + " Kč. " + note;
+      }
+      if (current === "vypršelo" || current === "zrušeno") {
+        note = "POZOR: platba přišla po vypršení/zrušení – zkontroluj, jestli jsou místa volná. " + note;
+      }
+      found.sheet.getRange(found.row, COL.status).setValue("zaplaceno");
+      found.sheet.getRange(found.row, COL.note).setValue(note);
+      found.sheet.getRange(found.row, COL.paid).setValue(msg.getDate());
+    });
+    thread.addLabel(label);
+  });
+}
+
+/* Spusť jednou ručně: nastaví časovače a štítek v Gmailu. */
+function setup() {
+  ScriptApp.getProjectTriggers().forEach(function (t) { ScriptApp.deleteTrigger(t); });
+  ScriptApp.newTrigger("expireHolds").timeBased().everyMinutes(1).create();
+  ScriptApp.newTrigger("checkPayments").timeBased().everyMinutes(5).create();
+  if (!GmailApp.getUserLabelByName(PAID_LABEL)) GmailApp.createLabel(PAID_LABEL);
+  var props = PropertiesService.getScriptProperties();
+  if (!props.getProperty("NEXT_VS")) props.setProperty("NEXT_VS", "1001");
+  if (!props.getProperty("PIN")) throw new Error("Nejdřív nastav PIN ve Vlastnostech skriptu (Nastavení projektu).");
+}
+
+/* ---------- pomocné funkce ---------- */
+
+function findRow_(vs) {
+  var sh = sheet_("Prodej");
+  var data = sh.getDataRange().getValues();
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][COL.vs - 1]) === String(vs)) return { sheet: sh, row: i + 1, values: data[i] };
+  }
+  return null;
+}
+
+function sheet_(name) {
+  return SpreadsheetApp.getActiveSpreadsheet().getSheetByName(name);
+}
+
+function json_(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
+}
