@@ -1,5 +1,6 @@
 /*
  * Maturák 2027 – prodej vstupenek přes pokladní, 5min rezervace, QR platby a jejich záznam
+ * (verze 3 – rychlé čtení obsazenosti bez blokování)
  *
  * Jak to funguje:
  *  - Plánek s obsazeností na webu vidí všichni.
@@ -38,30 +39,33 @@ var INACTIVE = { "vypršelo": 1, "zrušeno": 1 };
 function doGet(e) {
   var p = (e && e.parameter) || {};
   var result;
-  var lock = LockService.getScriptLock();
-  lock.waitLock(20000);
   try {
-    expireHolds();
     if (p.action === "state") result = { ok: true, tables: state_() };
     else if (p.action === "login") result = login_(p.login, p.password);
     else if (p.action === "hold" || p.action === "release" || p.action === "check") {
       var cashier = cashierFromSession_(p.session);
       if (!cashier) result = { ok: false, error: "Přihlášení vypršelo – přihlas se prosím znovu.", loggedOut: true };
-      else if (p.action === "hold") result = hold_(p.table, p.seats, cashier);
-      else if (p.action === "release") result = release_(p.vs, p.token);
-      else result = { ok: true, name: cashier };
+      else if (p.action === "check") result = { ok: true, name: cashier };
+      else result = withLock_(function () {
+        return p.action === "hold" ? hold_(p.table, p.seats, cashier) : release_(p.vs, p.token);
+      });
     }
-    else result = { ok: true, info: "Maturák 2027 – rezervace běží." };
+    else result = { ok: true, info: "Maturák 2027 – rezervace běží (verze 3)." };
   } catch (err) {
     result = { ok: false, error: "Chyba skriptu: " + err.message };
-  } finally {
-    lock.releaseLock();
   }
   var json = JSON.stringify(result);
   if (p.callback && /^[\w.]+$/.test(p.callback)) {
     return ContentService.createTextOutput(p.callback + "(" + json + ")").setMimeType(ContentService.MimeType.JAVASCRIPT);
   }
   return ContentService.createTextOutput(json).setMimeType(ContentService.MimeType.JSON);
+}
+
+/* Zápisy (rezervace) probíhají po jednom, aby dva lidé nezabrali stejné místo. */
+function withLock_(fn) {
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(15000)) return { ok: false, error: "Systém je teď vytížený, zkus to prosím za pár vteřin." };
+  try { return fn(); } finally { lock.releaseLock(); }
 }
 
 /* ---------- přihlášení pokladních ---------- */
@@ -77,8 +81,8 @@ function login_(login, password) {
   for (var i = 1; i < rows.length; i++) {
     var r = rows[i];
     var active = String(r[3] || "").trim().toLowerCase();
-    if (String(r[1] || "").trim().toLowerCase() === login && login &&
-        String(r[2] || "") !== "" && String(r[2]) === String(password || "") && active !== "ne") {
+    if (login && String(r[1] || "").trim().toLowerCase() === login &&
+        String(r[2]) !== "" && String(r[2]) === String(password || "") && active !== "ne") {
       var session = Utilities.getUuid().replace(/-/g, "");
       cache.put("s_" + session, String(r[0] || login), SESSION_HOURS * 3600);
       cache.remove(failKey);
@@ -96,17 +100,36 @@ function cashierFromSession_(session) {
 
 /* ---------- obsazenost a rezervace ---------- */
 
+/* Kapacity stolů (z listu Stoly, na 10 minut v mezipaměti – čtení je pak rychlé). */
+function capacities_() {
+  var cache = CacheService.getScriptCache();
+  var cached = cache.get("caps");
+  if (cached) return JSON.parse(cached);
+  var rows = sheet_("Stoly").getRange("A2:C200").getValues(), caps = {};
+  rows.forEach(function (r) { if (r[0]) caps[r[0]] = Number(r[2]) || 0; });
+  cache.put("caps", JSON.stringify(caps), 600);
+  return caps;
+}
+
+/* Je řádek aktivní? Podržení starší než HOLD_MINUTES se bere jako uvolněné, i když ho časovač ještě nepřepsal. */
+function isActive_(r, now) {
+  var st = r[COL.status - 1];
+  if (INACTIVE[st]) return false;
+  if (st === "drženo") {
+    var created = r[COL.created - 1];
+    if (created instanceof Date && created.getTime() < now - HOLD_MINUTES * 60 * 1000) return false;
+  }
+  return true;
+}
+
 /* Kapacita a obsazené (zaplacené, rezervované i právě držené) židle u každého stolu. */
 function state_() {
-  var stoly = sheet_("Stoly").getDataRange().getValues();
-  var out = {};
-  for (var i = 1; i < stoly.length; i++) {
-    if (stoly[i][0]) out[stoly[i][0]] = { cap: Number(stoly[i][2]) || 0, seats: [] };
-  }
+  var caps = capacities_(), out = {}, now = Date.now();
+  Object.keys(caps).forEach(function (id) { out[id] = { cap: caps[id], seats: [] }; });
   var data = sheet_("Prodej").getDataRange().getValues();
   for (var j = 1; j < data.length; j++) {
     var r = data[j], t = out[r[COL.table - 1]];
-    if (!t || INACTIVE[r[COL.status - 1]]) continue;
+    if (!t || !isActive_(r, now)) continue;
     var seats = parseSeats_(r[COL.seats - 1]);
     // ručně zapsané prodeje bez čísel židlí obsadí nejnižší volná místa
     for (var s = 1; seats.length < Number(r[COL.count - 1]) && s <= t.cap; s++) {
@@ -139,7 +162,7 @@ function release_(vs, token) {
   var sh = sheet_("Prodej"), data = sh.getDataRange().getValues();
   for (var i = data.length - 1; i >= 1; i--) {
     var r = data[i];
-    if (String(r[COL.vs - 1]) === String(vs) && r[COL.status - 1] === "drženo" && r[COL.note - 1] === "web " + token) {
+    if (String(r[COL.vs - 1]) === String(vs) && r[COL.status - 1] === "drženo" && String(r[COL.note - 1]) === "web " + token) {
       sh.getRange(i + 1, COL.status).setValue("zrušeno");
       updateLog_(token, { status: "zrušeno" });
       return { ok: true };
@@ -150,85 +173,93 @@ function release_(vs, token) {
 
 /* ---------- automatika (časovače z funkce setup) ---------- */
 
-/* Uvolní místa, která někdo podržel, ale platba do HOLD_MINUTES nedorazila. */
+/* Přepíše propadlá podržení na „vypršelo“ (obsazenost je počítá jako volná už dřív – viz isActive_). */
 function expireHolds() {
-  var sh = sheet_("Prodej"), data = sh.getDataRange().getValues();
-  var limit = Date.now() - HOLD_MINUTES * 60 * 1000;
-  for (var i = 1; i < data.length; i++) {
-    var created = data[i][COL.created - 1];
-    if (data[i][COL.status - 1] === "drženo" && created instanceof Date && created.getTime() < limit) {
-      sh.getRange(i + 1, COL.status).setValue("vypršelo");
-      var note = String(data[i][COL.note - 1] || "");
-      if (note.indexOf("web ") === 0) updateLog_(note.slice(4), { status: "vypršelo" });
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(5000)) return;
+  try {
+    var sh = sheet_("Prodej"), data = sh.getDataRange().getValues(), now = Date.now();
+    for (var i = 1; i < data.length; i++) {
+      if (data[i][COL.status - 1] === "drženo" && !isActive_(data[i], now)) {
+        sh.getRange(i + 1, COL.status).setValue("vypršelo");
+        var note = String(data[i][COL.note - 1] || "");
+        if (note.indexOf("web ") === 0) updateLog_(note.slice(4, 12), { status: "vypršelo" });
+      }
     }
+  } finally {
+    lock.releaseLock();
   }
 }
 
 /* Projde e-maily od Fio o příchozích platbách na plesový účet a označí zaplacená místa. */
 function checkPayments() {
+  var threads = GmailApp.search("from:fio.cz newer_than:30d -label:" + PAID_LABEL, 0, 50);
+  if (!threads.length) return;
+  var label = GmailApp.getUserLabelByName(PAID_LABEL) || GmailApp.createLabel(PAID_LABEL);
+
   var lock = LockService.getScriptLock();
-  lock.waitLock(20000);
+  if (!lock.tryLock(10000)) return;           // zkusí to znovu za 5 minut
   try {
-    var label = GmailApp.getUserLabelByName(PAID_LABEL) || GmailApp.createLabel(PAID_LABEL);
-    var threads = GmailApp.search("from:fio.cz newer_than:30d -label:" + PAID_LABEL);
     var sh = sheet_("Prodej");
-
     threads.forEach(function (thread) {
-      thread.getMessages().forEach(function (msg) {
-        var body = msg.getPlainBody();
-        if (body.indexOf(ACCOUNT_NUMBER) === -1) return;                    // platba na jiný účet
-
-        var vsMatch = body.match(/(?:VS|variabiln\S* symbol)\s*:?\s*(\d{6})\b/i);
-        if (!vsMatch) return;
-        var vs = vsMatch[1], order = decodeVs_(vs);
-        if (!order) return;
-
-        var amountMatch = body.match(/(?:částka|objem)\s*:?\s*([\d\s .]+,?\d*)/i);
-        var amount = amountMatch ? parseFloat(amountMatch[1].replace(/[\s .]/g, "").replace(",", ".")) : NaN;
-        var payerMatch = body.match(/(?:název protiúčtu|protiúčet|plátce)\s*:?\s*([^\n\r]+)/i);
-        var notes = [];
-        var expected = order.seats.length * PRICE;
-        if (isNaN(amount)) notes.push("POZOR: nepodařilo se přečíst částku – zkontroluj.");
-        else if (amount < expected) notes.push("POZOR: zaplaceno " + amount + " Kč místo " + expected + " Kč.");
-
-        var data = sh.getDataRange().getValues(), row = -1;
-        // nejnovější podržení se stejným VS (platba v čase nebo i po vypršení)
-        for (var i = data.length - 1; i >= 1; i--) {
-          var st = data[i][COL.status - 1];
-          if (String(data[i][COL.vs - 1]) === vs && (st === "drženo" || st === "vypršelo" || st === "zrušeno")) { row = i; break; }
-          if (String(data[i][COL.vs - 1]) === vs && st === "zaplaceno" && data[i][COL.paid - 1] instanceof Date &&
-              data[i][COL.paid - 1].getTime() === msg.getDate().getTime()) return;   // už zapsáno
-        }
-
-        // nepřekrývá se platba s místy, která mezitím prodal někdo jiný?
-        var others = state_()[order.table] || { seats: [] };
-        var mine = row > 0 && !INACTIVE[data[row][COL.status - 1]] ? parseSeats_(data[row][COL.seats - 1]) : [];
-        var clash = order.seats.filter(function (s) { return others.seats.indexOf(s) !== -1 && mine.indexOf(s) === -1; });
-        if (clash.length) notes.push("KONFLIKT: místa " + clash.join(",") + " už prodaná – vrátit peníze nebo nabídnout jiná místa.");
-        var status = clash.length ? "zrušeno" : "zaplaceno";
-        var payer = payerMatch ? payerMatch[1].trim() : "";
-
-        if (row > 0) {
-          sh.getRange(row + 1, COL.name).setValue(payer);
-          sh.getRange(row + 1, COL.status).setValue(status);
-          sh.getRange(row + 1, COL.note).setValue([String(data[row][COL.note - 1] || "")].concat(notes).join(" "));
-          sh.getRange(row + 1, COL.paid).setValue(msg.getDate());
-          if (!isNaN(amount)) sh.getRange(row + 1, COL.amount).setValue(amount);
-          var note = String(data[row][COL.note - 1] || "");
-          if (note.indexOf("web ") === 0) {
-            updateLog_(note.slice(4, 12), { status: clash.length ? "KONFLIKT – vrátit peníze" : "zaplaceno", paid: msg.getDate(), payer: payer });
-          }
-        } else {
-          sh.appendRow([payer, "", order.table, order.seats.length, status, notes.join(" "), vs,
-                        isNaN(amount) ? "" : amount, msg.getDate(), msg.getDate(), order.seats.join(",")]);
-          sheet_("QR kódy").appendRow(["", "", order.table, order.seats.join(","), order.seats.length, isNaN(amount) ? "" : amount,
-                                       vs, clash.length ? "KONFLIKT – vrátit peníze" : "zaplaceno (bez QR z webu)", msg.getDate(), payer, ""]);
-        }
-      });
+      thread.getMessages().forEach(function (msg) { processPayment_(sh, msg); });
       thread.addLabel(label);
     });
   } finally {
     lock.releaseLock();
+  }
+}
+
+function processPayment_(sh, msg) {
+  var body = msg.getPlainBody();
+  if (body.indexOf(ACCOUNT_NUMBER) === -1) return;                    // platba na jiný účet
+
+  var vsMatch = body.match(/(?:VS|variabiln\S* symbol)\s*:?\s*(\d{6})\b/i);
+  if (!vsMatch) return;
+  var vs = vsMatch[1], order = decodeVs_(vs);
+  if (!order) return;
+
+  var amountMatch = body.match(/(?:částka|objem)\s*:?\s*([\d\s .]+,?\d*)/i);
+  var amount = amountMatch ? parseFloat(amountMatch[1].replace(/[\s .]/g, "").replace(",", ".")) : NaN;
+  var payerMatch = body.match(/(?:název protiúčtu|protiúčet|plátce)\s*:?\s*([^\n\r]+)/i);
+  var notes = [];
+  var expected = order.seats.length * PRICE;
+  if (isNaN(amount)) notes.push("POZOR: nepodařilo se přečíst částku – zkontroluj.");
+  else if (amount < expected) notes.push("POZOR: zaplaceno " + amount + " Kč místo " + expected + " Kč.");
+
+  var data = sh.getDataRange().getValues(), row = -1;
+  // nejnovější podržení se stejným VS (platba v čase nebo i po vypršení)
+  for (var i = data.length - 1; i >= 1; i--) {
+    var st = data[i][COL.status - 1];
+    if (String(data[i][COL.vs - 1]) !== vs) continue;
+    if (st === "drženo" || st === "vypršelo" || st === "zrušeno") { row = i; break; }
+    if (st === "zaplaceno" && data[i][COL.paid - 1] instanceof Date &&
+        data[i][COL.paid - 1].getTime() === msg.getDate().getTime()) return;   // už zapsáno
+  }
+
+  // nepřekrývá se platba s místy, která mezitím prodal někdo jiný?
+  var others = state_()[order.table] || { seats: [] };
+  var mine = row > 0 && isActive_(data[row], Date.now()) ? parseSeats_(data[row][COL.seats - 1]) : [];
+  var clash = order.seats.filter(function (s) { return others.seats.indexOf(s) !== -1 && mine.indexOf(s) === -1; });
+  if (clash.length) notes.push("KONFLIKT: místa " + clash.join(",") + " už prodaná – vrátit peníze nebo nabídnout jiná místa.");
+  var status = clash.length ? "zrušeno" : "zaplaceno";
+  var payer = payerMatch ? payerMatch[1].trim() : "";
+
+  if (row > 0) {
+    var oldNote = String(data[row][COL.note - 1] || "");
+    sh.getRange(row + 1, COL.name).setValue(payer);
+    sh.getRange(row + 1, COL.status).setValue(status);
+    sh.getRange(row + 1, COL.note).setValue([oldNote].concat(notes).join(" "));
+    sh.getRange(row + 1, COL.paid).setValue(msg.getDate());
+    if (!isNaN(amount)) sh.getRange(row + 1, COL.amount).setValue(amount);
+    if (oldNote.indexOf("web ") === 0) {
+      updateLog_(oldNote.slice(4, 12), { status: clash.length ? "KONFLIKT – vrátit peníze" : "zaplaceno", paid: msg.getDate(), payer: payer });
+    }
+  } else {
+    sh.appendRow([payer, "", order.table, order.seats.length, status, notes.join(" "), vs,
+                  isNaN(amount) ? "" : amount, msg.getDate(), msg.getDate(), order.seats.join(",")]);
+    sheet_("QR kódy").appendRow(["", "", order.table, order.seats.join(","), order.seats.length, isNaN(amount) ? "" : amount,
+                                 vs, clash.length ? "KONFLIKT – vrátit peníze" : "zaplaceno (bez QR z webu)", msg.getDate(), payer, ""]);
   }
 }
 
@@ -240,6 +271,7 @@ function setup() {
   ScriptApp.newTrigger("expireHolds").timeBased().everyMinutes(1).create();
   ScriptApp.newTrigger("checkPayments").timeBased().everyMinutes(5).create();
   if (!GmailApp.getUserLabelByName(PAID_LABEL)) GmailApp.createLabel(PAID_LABEL);
+  CacheService.getScriptCache().remove("caps");
 }
 
 /* ---------- pomocné funkce ---------- */
