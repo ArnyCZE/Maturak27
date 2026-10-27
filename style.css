@@ -518,3 +518,37 @@ footer .mark { font-family: "Archivo Black", sans-serif; color: var(--gold); let
 .t-note { color: var(--muted); font-size: .9rem; margin: .8rem 0 1.3rem; }
 .tcard .pill { animation: none; }
 .table:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 3px; }
+
+/* ---------- obdélníkové stoly na plánku ---------- */
+.plan .table {
+  aspect-ratio: auto;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(120,110,95,.8) calc(var(--p) * 1%), var(--gold-mid) 0);
+}
+.plan .table::before { inset: 2px; border-radius: 2px; }
+.plan .table.full { background: rgba(120,110,95,.6); }
+.plan .table.unknown { background: rgba(230,184,79,.35); }
+
+/* ---------- výběr míst a QR platba v okénku ---------- */
+.t-seats { width: 100%; max-width: 300px; height: auto; }
+.t-table { fill: #120e06; stroke: var(--gold); stroke-width: 2; }
+.t-table-label { fill: var(--gold); font: 800 13px "Montserrat", sans-serif; letter-spacing: .15em; text-anchor: middle; }
+.t-seat { animation: seatIn .4s var(--ease) both; transform-box: fill-box; transform-origin: center; }
+.t-seat circle { stroke-width: 2; transition: fill .2s, stroke .2s; }
+.t-seat text { font: 800 13px "Montserrat", sans-serif; text-anchor: middle; pointer-events: none; }
+.t-seat.free { cursor: pointer; }
+.t-seat.free circle { fill: var(--gold-mid); stroke: #fff1b8; }
+.t-seat.free text { fill: #1a1406; }
+.t-seat.sel { cursor: pointer; }
+.t-seat.sel circle { fill: #fff; stroke: var(--gold); stroke-width: 4; }
+.t-seat.sel text { fill: #1a1406; }
+.t-seat.taken circle { fill: #3a342a; stroke: #6b6253; }
+.t-seat.taken text { fill: #8a8070; }
+.t-seat:focus-visible circle { stroke: #fff; stroke-width: 4; }
+.t-buy:disabled { opacity: .45; cursor: default; transform: none; }
+.tcard .pill { border: 0; cursor: pointer; font-family: inherit; }
+.tcard .pill.secondary { background: transparent; color: var(--gold); border: 1px solid rgba(230,184,79,.45); margin-top: .4rem; }
+.t-qr { background: #fff; border-radius: 14px; padding: 10px; width: 230px; max-width: 100%; margin: .4rem auto 0; }
+.t-qr svg { display: block; width: 100%; height: auto; }
+.t-details { color: var(--muted); font-size: .88rem; margin-top: .4rem; }
+.t-details b { color: var(--text); }

@@ -5,7 +5,9 @@
    - Galerie: ochoz do „U“ kolem velkého sálu (nad podiem, nad barem, dole), schody v horních rozích,
      stoly po stranách v jedné řadě; stůl G 27 (naproti podiu nad barem) je zrušený – je tam projekce,
    - Levý a Pravý sál pod velkým sálem, mezi nimi WC.
-   Souřadnice jsou v jednotkách plánku, stůl = [označení, x, y]. Označení musí sedět se sloupcem „Stůl“ v tabulce.
+   Souřadnice jsou v jednotkách plánku, stůl = [označení, x, y] (střed obdélníkového stolu).
+   d = základní velikost stolu (šířka ≈ 1,15·d, výška ≈ 0,7·d).
+   Označení musí sedět se sloupcem „Stůl“ v tabulce.
    cls u zón: solid (podium), floor-dance (parket), void (prostor nad sálem), stairs (schody), faded (vidět zdola). */
 window.IDEON_PLAN = (function () {
   function row(prefix, nums, xs, y) {
@@ -25,7 +27,7 @@ window.IDEON_PLAN = (function () {
     halls: { VS: "Velký sál", LS: "Levý sál", PS: "Pravý sál", G: "Galerie" },
     floors: {
       ground: {
-        w: 120, h: 91, d: 4.3,
+        w: 120, h: 91, d: 3.6,
         rooms: [
           { x: 16, y: 1, w: 73, h: 58 },     // Velký sál
           { x: 1, y: 62, w: 39, h: 28 },     // Levý sál
@@ -62,18 +64,18 @@ window.IDEON_PLAN = (function () {
           // spodní pás pod parketem
           row("VS", [43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30], spread(20, 85, 14), 50),
           // Levý sál
-          column("LS", [47, 48, 49, 50], 5, 68, 5),
-          row("LS", [62, 63, 64, 65], [12, 18, 27, 33], 69),
-          row("LS", [58, 59, 60, 61], [12, 18, 27, 33], 76),
-          row("LS", [51, 52, 53, 54, 55, 56, 57], spread(10.5, 35.5, 7), 85.5),
+          column("LS", [47, 48, 49, 50], 5, 67.5, 4.3),
+          row("LS", [62, 63, 64, 65], [13, 19, 27, 33], 69),
+          row("LS", [58, 59, 60, 61], [13, 19, 27, 33], 76),
+          row("LS", [51, 52, 53, 54, 55, 56, 57], spread(5, 37, 7), 85.5),
           // Pravý sál
           row("PS", [66, 67, 68, 69], [84, 90, 96, 102], 68),
           row("PS", [74, 75, 76, 71, 72], [84, 90.5, 97, 104, 111], 76),
-          row("PS", [77, 78, 79, 80, 81, 82, 83, 73], spread(84.5, 114, 8), 85.5)
+          row("PS", [77, 78, 79, 80, 81, 82, 83, 73], spread(83.5, 116, 8), 85.5)
         )
       },
       gallery: {
-        w: 107, h: 70, d: 4.5,
+        w: 107, h: 70, d: 4,
         rooms: [
           { x: 1, y: 1, w: 105, h: 68 }      // ochoz galerie (vnitřek zakryje prostor nad sálem)
         ],
