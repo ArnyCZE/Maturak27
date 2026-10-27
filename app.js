@@ -162,7 +162,7 @@
   showTime("18:00", "Otevření sálu");
   steps[0].classList.add("active");
 
-  /* --- zasedací pořádek: veřejnost vidí jen obsazenost, nákupy a QR kódy jen přihlášené pokladní --- */
+  /* --- zasedací pořádek: veřejnost vidí obsazenost jednotlivých míst, nákupy a QR kódy jen přihlášené pokladní --- */
   var CFG = window.PLES_CONFIG;
   var API = CFG.api;
   var PAY = { iban: CFG.iban, account: CFG.account, price: CFG.price };
@@ -185,7 +185,7 @@
   var hold = null;          // { vs, token, expiresAt, amount, items, first, last } – právě podržený nákup
   var finished = false;     // QR je vyřízený (zaplaceno / vypršelo) – tlačítko dole jen zavře okénko
   var timerId = null;
-  var lastTable = null, openId = null, pickedId = null;
+  var lastTable = null, openId = null;
 
   /* Volání skriptu přes <script> (JSONP) – funguje z GitHub Pages bez potíží s prohlížeči. */
   function api(params) {
@@ -249,7 +249,7 @@
       el.setAttribute("role", "button");
       el.setAttribute("tabindex", "0");
       el.innerHTML = "<span>" + id.split(" ")[1] + "</span>";
-      if (id === openId || id === pickedId) el.classList.add("sel");
+      if (id === openId) el.classList.add("sel");
       el.addEventListener("click", function () { openTable(id, el); });
       el.addEventListener("keydown", function (e) { if (e.key === "Enter") openTable(id, el); });
     });
@@ -279,8 +279,7 @@
     });
     updateStats();
     renderFloor(currentFloor);
-    if (pickedId) showTableInfo(pickedId);
-    if (openId) drawSeats();
+    if (openId) { drawSeats(); showTableInfo(openId); }
     renderCart(dropped ? "Některá vybraná místa mezitím prodal někdo jiný – z nákupu jsem je odebral." : undefined);
   }
 
@@ -507,7 +506,7 @@
     });
   });
 
-  /* --- okénko stolu: pokladní v něm přidává místa do nákupu --- */
+  /* --- okénko stolu: všichni vidí, která místa jsou volná; pokladní v něm navíc přidává místa do nákupu --- */
   var modal = document.createElement("div");
   modal.className = "tmodal";
   modal.hidden = true;
@@ -518,6 +517,7 @@
       '<h3 id="t-title"></h3>' +
       '<svg class="t-seats" id="t-seats" viewBox="0 0 240 160"></svg>' +
       '<div class="t-free" id="t-free"></div>' +
+      '<div class="t-legend"><span><i class="free"></i>volné</span><span><i class="taken"></i>obsazené</span></div>' +
       '<p class="t-note" id="t-note"></p>' +
       '<button class="pill" id="t-done">Hotovo</button>' +
     '</div>';
@@ -555,7 +555,7 @@
   }
 
   function drawSeats() {
-    var svg = document.getElementById("t-seats"), s = tableState(openId), mine = cart[openId] || [];
+    var svg = document.getElementById("t-seats"), s = tableState(openId), mine = session ? (cart[openId] || []) : [];
     svg.innerHTML = "";
     var table = document.createElementNS(NS, "rect");
     table.setAttribute("x", 40); table.setAttribute("y", 52); table.setAttribute("width", 160); table.setAttribute("height", 56);
@@ -588,6 +588,13 @@
     });
 
     set("t-free", !loaded ? s.cap + " míst u stolu" : s.free === 0 ? "Obsazeno" : "Volno " + s.free + " z " + s.cap + " míst");
+    if (!session) {
+      set("t-note", !loaded ? "Aktuální obsazenost zatím nemáme načtenou." :
+        s.free === 0 ? "Tento stůl je už celý obsazený." :
+        "Volná místa: " + seatPositions(s.cap).map(function (p, i) { return i + 1; })
+          .filter(function (n) { return s.seats.indexOf(n) === -1; }).join(", ") + ".");
+      return;
+    }
     var total = itemsCount(cartItems());
     if (!live) set("t-note", OFFLINE);
     else if (s.free === 0) set("t-note", "Tento stůl je už celý obsazený.");
@@ -604,7 +611,6 @@
     renderCart("");
   }
 
-  /* Veřejnost: klik na stůl jen ukáže pod plánkem, kolik je u něj volných míst. */
   function showTableInfo(id) {
     var s = tableState(id);
     infoEl.textContent = "Stůl " + id + " · " + HALLS[id.split(" ")[0]] +
@@ -614,11 +620,11 @@
   function openTable(id, el) {
     planEl.querySelectorAll(".table.sel").forEach(function (x) { x.classList.remove("sel"); });
     el.classList.add("sel");
-    if (!session) { pickedId = id; showTableInfo(id); return; }
-    lastTable = el; openId = id; pickedId = null;
+    lastTable = el; openId = id;
     var s = tableState(id);
     set("t-hall", HALLS[id.split(" ")[0]] + " · stůl pro " + s.cap);
     set("t-title", "Stůl " + id);
+    set("t-done", session ? "Hotovo" : "Zavřít");
     drawSeats();
     showTableInfo(id);
     openModal(modal);
