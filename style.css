@@ -556,3 +556,17 @@ footer .mark { font-family: "Archivo Black", sans-serif; color: var(--gold); let
 /* odpočet rezervace v okénku */
 .t-timer { font-family: "Archivo Black", sans-serif; font-size: 1.05rem; color: var(--gold-mid); margin-bottom: .3rem; text-transform: uppercase; letter-spacing: .04em; }
 .t-timer.low { color: #ff6b6b; }
+
+/* ---------- pokladna: přihlášení a lišta ---------- */
+.cashier-bar { margin-top: .8rem; display: flex; flex-wrap: wrap; gap: .8rem; align-items: center; font-size: .85rem; color: var(--muted); }
+.cashier-bar b { color: var(--gold-mid); }
+.link-btn { background: none; border: 0; padding: 0; font: inherit; color: var(--gold); text-decoration: underline; cursor: pointer; }
+.login-card { text-align: left; }
+.login-card .t-hall, .login-card h3 { text-align: center; }
+.login-card label { display: block; font-weight: 800; font-size: .66rem; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); margin: .9rem 0 .35rem; }
+.login-card input {
+  width: 100%; font: inherit; font-size: 1rem; color: var(--text);
+  background: #000; border: 1px solid rgba(230,184,79,.35); border-radius: 12px; padding: .75rem .9rem;
+}
+.login-card .pill { display: block; width: 100%; margin-top: .4rem; }
+.t-seat.readonly { cursor: default; }

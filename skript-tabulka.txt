@@ -1,23 +1,25 @@
 /*
- * Maturák 2027 – rezervace míst na 5 minut a automatické zapisování zaplacených vstupenek
+ * Maturák 2027 – prodej vstupenek přes pokladní, 5min rezervace, QR platby a jejich záznam
  *
  * Jak to funguje:
- *  - Na webu si kupující vybere místa u stolu a klikne „Zaplatit QR kódem“.
- *    Web přes tenhle skript místa na 5 minut podrží (stav „drženo“) a ukáže QR kód s odpočtem.
- *  - Když platba nedorazí, místa se po 5 minutách sama uvolní (stav „vypršelo“).
+ *  - Plánek s obsazeností na webu vidí všichni.
+ *  - Místa rezervovat a generovat QR kód smí jen přihlášená pokladní (list „Pokladní“).
+ *  - Po vygenerování QR kódu jsou místa 5 minut držená (stav „drženo“), pak se sama uvolní.
+ *  - Každý vygenerovaný QR kód se zapíše do listu „QR kódy“ (kdo, kdy, stůl, místa, VS, stav, platba).
  *  - Skript každých 5 minut projde e-maily od Fio o příchozích platbách a zaplacená místa
  *    označí jako „zaplaceno“ – podle variabilního symbolu, ve kterém je stůl i čísla židlí.
- *  - Tabulku „Maturák 2027 – vstupenky (soukromé)“ si skript najde sám podle ID níže.
  *
  * Instalace / aktualizace:
  *   1. V Apps Scriptu smaž starý kód, vlož tenhle → Uložit.
- *   2. Nahoře vyber funkci „setup“ → Spustit → povolit přístup.
+ *   2. Nahoře vyber funkci „setup“ → Spustit (vytvoří listy „Pokladní“ a „QR kódy“, pokud chybí).
  *   3. Implementovat → Spravovat implementace → tužka → Verze: „Nová verze“ → Implementovat.
+ *   4. V listu „Pokladní“ vyplň pokladní: jméno, přihlašovací jméno, heslo, aktivní = ano.
  */
 
 var SPREADSHEET_ID = "1O-i3_C3p2RyKldJzpj98r_GLJsaVL6VH0yNoLWV0-v0";   // Maturák 2027 – vstupenky (soukromé)
 var PRICE = 450;                       // cena jedné vstupenky v Kč
 var HOLD_MINUTES = 5;                  // jak dlouho QR kód drží místa
+var SESSION_HOURS = 6;                 // jak dlouho platí přihlášení pokladní
 var ACCOUNT_NUMBER = "2203629553";     // účet Plesy 4FH (Fio)
 var PAID_LABEL = "ples-zpracovano";    // štítek v Gmailu pro už zpracované platby
 var HALL_BY_DIGIT = { "1": "VS", "2": "LS", "3": "PS", "4": "G" };
@@ -25,9 +27,13 @@ var DIGIT_BY_HALL = { VS: "1", LS: "2", PS: "3", G: "4" };
 
 // sloupce v listu Prodej (1 = A)
 var COL = { name: 1, contact: 2, table: 3, count: 4, status: 5, note: 6, vs: 7, amount: 8, created: 9, paid: 10, seats: 11 };
+// sloupce v listu QR kódy
+var LOG = { created: 1, cashier: 2, table: 3, seats: 4, count: 5, amount: 6, vs: 7, status: 8, paid: 9, payer: 10, token: 11 };
+var LOG_HEADER = ["Vygenerováno", "Pokladní", "Stůl", "Místa", "Počet", "Částka (Kč)", "VS", "Stav", "Zaplaceno", "Plátce", "Kód"];
+var CASHIER_HEADER = ["Jméno", "Přihlašovací jméno", "Heslo", "Aktivní (ano/ne)"];
 var INACTIVE = { "vypršelo": 1, "zrušeno": 1 };
 
-/* ---------- veřejné rozhraní pro web (JSONP přes GET, funguje i z GitHub Pages) ---------- */
+/* ---------- rozhraní pro web (JSONP přes GET, funguje i z GitHub Pages) ---------- */
 
 function doGet(e) {
   var p = (e && e.parameter) || {};
@@ -37,8 +43,14 @@ function doGet(e) {
   try {
     expireHolds();
     if (p.action === "state") result = { ok: true, tables: state_() };
-    else if (p.action === "hold") result = hold_(p.table, p.seats);
-    else if (p.action === "release") result = release_(p.vs, p.token);
+    else if (p.action === "login") result = login_(p.login, p.password);
+    else if (p.action === "hold" || p.action === "release" || p.action === "check") {
+      var cashier = cashierFromSession_(p.session);
+      if (!cashier) result = { ok: false, error: "Přihlášení vypršelo – přihlas se prosím znovu.", loggedOut: true };
+      else if (p.action === "hold") result = hold_(p.table, p.seats, cashier);
+      else if (p.action === "release") result = release_(p.vs, p.token);
+      else result = { ok: true, name: cashier };
+    }
     else result = { ok: true, info: "Maturák 2027 – rezervace běží." };
   } catch (err) {
     result = { ok: false, error: "Chyba skriptu: " + err.message };
@@ -51,6 +63,38 @@ function doGet(e) {
   }
   return ContentService.createTextOutput(json).setMimeType(ContentService.MimeType.JSON);
 }
+
+/* ---------- přihlášení pokladních ---------- */
+
+function login_(login, password) {
+  login = String(login || "").trim().toLowerCase();
+  var cache = CacheService.getScriptCache();
+  var failKey = "fail_" + login;
+  var fails = parseInt(cache.get(failKey) || "0", 10);
+  if (fails >= 5) return { ok: false, error: "Příliš mnoho pokusů – zkus to za 10 minut." };
+
+  var rows = sheet_("Pokladní").getDataRange().getValues();
+  for (var i = 1; i < rows.length; i++) {
+    var r = rows[i];
+    var active = String(r[3] || "").trim().toLowerCase();
+    if (String(r[1] || "").trim().toLowerCase() === login && login &&
+        String(r[2] || "") !== "" && String(r[2]) === String(password || "") && active !== "ne") {
+      var session = Utilities.getUuid().replace(/-/g, "");
+      cache.put("s_" + session, String(r[0] || login), SESSION_HOURS * 3600);
+      cache.remove(failKey);
+      return { ok: true, session: session, name: String(r[0] || login) };
+    }
+  }
+  cache.put(failKey, String(fails + 1), 600);
+  return { ok: false, error: "Špatné přihlašovací jméno nebo heslo." };
+}
+
+function cashierFromSession_(session) {
+  if (!session) return null;
+  return CacheService.getScriptCache().get("s_" + session);
+}
+
+/* ---------- obsazenost a rezervace ---------- */
 
 /* Kapacita a obsazené (zaplacené, rezervované i právě držené) židle u každého stolu. */
 function state_() {
@@ -73,7 +117,7 @@ function state_() {
   return out;
 }
 
-function hold_(table, seatsParam) {
+function hold_(table, seatsParam, cashier) {
   var seats = parseSeats_(seatsParam);
   var tables = state_(), t = tables[table];
   if (!t) return { ok: false, error: "Stůl neexistuje." };
@@ -84,18 +128,20 @@ function hold_(table, seatsParam) {
 
   var vs = encodeVs_(table, seats);
   var token = Utilities.getUuid().slice(0, 8);
-  var now = new Date();
-  sheet_("Prodej").appendRow(["", "", table, seats.length, "drženo", "web " + token, vs, seats.length * PRICE, now, "", seats.join(",")]);
-  return { ok: true, vs: vs, token: token, amount: seats.length * PRICE, expiresAt: now.getTime() + HOLD_MINUTES * 60 * 1000 };
+  var now = new Date(), amount = seats.length * PRICE;
+  sheet_("Prodej").appendRow(["", "pokladní: " + cashier, table, seats.length, "drženo", "web " + token, vs, amount, now, "", seats.join(",")]);
+  sheet_("QR kódy").appendRow([now, cashier, table, seats.join(","), seats.length, amount, vs, "drženo", "", "", token]);
+  return { ok: true, vs: vs, token: token, amount: amount, expiresAt: now.getTime() + HOLD_MINUTES * 60 * 1000 };
 }
 
-/* Uvolní podržená místa, když kupující zavře QR kód (jen ten, kdo je podržel – podle tokenu). */
+/* Uvolní podržená místa, když pokladní QR kód zruší (jen ta, která podržel – podle kódu). */
 function release_(vs, token) {
   var sh = sheet_("Prodej"), data = sh.getDataRange().getValues();
   for (var i = data.length - 1; i >= 1; i--) {
     var r = data[i];
     if (String(r[COL.vs - 1]) === String(vs) && r[COL.status - 1] === "drženo" && r[COL.note - 1] === "web " + token) {
       sh.getRange(i + 1, COL.status).setValue("zrušeno");
+      updateLog_(token, { status: "zrušeno" });
       return { ok: true };
     }
   }
@@ -112,6 +158,8 @@ function expireHolds() {
     var created = data[i][COL.created - 1];
     if (data[i][COL.status - 1] === "drženo" && created instanceof Date && created.getTime() < limit) {
       sh.getRange(i + 1, COL.status).setValue("vypršelo");
+      var note = String(data[i][COL.note - 1] || "");
+      if (note.indexOf("web ") === 0) updateLog_(note.slice(4), { status: "vypršelo" });
     }
   }
 }
@@ -163,12 +211,18 @@ function checkPayments() {
         if (row > 0) {
           sh.getRange(row + 1, COL.name).setValue(payer);
           sh.getRange(row + 1, COL.status).setValue(status);
-          sh.getRange(row + 1, COL.note).setValue(notes.join(" "));
+          sh.getRange(row + 1, COL.note).setValue([String(data[row][COL.note - 1] || "")].concat(notes).join(" "));
           sh.getRange(row + 1, COL.paid).setValue(msg.getDate());
           if (!isNaN(amount)) sh.getRange(row + 1, COL.amount).setValue(amount);
+          var note = String(data[row][COL.note - 1] || "");
+          if (note.indexOf("web ") === 0) {
+            updateLog_(note.slice(4, 12), { status: clash.length ? "KONFLIKT – vrátit peníze" : "zaplaceno", paid: msg.getDate(), payer: payer });
+          }
         } else {
           sh.appendRow([payer, "", order.table, order.seats.length, status, notes.join(" "), vs,
                         isNaN(amount) ? "" : amount, msg.getDate(), msg.getDate(), order.seats.join(",")]);
+          sheet_("QR kódy").appendRow(["", "", order.table, order.seats.join(","), order.seats.length, isNaN(amount) ? "" : amount,
+                                       vs, clash.length ? "KONFLIKT – vrátit peníze" : "zaplaceno (bez QR z webu)", msg.getDate(), payer, ""]);
         }
       });
       thread.addLabel(label);
@@ -178,16 +232,40 @@ function checkPayments() {
   }
 }
 
-/* Spusť jednou ručně: nastaví časovače a štítek v Gmailu. */
+/* Spusť jednou ručně: vytvoří chybějící listy, nastaví časovače a štítek v Gmailu. */
 function setup() {
+  ensureSheet_("Pokladní", CASHIER_HEADER);
+  ensureSheet_("QR kódy", LOG_HEADER);
   ScriptApp.getProjectTriggers().forEach(function (t) { ScriptApp.deleteTrigger(t); });
   ScriptApp.newTrigger("expireHolds").timeBased().everyMinutes(1).create();
   ScriptApp.newTrigger("checkPayments").timeBased().everyMinutes(5).create();
   if (!GmailApp.getUserLabelByName(PAID_LABEL)) GmailApp.createLabel(PAID_LABEL);
-  sheet_("Stoly");   // ověří, že je tabulka dostupná
 }
 
 /* ---------- pomocné funkce ---------- */
+
+/* Upraví řádek v listu QR kódy podle kódu (tokenu) rezervace. */
+function updateLog_(token, fields) {
+  var sh = sheet_("QR kódy"), data = sh.getDataRange().getValues();
+  for (var i = data.length - 1; i >= 1; i--) {
+    if (String(data[i][LOG.token - 1]) !== String(token)) continue;
+    if (fields.status) sh.getRange(i + 1, LOG.status).setValue(fields.status);
+    if (fields.paid) sh.getRange(i + 1, LOG.paid).setValue(fields.paid);
+    if (fields.payer) sh.getRange(i + 1, LOG.payer).setValue(fields.payer);
+    return;
+  }
+}
+
+function ensureSheet_(name, header) {
+  var ss = spreadsheet_ || (spreadsheet_ = SpreadsheetApp.openById(SPREADSHEET_ID));
+  var sh = ss.getSheetByName(name);
+  if (!sh) {
+    sh = ss.insertSheet(name);
+    sh.getRange(1, 1, 1, header.length).setValues([header]).setFontWeight("bold").setBackground("#f2d98c");
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
 
 /* VS = číslice sálu + 2 číslice stolu + 3 číslice „masky“ míst (bit 1 = místo 1 …), např. 112005 = VS 12, místa 1 a 3. */
 function encodeVs_(table, seats) {
@@ -213,6 +291,10 @@ var spreadsheet_ = null;
 function sheet_(name) {
   spreadsheet_ = spreadsheet_ || SpreadsheetApp.openById(SPREADSHEET_ID);
   var sh = spreadsheet_.getSheetByName(name);
-  if (!sh) throw new Error("V tabulce chybí list „" + name + "“.");
+  if (!sh) {
+    if (name === "Pokladní") return ensureSheet_(name, CASHIER_HEADER);
+    if (name === "QR kódy") return ensureSheet_(name, LOG_HEADER);
+    throw new Error("V tabulce chybí list „" + name + "“.");
+  }
   return sh;
 }
