@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Back to the Future – Maturitní ples 2027 | Gymnázium Pardubice, Dašická</title>
+<meta name="description" content="Maturitní ples tříd 4. F a 4. H Gymnázia Pardubice, Dašická – Back to the Future. Sobota 30. ledna 2027, Ideon Pardubice.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Monoton&family=Orbitron:wght@500;800&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #0b0618;
+    --deep: #1a0b3a;
+    --orange: #ff7a18;
+    --yellow: #ffd200;
+    --red: #ff2e4d;
+    --cyan: #23e5ff;
+    --pink: #ff3fd8;
+    --text: #f3ecff;
+    --muted: #b8a9d9;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: "Inter", sans-serif;
+    background: var(--night);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  a { color: var(--cyan); }
+
+  /* ---------- úvod ---------- */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 4rem 1.5rem 9rem;
+    overflow: hidden;
+    background:
+      radial-gradient(ellipse at 50% 120%, rgba(255,122,24,.45), transparent 60%),
+      linear-gradient(180deg, #05020d 0%, var(--deep) 55%, #3b0d4d 100%);
+  }
+  /* neonová mřížka */
+  .hero::after {
+    content: "";
+    position: absolute;
+    left: -50%; right: -50%; bottom: 0;
+    height: 45%;
+    background:
+      repeating-linear-gradient(90deg, rgba(35,229,255,.55) 0 2px, transparent 2px 80px),
+      repeating-linear-gradient(0deg, rgba(35,229,255,.55) 0 2px, transparent 2px 50px);
+    transform: perspective(300px) rotateX(60deg);
+    transform-origin: bottom;
+    mask-image: linear-gradient(to top, #000 30%, transparent);
+    -webkit-mask-image: linear-gradient(to top, #000 30%, transparent);
+    animation: drive 1.2s linear infinite;
+  }
+  @keyframes drive { to { background-position: 0 50px, 0 50px; } }
+
+  .school {
+    font-family: "Orbitron", sans-serif;
+    letter-spacing: .35em;
+    text-transform: uppercase;
+    font-size: .8rem;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+    position: relative; z-index: 1;
+  }
+  .title {
+    position: relative; z-index: 1;
+    font-family: "Orbitron", sans-serif;
+    font-weight: 800;
+    font-style: italic;
+    text-transform: uppercase;
+    line-height: .95;
+    transform: skewY(-6deg);
+  }
+  .title .small {
+    display: block;
+    font-size: clamp(1.6rem, 5vw, 3rem);
+    color: var(--yellow);
+    text-shadow: 0 0 12px rgba(255,210,0,.6);
+  }
+  .title .big {
+    display: block;
+    font-size: clamp(3.2rem, 13vw, 8.5rem);
+    background: linear-gradient(180deg, var(--yellow) 0%, var(--orange) 50%, var(--red) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 4px 0 #6b0f1a) drop-shadow(0 0 25px rgba(255,90,30,.55));
+  }
+  .subtitle {
+    position: relative; z-index: 1;
+    margin-top: 2.5rem;
+    font-family: "Monoton", cursive;
+    font-size: clamp(1.2rem, 4vw, 2.2rem);
+    color: var(--pink);
+    text-shadow: 0 0 8px var(--pink), 0 0 20px var(--pink);
+  }
+  .when {
+    position: relative; z-index: 1;
+    margin-top: 1.2rem;
+    font-family: "Orbitron", sans-serif;
+    font-size: clamp(1rem, 3vw, 1.4rem);
+    color: var(--cyan);
+    text-shadow: 0 0 10px rgba(35,229,255,.7);
+  }
+
+  /* ohnivé stopy */
+  .trails {
+    position: absolute; z-index: 1;
+    bottom: 3.2rem; left: 50%;
+    width: min(420px, 70vw);
+    transform: translateX(-50%);
+    display: flex; justify-content: space-between;
+  }
+  .trails span {
+    width: 6px; height: 110px;
+    background: linear-gradient(to top, transparent, var(--orange), var(--yellow));
+    border-radius: 3px;
+    filter: blur(1px) drop-shadow(0 0 8px var(--orange));
+    animation: flicker .15s infinite alternate;
+  }
+  @keyframes flicker { from { opacity: .75; } to { opacity: 1; } }
+
+  /* ---------- sekce ---------- */
+  section { padding: 5rem 1.5rem; }
+  .wrap { max-width: 900px; margin: 0 auto; }
+  h2 {
+    font-family: "Orbitron", sans-serif;
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: clamp(1.6rem, 5vw, 2.4rem);
+    text-align: center;
+    margin-bottom: 2.5rem;
+    color: var(--yellow);
+    text-shadow: 0 0 14px rgba(255,210,0,.45);
+  }
+
+  /* odpočet – „časové displeje“ */
+  .countdown { background: var(--deep); }
+  .time-circuits {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  .unit {
+    background: #120620;
+    border: 2px solid #3a2560;
+    border-radius: 8px;
+    padding: 1rem .5rem;
+    text-align: center;
+  }
+  .unit .num {
+    display: block;
+    font-family: "Orbitron", sans-serif;
+    font-size: clamp(1.8rem, 7vw, 3rem);
+    color: var(--red);
+    text-shadow: 0 0 10px rgba(255,46,77,.8);
+  }
+  .unit .lbl {
+    font-size: .75rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .countdown p.note { text-align: center; margin-top: 1.5rem; color: var(--muted); }
+
+  /* informace */
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.2rem;
+  }
+  .card {
+    background: linear-gradient(160deg, rgba(255,63,216,.12), rgba(35,229,255,.08));
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 14px;
+    padding: 1.5rem;
+    text-align: center;
+  }
+  .card .icon { font-size: 2rem; }
+  .card h3 {
+    font-family: "Orbitron", sans-serif;
+    font-size: 1rem;
+    color: var(--cyan);
+    margin: .6rem 0 .3rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+  }
+
+  /* program – časová osa */
+  .program { background: var(--deep); }
+  .timeline { list-style: none; position: relative; max-width: 640px; margin: 0 auto; }
+  .timeline::before {
+    content: "";
+    position: absolute; left: 92px; top: 0; bottom: 0;
+    width: 3px;
+    background: linear-gradient(var(--yellow), var(--orange), var(--red));
+    box-shadow: 0 0 10px var(--orange);
+  }
+  .timeline li {
+    position: relative;
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 2.2rem;
+    padding: .9rem 0;
+  }
+  .timeline li::before {
+    content: "";
+    position: absolute; left: 86px; top: 1.35rem;
+    width: 15px; height: 15px;
+    border-radius: 50%;
+    background: var(--yellow);
+    box-shadow: 0 0 12px var(--yellow);
+  }
+  .timeline time {
+    font-family: "Orbitron", sans-serif;
+    color: var(--red);
+    text-shadow: 0 0 8px rgba(255,46,77,.6);
+    text-align: right;
+    padding-top: .1rem;
+  }
+  .timeline strong { display: block; color: var(--text); }
+  .timeline span { color: var(--muted); font-size: .95rem; }
+  .draft {
+    text-align: center;
+    margin-top: 2rem;
+    font-size: .85rem;
+    color: var(--muted);
+  }
+
+  /* vstupenky */
+  .tickets { text-align: center; }
+  .tickets p { max-width: 560px; margin: 0 auto 1.5rem; color: var(--muted); }
+  .btn {
+    display: inline-block;
+    font-family: "Orbitron", sans-serif;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    text-decoration: none;
+    color: var(--night);
+    background: linear-gradient(90deg, var(--yellow), var(--orange));
+    padding: .9rem 2rem;
+    border-radius: 999px;
+    box-shadow: 0 0 20px rgba(255,122,24,.6);
+  }
+
+  /* sponzoři */
+  .sponsors { background: var(--deep); }
+  .sponsor-list {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem;
+  }
+  .sponsor-list div {
+    padding: 1rem 1.6rem;
+    border: 1px dashed rgba(255,255,255,.25);
+    border-radius: 10px;
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  footer {
+    text-align: center;
+    padding: 3rem 1.5rem;
+    color: var(--muted);
+    font-size: .9rem;
+    border-top: 1px solid rgba(255,255,255,.08);
+  }
+  footer .quote {
+    font-family: "Orbitron", sans-serif;
+    color: var(--yellow);
+    margin-bottom: .8rem;
+  }
+
+  @media (max-width: 520px) {
+    .time-circuits { grid-template-columns: repeat(2, 1fr); }
+    .timeline::before { left: 66px; }
+    .timeline li { grid-template-columns: 56px 1fr; gap: 1.8rem; }
+    .timeline li::before { left: 60px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <p class="school">Gymnázium Pardubice, Dašická · 4. F &amp; 4. H</p>
+  <h1 class="title">
+    <span class="small">Back to the</span>
+    <span class="big">Future</span>
+  </h1>
+  <p class="subtitle">Maturitní ples 2027</p>
+  <p class="when">Sobota 30. 1. 2027 · Ideon Pardubice</p>
+  <div class="trails" aria-hidden="true"><span></span><span></span></div>
+</header>
+
+<section class="countdown">
+  <div class="wrap">
+    <h2>Odpočet do startu</h2>
+    <div class="time-circuits">
+      <div class="unit"><span class="num" id="d">--</span><span class="lbl">dní</span></div>
+      <div class="unit"><span class="num" id="h">--</span><span class="lbl">hodin</span></div>
+      <div class="unit"><span class="num" id="m">--</span><span class="lbl">minut</span></div>
+      <div class="unit"><span class="num" id="s">--</span><span class="lbl">sekund</span></div>
+    </div>
+    <p class="note">Až rychlost dosáhne 88 mil za hodinu, uvidíte pořádnou jízdu.</p>
+  </div>
+</section>
+
+<section class="info">
+  <div class="wrap">
+    <h2>Kdy a kde</h2>
+    <div class="info-grid">
+      <div class="card">
+        <div class="icon">📅</div>
+        <h3>Datum</h3>
+        <p>Sobota 30. ledna 2027</p>
+      </div>
+      <div class="card">
+        <div class="icon">🕖</div>
+        <h3>Začátek</h3>
+        <p>Vstup od 19:00</p>
+      </div>
+      <div class="card">
+        <div class="icon">📍</div>
+        <h3>Místo</h3>
+        <p>Ideon Pardubice</p>
+      </div>
+      <div class="card">
+        <div class="icon">👔</div>
+        <h3>Dress code</h3>
+        <p>Společenský – a klidně s retro šmrncem 80. let</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="program" id="program">
+  <div class="wrap">
+    <h2>Program večera</h2>
+    <ol class="timeline">
+      <li><time>19:00</time><div><strong>Otevření sálu</strong><span>Příjezd hostů, uvítací drink a fotokoutek</span></div></li>
+      <li><time>19:30</time><div><strong>Slavnostní zahájení</strong><span>Úvodní slovo moderátora a vedení školy</span></div></li>
+      <li><time>19:45</time><div><strong>Polonéza</strong><span>Nástup maturantů 4. F a 4. H</span></div></li>
+      <li><time>20:15</time><div><strong>Šerpování 4. F</strong><span>Předávání šerp s třídním učitelem</span></div></li>
+      <li><time>20:45</time><div><strong>Šerpování 4. H</strong><span>Předávání šerp s třídním učitelem</span></div></li>
+      <li><time>21:15</time><div><strong>Předtančení</strong><span>Vystoupení maturantů</span></div></li>
+      <li><time>21:30</time><div><strong>Volná zábava</strong><span>Tanec, živá hudba a DJ</span></div></li>
+      <li><time>22:30</time><div><strong>Tombola</strong><span>Losování cen od našich sponzorů</span></div></li>
+      <li><time>00:00</time><div><strong>Půlnoční překvapení</strong><span>Návrat do budoucnosti… víc neprozradíme</span></div></li>
+      <li><time>02:00</time><div><strong>Konec plesu</strong><span>Cesta zpátky do přítomnosti</span></div></li>
+    </ol>
+    <p class="draft">Program se může ještě upřesnit.</p>
+  </div>
+</section>
+
+<section class="tickets" id="vstupenky">
+  <div class="wrap">
+    <h2>Vstupenky</h2>
+    <p>Informace o prodeji vstupenek zveřejníme brzy. Sledujte tento web.</p>
+    <a class="btn" href="#program">Prohlédnout program</a>
+  </div>
+</section>
+
+<section class="sponsors">
+  <div class="wrap">
+    <h2>Děkujeme sponzorům</h2>
+    <div class="sponsor-list">
+      <div>Ploty Dobrý</div>
+      <div>2VV s.r.o.</div>
+      <div>Pivovar Svijany</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p class="quote">„Kam jedeme, tam silnice nepotřebujeme.“</p>
+  <p>Maturitní ples tříd 4. F a 4. H · Gymnázium Pardubice, Dašická 1083</p>
+</footer>
+
+<script>
+  /* odpočet do začátku plesu (30. 1. 2027 19:00 středoevropského času) */
+  (function () {
+    var target = new Date("2027-01-30T19:00:00+01:00").getTime();
+    var ids = ["d", "h", "m", "s"];
+
+    function pad(n) { return n < 10 ? "0" + n : String(n); }
+
+    function tick() {
+      var diff = Math.max(0, target - Date.now());
+      var values = [
+        Math.floor(diff / 86400000),
+        Math.floor(diff / 3600000) % 24,
+        Math.floor(diff / 60000) % 60,
+        Math.floor(diff / 1000) % 60
+      ];
+      ids.forEach(function (id, i) {
+        document.getElementById(id).textContent = i === 0 ? values[i] : pad(values[i]);
+      });
+    }
+
+    tick();
+    setInterval(tick, 1000);
+  })();
+</script>
+
+</body>
+</html>
