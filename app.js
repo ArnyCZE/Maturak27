@@ -162,7 +162,7 @@
   showTime("18:00", "Otevření sálu");
   steps[0].classList.add("active");
 
-  /* --- zasedací pořádek: plánek pro všechny, rezervace a QR kódy jen pro přihlášené pokladní --- */
+  /* --- zasedací pořádek: veřejnost vidí jen obsazenost, rezervace a QR kódy jen přihlášené pokladní --- */
   var CFG = window.PLES_CONFIG;
   var API = CFG.api;
   var PAY = { iban: CFG.iban, account: CFG.account, price: CFG.price };
@@ -241,7 +241,7 @@
       el.setAttribute("role", "button");
       el.setAttribute("tabindex", "0");
       el.innerHTML = "<span>" + id.split(" ")[1] + "</span>";
-      if (id === openId) el.classList.add("sel");
+      if (id === openId || id === pickedId) el.classList.add("sel");
       el.addEventListener("click", function () { openTable(id, el); });
       el.addEventListener("keydown", function (e) { if (e.key === "Enter") openTable(id, el); });
     });
@@ -263,6 +263,7 @@
     loaded = true;
     updateStats();
     renderFloor(currentFloor);
+    if (pickedId) showTableInfo(pickedId);
     if (openId && !hold && !document.getElementById("t-pick").hidden) drawSeats();
   }
 
@@ -374,7 +375,6 @@
         document.getElementById("l-pass").value = "";
         renderCashierBar();
         closeLogin();
-        if (openId) drawSeats();
       });
   });
 
@@ -383,10 +383,10 @@
     localStorage.removeItem("ples-session");
     localStorage.removeItem("ples-name");
     renderCashierBar();
-    if (openId && !hold) drawSeats();
+    if (openId && !hold) { hold = null; finished = true; closeTable(); }
   }
 
-  /* --- okénko stolu: obsazenost pro všechny; výběr míst, 5min rezervace a QR jen pro pokladní --- */
+  /* --- okénko stolu pro pokladní: výběr míst, jméno kupujícího, 5min rezervace a QR kód --- */
   var modal = document.createElement("div");
   modal.className = "tmodal";
   modal.hidden = true;
@@ -417,7 +417,7 @@
     '</div>';
   document.body.appendChild(modal);
 
-  var lastTable = null, openId = null, selected = [];
+  var lastTable = null, openId = null, pickedId = null, selected = [];
   var hold = null;          // { vs, token, expiresAt, amount, seats, buyer } – právě podržená místa
   var finished = false;     // QR je vyřízený (zaplaceno / vypršelo) – tlačítko dole jen zavře okénko
   var timerId = null;
@@ -483,11 +483,6 @@
     set("t-free", !loaded ? s.cap + " míst u stolu" : s.free === 0 ? "Obsazeno" : "Volno " + s.free + " z " + s.cap + " míst");
     btn.hidden = true;
     buyerBox.hidden = true;
-    if (!session) {
-      set("t-note", s.free === 0 ? "Tento stůl je už celý obsazený." :
-        "Vstupenky (" + PAY.price + " Kč) prodávají maturanti 4. F a 4. H – u nich si vybereš místa a zaplatíš QR kódem.");
-      return;
-    }
     if (!live) { set("t-note", "Rezervační systém teď neodpovídá – zkus to prosím za chvíli."); return; }
     if (s.free === 0) { set("t-note", errorText || "Tento stůl je už celý obsazený."); return; }
     btn.hidden = false;
@@ -614,17 +609,25 @@
     });
   });
 
+  /* Veřejnost: klik na stůl jen ukáže pod plánkem, kolik je u něj volných míst. */
+  function showTableInfo(id) {
+    var s = tableState(id);
+    infoEl.textContent = "Stůl " + id + " · " + HALLS[id.split(" ")[0]] +
+      (!loaded ? "" : s.free === 0 ? " · obsazeno" : " · volno " + s.free + " z " + s.cap + " míst");
+  }
+
   function openTable(id, el) {
     planEl.querySelectorAll(".table.sel").forEach(function (x) { x.classList.remove("sel"); });
     el.classList.add("sel");
-    lastTable = el; openId = id; selected = []; hold = null; finished = false;
+    if (!session) { pickedId = id; showTableInfo(id); return; }
+    lastTable = el; openId = id; pickedId = null; selected = []; hold = null; finished = false;
     var s = tableState(id);
     set("t-hall", HALLS[id.split(" ")[0]] + " · stůl pro " + s.cap);
     set("t-title", "Stůl " + id);
     document.getElementById("t-pay").hidden = true;
     document.getElementById("t-pick").hidden = false;
     drawSeats();
-    infoEl.textContent = "Stůl " + id + (loaded ? " · volno " + s.free + " z " + s.cap : "");
+    showTableInfo(id);
 
     modal.hidden = false;
     requestAnimationFrame(function () { modal.classList.add("open"); });
