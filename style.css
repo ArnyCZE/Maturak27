@@ -856,3 +856,7 @@ a.sponsor .s-name::after { content: " ↗"; opacity: .6; }
   .sponsor .s-logo img { max-height: 52px; }
   .sponsor .s-logo.s-text { font-size: .78rem; }
 }
+
+/* sponzoři: pod logem celý oficiální název normálním písmem */
+.sponsor .s-name { text-transform: none; letter-spacing: .02em; font-size: .8rem; font-weight: 600; line-height: 1.3; min-height: 2.6em; display: flex; align-items: center; justify-content: center; }
+a.sponsor .s-name::after { margin-left: .3em; }
