@@ -755,3 +755,15 @@ footer .mark { font-family: "Archivo Black", sans-serif; color: var(--gold); let
   .plan-wrap { padding: .5rem; overflow: hidden; }
   .swipe-hint { display: none !important; }
 }
+
+/* ---------- plánek pro mobil nakreslený na výšku (plan.js → mobile) ---------- */
+.plan.mobile .room { border-radius: 10px; border-width: 1.5px; box-shadow: inset 0 0 24px rgba(0,0,0,.6); }
+.plan.mobile .zone {
+  font-size: .5rem; letter-spacing: .1em; line-height: 1.2; padding: 2px;
+  word-break: normal; overflow-wrap: normal; hyphens: none; border-radius: 7px;
+}
+.plan.mobile .zone.solid { letter-spacing: .14em; }
+.plan.mobile .hall-name { writing-mode: horizontal-tb; font-size: .48rem; letter-spacing: .14em; }
+.plan.mobile .table { border-radius: 4px; }
+.plan.mobile .table span { font-size: .56rem; }
+.plan.mobile .table:hover, .plan.mobile .table.sel { transform: translate(-50%, -50%) scale(1.3); }

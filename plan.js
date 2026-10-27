@@ -8,7 +8,8 @@
    Souřadnice jsou v jednotkách plánku, stůl = [označení, x, y] (střed obdélníkového stolu).
    d = základní velikost stolu (šířka ≈ 1,15·d, výška ≈ 0,7·d).
    Označení musí sedět se sloupcem „Stůl“ v tabulce.
-   cls u zón: solid (podium), floor-dance (parket), void (prostor nad sálem), stairs (schody), faded (vidět zdola). */
+   cls u zón: solid (podium), floor-dance (parket), void (prostor nad sálem), stairs (schody), faded (vidět zdola).
+   „mobile“ = stejné sály nakreslené na výšku pro telefony (podium nahoře), s kratšími popisky. */
 window.IDEON_PLAN = (function () {
   function row(prefix, nums, xs, y) {
     return nums.map(function (n, i) { return [prefix + " " + n, xs[i], y]; });
@@ -16,11 +17,17 @@ window.IDEON_PLAN = (function () {
   function column(prefix, nums, x, y0, step) {
     return nums.map(function (n, i) { return [prefix + " " + n, x, y0 + i * step]; });
   }
+  function colAt(prefix, nums, x, ys) {
+    return nums.map(function (n, i) { return [prefix + " " + n, x, ys[i]]; });
+  }
   function spread(from, to, count) {
     var out = [], step = (to - from) / (count - 1);
     for (var i = 0; i < count; i++) out.push(+(from + i * step).toFixed(2));
     return out;
   }
+  // svislá poloha stolů velkého sálu na mobilu: vodorovná osa plánku (x 21–85) → shora dolů (y 18–90)
+  function vsY(x) { return +(18 + (x - 21) * 72 / 64).toFixed(2); }
+  var galleryRow = spread(20, 66, 8);   // 8 míst v řadě na mobilní galerii
 
   return {
     seats: { VS: 6, LS: 8, PS: 8, G: 8 },
@@ -100,6 +107,85 @@ window.IDEON_PLAN = (function () {
           // spodní strana
           row("G", [9, 10, 11, 12, 13, 14, 15], spread(14, 48, 7), 63.5),
           row("G", [16, 17, 18, 19, 20, 21, 22], spread(60, 94, 7), 63.5)
+        )
+      }
+    },
+
+    /* Na výšku pro mobil: podium nahoře, Levý a Pravý sál vlevo pod sebou, bar a šatna maturantů pod velkým sálem. */
+    mobile: {
+      ground: {
+        w: 100, h: 150, d: 5,
+        rooms: [
+          { x: 34, y: 13, w: 65, h: 85 },    // Velký sál
+          { x: 1, y: 13, w: 31, h: 49 },     // Levý sál
+          { x: 1, y: 77, w: 31, h: 72 }      // Pravý sál
+        ],
+        zones: [
+          { t: "Foto", x: 1, y: 1, w: 15, h: 9 },
+          { t: "Šatna 2", x: 18, y: 1, w: 18, h: 9 },
+          { t: "Šatna 1", x: 38, y: 1, w: 18, h: 9 },
+          { t: "WC účink.", x: 58, y: 1, w: 18, h: 9 },
+          { t: "Schody", x: 78, y: 1, w: 21, h: 9, cls: "stairs" },
+          { t: "Podium · kapela", x: 45, y: 15.5, w: 38, h: 7, cls: "solid" },
+          { t: "Taneční parket", x: 45, y: 24, w: 38, h: 33, cls: "floor-dance" },
+          { t: "WC", x: 6, y: 65, w: 21, h: 9 },
+          { t: "Bar", x: 36, y: 101, w: 20, h: 13 },
+          { t: "Šatna maturantů", x: 58, y: 101, w: 22, h: 20 },
+          { t: "Schody", x: 82, y: 101, w: 17, h: 10, cls: "stairs" },
+          { t: "Foto", x: 21, y: 128, w: 10, h: 9 }
+        ],
+        names: [
+          { t: "Velký sál · stoly po 6", x: 36, y: 94.2 },
+          { t: "Levý sál · po 8", x: 3, y: 58.4 },
+          { t: "Pravý sál · po 8", x: 3, y: 145.4 }
+        ],
+        tables: [].concat(
+          // pravý okraj velkého sálu: VS 1–9 a 10–13
+          colAt("VS", [1, 2, 3, 4, 5, 6, 7, 8, 9], 94, spread(18, 90, 9)),
+          colAt("VS", [10, 11, 12, 13], 87.5, [42, 52, 64, 78].map(vsY)),
+          // blok u baru – 4 sloupce po 4, pod parketem
+          colAt("VS", [14, 15, 16, 17], 79, [65, 71.5, 78, 84.5].map(vsY)),
+          colAt("VS", [18, 19, 20, 21], 71, [65, 71.5, 78, 84.5].map(vsY)),
+          colAt("VS", [22, 23, 24, 25], 63, [65, 71.5, 78, 84.5].map(vsY)),
+          colAt("VS", [26, 27, 28, 29], 55, [65, 71.5, 78, 84.5].map(vsY)),
+          // levý okraj velkého sálu: VS 43–30
+          colAt("VS", [43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30], 39.5, spread(17, 91, 14)),
+          // Levý sál
+          colAt("LS", [51, 52, 53, 54, 55, 56, 57], 5.5, spread(18, 54, 7)),
+          colAt("LS", [58, 59, 60, 61], 13, [22, 29, 40, 47]),
+          colAt("LS", [62, 63, 64, 65], 20.5, [22, 29, 40, 47]),
+          colAt("LS", [47, 48, 49, 50], 28, [18, 26, 34, 42]),
+          // Pravý sál
+          colAt("PS", [77, 78, 79, 80, 81, 82, 83, 73], 5.5, spread(82, 138, 8)),
+          colAt("PS", [74, 75, 76, 71, 72], 14.5, spread(82, 118, 5)),
+          colAt("PS", [66, 67, 68, 69], 26, spread(82, 103, 4))
+        )
+      },
+      gallery: {
+        w: 80, h: 110, d: 5,
+        rooms: [
+          { x: 1, y: 1, w: 78, h: 108 }
+        ],
+        zones: [
+          { t: "", x: 15, y: 13, w: 63, h: 83, cls: "void" },
+          { t: "Podium (dole)", x: 22, y: 16, w: 50, h: 7, cls: "solid faded" },
+          { t: "Taneční parket (dole)", x: 22, y: 25, w: 50, h: 30, cls: "floor-dance faded" },
+          { t: "Stoly velkého sálu (dole)", x: 22, y: 58, w: 50, h: 26, cls: "faded" },
+          { t: "Schody", x: 70, y: 2, w: 8, h: 9, cls: "stairs" },
+          { t: "Schody", x: 70, y: 98, w: 8, h: 10, cls: "stairs" },
+          { t: "Proj.", x: galleryRow[4] - 2.9, y: 100.5, w: 5.8, h: 5, cls: "solid" }
+        ],
+        names: [
+          { t: "Galerie · stoly po 8", x: 22, y: 88 }
+        ],
+        tables: [].concat(
+          // nad podiem (horní řada)
+          row("G", [8, 7, 6, 5, 4, 3, 2, 1], galleryRow, 7),
+          // spodní strana ochozu (levý sloupec)
+          colAt("G", [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22], 7.5, spread(16, 94, 14)),
+          // nad barem (dolní řada), na místě G 27 je projekce
+          row("G", [23, 24, 25, 26], galleryRow.slice(0, 4), 103),
+          row("G", [28, 29, 30], galleryRow.slice(5), 103)
         )
       }
     }
