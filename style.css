@@ -618,3 +618,20 @@ footer .mark { font-family: "Archivo Black", sans-serif; color: var(--gold); let
   .tcard { width: 100%; max-height: 92vh; overflow-y: auto; padding: 2rem 1.2rem 1.4rem; }
   .t-seats { max-width: 100%; }
 }
+
+/* vstupenky na stání: počítadlo nahoře a výběr počtu v nákupu */
+.seat-total[hidden] { display: none; }
+.seat-head .seat-total + .seat-total { margin-right: auto; }
+.c-standing { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: .8rem; padding: .7rem 0; border-bottom: 1px solid var(--line); }
+.c-standing b { color: var(--gold-mid); font-weight: 800; }
+.c-standing small { display: block; color: var(--muted); font-size: .8rem; }
+.c-stepper { display: flex; align-items: center; gap: .4rem; }
+.c-stepper button {
+  width: 40px; height: 40px; border-radius: 50%; cursor: pointer;
+  border: 1px solid rgba(230,184,79,.5); background: transparent; color: var(--gold); font-size: 1.3rem; line-height: 1;
+}
+.c-stepper button:disabled { opacity: .35; cursor: default; }
+.c-stepper input {
+  width: 64px; text-align: center; font: inherit; font-size: 1.1rem; font-weight: 800; color: var(--text);
+  background: #000; border: 1px solid rgba(230,184,79,.35); border-radius: 10px; padding: .45rem .3rem;
+}

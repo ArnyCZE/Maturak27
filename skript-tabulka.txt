@@ -1,16 +1,17 @@
 /*
  * Maturák 2027 – prodej vstupenek přes pokladní, 5min rezervace, QR platby a jejich záznam
- * (verze 5 – jeden nákup = místa u více stolů, jméno a příjmení kupujícího)
+ * (verze 6 – vstupenky na stání, nákup z více stolů, jméno a příjmení kupujícího)
  *
  * Jak to funguje:
  *  - Plánek s obsazeností na webu vidí všichni.
  *  - Místa rezervovat a generovat QR kód smí jen přihlášená pokladní (list „Pokladní“).
- *  - Pokladní vybere místa (klidně u více stolů), vyplní jméno a příjmení kupujícího a vygeneruje
- *    jeden QR kód na celý nákup → místa jsou 5 minut „drženo“.
- *  - Když kupující zaplatí, pokladní klikne „Zaplaceno“ → místa jsou natrvalo „zaplaceno“.
- *    Když pokladní nákup zruší nebo do 5 minut nepotvrdí, místa se uvolní.
- *  - V listu „Prodej“ je za každý stůl nákupu jeden řádek (se stejným VS), v listu „QR kódy“
- *    je za každý QR kód jeden řádek (kdo, komu, kdy, stoly, místa, VS, stav).
+ *  - Pokladní vybere místa (klidně u více stolů) a/nebo počet vstupenek na stání, vyplní jméno
+ *    a příjmení kupujícího a vygeneruje jeden QR kód na celý nákup → vše je 5 minut „drženo“.
+ *  - Když kupující zaplatí, pokladní klikne „Zaplaceno“ → vstupenky jsou natrvalo „zaplaceno“.
+ *    Když pokladní nákup zruší nebo do 5 minut nepotvrdí, vstupenky se uvolní.
+ *  - Vstupenky na stání jsou v listu „Stoly“ jako řádek „Stání“ (kapacita = 1100 minus místa u stolů).
+ *  - V listu „Prodej“ je za každý stůl nákupu (a za stání) jeden řádek se stejným VS, v listu
+ *    „QR kódy“ je za každý QR kód jeden řádek (kdo, komu, kdy, stoly, místa, VS, stav).
  *  - Skript každých 5 minut projde e-maily od Fio o příchozích platbách a k zaplaceným nákupům
  *    doplní „Ověřeno bankou“ – podle variabilního symbolu (číslo nákupu 27xxxxx).
  *
@@ -21,7 +22,8 @@
  */
 
 var SPREADSHEET_ID = "1O-i3_C3p2RyKldJzpj98r_GLJsaVL6VH0yNoLWV0-v0";   // Maturák 2027 – vstupenky (soukromé)
-var PRICE = 450;                       // cena jedné vstupenky v Kč
+var PRICE = 450;                       // cena jedné vstupenky v Kč (u stolu i na stání)
+var STANDING = "Stání";                // řádek v listu Stoly pro vstupenky na stání
 var HOLD_MINUTES = 5;                  // jak dlouho QR kód drží místa
 var SESSION_HOURS = 6;                 // jak dlouho platí přihlášení pokladní
 var ACCOUNT_NUMBER = "2203629553";     // účet Plesy 4FH (Fio)
@@ -50,12 +52,12 @@ function doGet(e) {
       if (!cashier) result = { ok: false, error: "Přihlášení vypršelo – přihlas se prosím znovu.", loggedOut: true };
       else if (p.action === "check") result = { ok: true, name: cashier };
       else result = withLock_(function () {
-        if (p.action === "hold") return hold_(p.items, p.firstName, p.lastName, cashier);
+        if (p.action === "hold") return hold_(p.items, p.standing, p.firstName, p.lastName, cashier);
         if (p.action === "confirm") return confirm_(p.vs, p.token);
         return release_(p.vs, p.token);
       });
     }
-    else result = { ok: true, info: "Maturák 2027 – rezervace běží (verze 5)." };
+    else result = { ok: true, info: "Maturák 2027 – rezervace běží (verze 6)." };
   } catch (err) {
     result = { ok: false, error: "Chyba skriptu: " + err.message };
   }
@@ -105,7 +107,7 @@ function cashierFromSession_(session) {
 
 /* ---------- obsazenost a rezervace ---------- */
 
-/* Kapacity stolů (z listu Stoly, na 10 minut v mezipaměti – čtení je pak rychlé). */
+/* Kapacity stolů a stání (z listu Stoly, na 10 minut v mezipaměti – čtení je pak rychlé). */
 function capacities_() {
   var cache = CacheService.getScriptCache();
   var cached = cache.get("caps");
@@ -127,7 +129,8 @@ function isActive_(r, now) {
   return true;
 }
 
-/* Kapacita a obsazené (zaplacené, rezervované i právě držené) židle u každého stolu. */
+/* Kapacita a obsazené (zaplacené, rezervované i právě držené) židle u každého stolu.
+   U stání a ručně zapsaných prodejů bez čísel židlí se obsazená místa jen dopočítají podle počtu. */
 function state_() {
   var caps = capacities_(), out = {}, now = Date.now();
   Object.keys(caps).forEach(function (id) { out[id] = { cap: caps[id], seats: [] }; });
@@ -136,7 +139,6 @@ function state_() {
     var r = data[j], t = out[r[COL.table - 1]];
     if (!t || !isActive_(r, now)) continue;
     var seats = parseSeats_(r[COL.seats - 1]);
-    // ručně zapsané prodeje bez čísel židlí obsadí nejnižší volná místa
     for (var s = 1; seats.length < Number(r[COL.count - 1]) && s <= t.cap; s++) {
       if (t.seats.indexOf(s) === -1 && seats.indexOf(s) === -1) seats.push(s);
     }
@@ -145,16 +147,17 @@ function state_() {
   return out;
 }
 
-/* items = "VS 12:1,2;LS 50:3" – místa u jednoho nebo více stolů, jeden QR kód na celý nákup. */
-function hold_(itemsParam, firstName, lastName, cashier) {
+/* items = "VS 12:1,2;LS 50:3" – místa u stolů, standing = počet vstupenek na stání; jeden QR kód na celý nákup. */
+function hold_(itemsParam, standingParam, firstName, lastName, cashier) {
   firstName = String(firstName || "").trim();
   lastName = String(lastName || "").trim();
   if (!firstName || !lastName) return { ok: false, error: "Vyplň jméno i příjmení kupujícího." };
   var buyer = firstName + " " + lastName;
 
-  var items = parseItems_(itemsParam);
-  if (!items.length) return { ok: false, error: "Vyber aspoň jedno místo." };
-  var tables = state_(), count = 0;
+  var items = parseItems_(itemsParam).filter(function (it) { return it.table !== STANDING; });
+  var standing = Math.max(0, parseInt(standingParam, 10) || 0);
+  if (!items.length && !standing) return { ok: false, error: "Vyber aspoň jedno místo nebo vstupenku na stání." };
+  var tables = state_(), count = standing;
   for (var i = 0; i < items.length; i++) {
     var it = items[i], t = tables[it.table];
     if (!t || !t.cap) return { ok: false, error: "Stůl " + it.table + " neexistuje." };
@@ -162,6 +165,12 @@ function hold_(itemsParam, firstName, lastName, cashier) {
     var clash = it.seats.filter(function (s) { return t.seats.indexOf(s) !== -1; });
     if (clash.length) return { ok: false, error: "Stůl " + it.table + ": místa " + clash.join(", ") + " si právě někdo zabral. Vyber jiná.", tables: tables };
     count += it.seats.length;
+  }
+  if (standing) {
+    var st = tables[STANDING];
+    if (!st) return { ok: false, error: "V listu Stoly chybí řádek „Stání“." };
+    var left = st.cap - st.seats.length;
+    if (standing > left) return { ok: false, error: left ? "Na stání zbývá už jen " + left + " vstupenek." : "Vstupenky na stání jsou vyprodané.", tables: tables };
   }
 
   var vs = nextOrderVs_();
@@ -172,10 +181,15 @@ function hold_(itemsParam, firstName, lastName, cashier) {
     prodej.appendRow([buyer, "pokladní: " + cashier, it.table, it.seats.length, "drženo", "web " + token, vs,
                       it.seats.length * PRICE, now, "", "'" + it.seats.join(","), ""]);
   });
-  sheet_("QR kódy").appendRow([now, cashier, buyer,
-    items.map(function (it) { return it.table; }).join(", "),
-    items.map(function (it) { return it.table + ": " + it.seats.join(","); }).join(" · "),
-    count, amount, vs, "drženo", "", "", "", token]);
+  if (standing) {
+    prodej.appendRow([buyer, "pokladní: " + cashier, STANDING, standing, "drženo", "web " + token, vs,
+                      standing * PRICE, now, "", "", ""]);
+  }
+  var tableNames = items.map(function (it) { return it.table; });
+  var seatTexts = items.map(function (it) { return it.table + ": " + it.seats.join(","); });
+  if (standing) { tableNames.push(STANDING); seatTexts.push(STANDING + ": " + standing + "×"); }
+  sheet_("QR kódy").appendRow([now, cashier, buyer, tableNames.join(", "), seatTexts.join(" · "),
+                               count, amount, vs, "drženo", "", "", "", token]);
   return { ok: true, vs: vs, token: token, amount: amount, expiresAt: now.getTime() + HOLD_MINUTES * 60 * 1000 };
 }
 
@@ -187,7 +201,7 @@ function nextOrderVs_() {
   return "27" + ("0000" + n).slice(-5);
 }
 
-/* Všechny řádky nákupu (každý stůl jeden řádek) podle VS a kódu. */
+/* Všechny řádky nákupu (každý stůl a stání jeden řádek) podle VS a kódu. */
 function findOrder_(vs, token) {
   var sh = sheet_("Prodej"), data = sh.getDataRange().getValues(), rows = [];
   for (var i = 1; i < data.length; i++) {
@@ -204,19 +218,24 @@ function orderClashes_(rows) {
   var tables = state_(), now = Date.now(), msgs = [];
   rows.forEach(function (h) {
     if (h.values[COL.status - 1] === "zaplaceno" || isActive_(h.values, now)) return;
-    var table = h.values[COL.table - 1], t = tables[table] || { seats: [] };
+    var table = h.values[COL.table - 1], t = tables[table] || { cap: 0, seats: [] };
+    if (table === STANDING) {
+      var left = t.cap - t.seats.length, need = Number(h.values[COL.count - 1]) || 0;
+      if (need > left) msgs.push("na stání zbývá jen " + left + " vstupenek");
+      return;
+    }
     var clash = parseSeats_(h.values[COL.seats - 1]).filter(function (s) { return t.seats.indexOf(s) !== -1; });
     if (clash.length) msgs.push(table + ": " + clash.join(", "));
   });
   return msgs;
 }
 
-/* Pokladní potvrdil(a), že kupující zaplatil → místa jsou prodaná natrvalo. */
+/* Pokladní potvrdil(a), že kupující zaplatil → vstupenky jsou prodané natrvalo. */
 function confirm_(vs, token) {
   var o = findOrder_(vs, token);
   if (!o.rows.length) return { ok: false, error: "Rezervace nenalezena." };
   var clash = orderClashes_(o.rows);
-  if (clash.length) return { ok: false, error: "Rezervace vypršela a tato místa už má někdo jiný – " + clash.join("; ") + "." };
+  if (clash.length) return { ok: false, error: "Rezervace vypršela a mezitím se prodalo i tohle – " + clash.join("; ") + "." };
   var now = new Date();
   o.rows.forEach(function (h) {
     if (h.values[COL.status - 1] === "zaplaceno") return;
@@ -293,7 +312,7 @@ function processPayment_(sh, msg) {
   var payerMatch = body.match(/(?:název protiúčtu|protiúčet|plátce)\s*:?\s*([^\n\r]+)/i);
   var payer = payerMatch ? payerMatch[1].trim() : "";
 
-  // nejnovější nákup s tímto VS, který ještě nemá ověření (všechny jeho řádky = stoly)
+  // nejnovější nákup s tímto VS, který ještě nemá ověření (všechny jeho řádky = stoly a stání)
   var data = sh.getDataRange().getValues(), rows = [], note = null;
   for (var i = data.length - 1; i >= 1; i--) {
     if (String(data[i][COL.vs - 1]) !== vs || data[i][COL.bank - 1]) continue;
@@ -320,7 +339,7 @@ function processPayment_(sh, msg) {
   if (unpaid.length) {
     var clash = orderClashes_(unpaid);
     unpaid.forEach(function (h) { sh.getRange(h.row, COL.status).setValue(clash.length ? "zrušeno" : "zaplaceno"); });
-    if (clash.length) sh.getRange(unpaid[0].row, COL.note).setValue(note + " KONFLIKT: místa " + clash.join("; ") + " už prodaná – vrátit peníze.");
+    if (clash.length) sh.getRange(unpaid[0].row, COL.note).setValue(note + " KONFLIKT: " + clash.join("; ") + " – už prodané, vrátit peníze.");
   }
   if (note.indexOf("web ") === 0) updateLog_(note.slice(4, 12), { bank: bankNote, payer: payer });
 }
