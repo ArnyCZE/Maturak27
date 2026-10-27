@@ -18,7 +18,7 @@
     "choceňská mlékárna": { name: "Choceňská mlékárna s.r.o.", url: "https://www.chocenskamlekarna.cz/", logo: "https://www.chocenskamlekarna.cz/wp-content/uploads/2021/03/chm_logo_200.png" },
     "kara trutnov": { name: "KARA Trutnov a.s.", url: "https://kara.cz/", logo: "https://kara.cz/img/logo.svg" },
     "knihkupectví kosmas pardubice": { name: "Knihkupectví Kosmas Pardubice", url: "https://www.kosmas.cz/", logo: "https://lh3.googleusercontent.com/d/1nbuNVZ5zy8GH2W3Kfry8GMDhxJ36sqlB=w800" },
-    "komorní filharmonie pardubice": { name: "Komorní filharmonie Pardubice", url: "https://www.kfpar.cz/", logo: "https://www.kfpar.cz/data/filecache/ff/kfp_logo_zakladni_barva_2_1.png" },
+    "komorní filharmonie pardubice": { name: "Komorní filharmonie Pardubice", url: "https://www.kfpar.cz/", logo: "https://www.kfpar.cz/data/filecache/ff/kfp_logo_zakladni_barva_2_1.png", dark: true },
     "kutil cz": { name: "Železářství KUTIL, s.r.o.", url: "https://www.kutil.cz/", logo: "https://www.kutil.cz/images/logo.png" },
     "leoexpress": { name: "Leo Express", url: "https://www.leoexpress.com/cs", logo: "https://upload.wikimedia.org/wikipedia/commons/2/2f/Leo_Express.svg" },
     "město pardubice": { name: "Statutární město Pardubice", url: "https://pardubice.eu/", logo: "https://upload.wikimedia.org/wikipedia/commons/d/d6/Pardubice_logo.svg" },
