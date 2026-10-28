@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<title>Plánovač plesu – Maturitní ples 2027</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="organizace.css?v=1">
+</head>
+<body>
+
+<!-- přihlášení -->
+<main id="login" class="login" hidden>
+  <form id="loginForm" class="login-card" autocomplete="on">
+    <img src="favicon.svg" alt="" class="login-logo">
+    <p class="eyebrow">Maturitní ples 4.F a 4.H</p>
+    <h1>Plánovač plesu</h1>
+    <p class="muted">Jen pro organizátory. Přihlas se stejným jménem a heslem jako do pokladny.</p>
+    <label>Přihlašovací jméno<input id="lgName" name="username" autocomplete="username" required></label>
+    <label>Heslo
+      <span class="pw"><input id="lgPass" name="password" type="password" autocomplete="current-password" required>
+      <button type="button" id="lgShow" class="ghost" aria-label="Zobrazit heslo">👁</button></span>
+    </label>
+    <p id="lgErr" class="err" role="alert"></p>
+    <button id="lgBtn" class="btn" type="submit">Přihlásit</button>
+    <a class="muted small" href="./">← zpět na web plesu</a>
+  </form>
+</main>
+
+<!-- plánovač -->
+<div id="app" hidden>
+  <header class="top">
+    <div class="brand"><img src="favicon.svg" alt=""><span>Plánovač plesu</span></div>
+    <nav id="tabs" class="tabs" role="tablist">
+      <button data-tab="prehled" class="on">Přehled</button>
+      <button data-tab="dodavatele">Dodavatelé</button>
+      <button data-tab="rozpocet">Rozpočet</button>
+      <button data-tab="ukoly">Úkoly</button>
+      <button data-tab="kontakty">Kontakty</button>
+    </nav>
+    <div class="who"><span id="whoName"></span><button id="logout" class="ghost small">Odhlásit</button></div>
+  </header>
+
+  <section class="hero">
+    <div>
+      <p class="eyebrow">Maturitní ples 4.F a 4.H · Ideon Pardubice</p>
+      <h1>Sobota 30. 1. 2027</h1>
+      <p class="muted" id="updated"></p>
+    </div>
+    <div class="countdown"><b id="daysLeft">–</b><span>dní do plesu</span></div>
+  </section>
+
+  <main class="wrap">
+    <p id="msg" class="toast" hidden></p>
+
+    <!-- PŘEHLED -->
+    <section data-panel="prehled" class="panel on">
+      <div class="kpis">
+        <article class="kpi"><h3>Dodavatelé</h3><b id="kSup">–</b><span id="kSupSub"></span><div class="bar"><i id="kSupBar"></i></div></article>
+        <article class="kpi"><h3>Rozpočet</h3><b id="kBud">–</b><span id="kBudSub"></span></article>
+        <article class="kpi"><h3>Úkoly</h3><b id="kTask">–</b><span id="kTaskSub"></span><div class="bar"><i id="kTaskBar"></i></div></article>
+        <article class="kpi"><h3>Vstupenky</h3><b id="kTix">–</b><span id="kTixSub"></span><div class="bar"><i id="kTixBar"></i></div></article>
+      </div>
+      <div class="cols">
+        <div class="box"><h2>Co hoří</h2><ul id="hot" class="list"></ul></div>
+        <div class="box"><h2>Stav dodavatelů</h2><div id="supMini" class="mini"></div></div>
+      </div>
+    </section>
+
+    <!-- DODAVATELÉ -->
+    <section data-panel="dodavatele" class="panel">
+      <div class="toolbar">
+        <h2>Dodavatelé</h2>
+        <div class="chips" id="supFilter"></div>
+      </div>
+      <div id="supList" class="cards"></div>
+    </section>
+
+    <!-- ROZPOČET -->
+    <section data-panel="rozpocet" class="panel">
+      <div class="toolbar"><h2>Rozpočet</h2></div>
+      <div class="kpis three">
+        <article class="kpi"><h3>Příjmy</h3><b id="bIn">–</b><span id="bInSub"></span></article>
+        <article class="kpi"><h3>Výdaje</h3><b id="bOut">–</b><span id="bOutSub"></span></article>
+        <article class="kpi"><h3>Bilance</h3><b id="bBal">–</b><span id="bBalSub"></span></article>
+      </div>
+      <div class="cols">
+        <div class="box"><h2>Příjmy</h2><table class="tbl" id="tIn"></table></div>
+        <div class="box"><h2>Výdaje</h2><table class="tbl" id="tOut"></table></div>
+      </div>
+      <p class="muted small">Plán = odhad, skutečnost = co opravdu přišlo / odešlo. Skutečnost u výdaje můžeš přepsat kliknutím na částku. Vstupenky se počítají samy z pokladny.</p>
+    </section>
+
+    <!-- ÚKOLY -->
+    <section data-panel="ukoly" class="panel">
+      <div class="toolbar">
+        <h2>Úkoly</h2>
+        <div class="chips" id="taskFilter">
+          <button data-f="open" class="on">Nehotové</button><button data-f="mine">Moje</button><button data-f="done">Hotové</button><button data-f="all">Vše</button>
+        </div>
+      </div>
+      <form id="addTask" class="addtask">
+        <input id="atText" placeholder="Nový úkol – co je potřeba udělat" maxlength="200" required>
+        <input id="atWho" placeholder="Kdo" maxlength="60">
+        <input id="atDue" type="date">
+        <button class="btn" type="submit">Přidat</button>
+      </form>
+      <ul id="taskList" class="tasks"></ul>
+    </section>
+
+    <!-- KONTAKTY -->
+    <section data-panel="kontakty" class="panel">
+      <div class="toolbar"><h2>Důležité kontakty</h2></div>
+      <div id="contactList" class="cards"></div>
+    </section>
+  </main>
+
+  <footer class="foot">Data jsou v soukromé tabulce „Maturák 2027 – Organizace“. Stránku nesdílej mimo organizační tým.</footer>
+</div>
+
+<div id="loading" class="loading"><span></span></div>
+
+<script src="config.js?v=22"></script>
+<script src="organizace.js?v=1"></script>
+</body>
+</html>
