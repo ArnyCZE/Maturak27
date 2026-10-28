@@ -5,7 +5,6 @@
 
   var API = (window.PLES_CONFIG || {}).api;
   var SESSION_KEY = "ples-org-session";
-  var BALL = new Date(2027, 0, 30, 18, 0);
 
   // stavy dodavatelů v pořadí; úroveň 0–4 = barva a ukazatel postupu
   var STATES = [
@@ -30,7 +29,7 @@
   function api(params) {
     return new Promise(function (resolve, reject) {
       var cb = "orgCb" + (++seq) + "_" + Date.now(), s = document.createElement("script"), done = false;
-      var timer = setTimeout(function () { finish(); reject(new Error("Server neodpovídá – zkontroluj internet a zkus to znovu.")); }, 20000);
+      var timer = setTimeout(function () { finish(); reject(new Error("Server neodpovídá – zkontroluj internet a zkus to znovu.")); }, 30000);
       function finish() { done = true; clearTimeout(timer); delete window[cb]; s.remove(); }
       window[cb] = function (res) { if (!done) { finish(); resolve(res); } };
       var q = Object.keys(params).map(function (k) { return encodeURIComponent(k) + "=" + encodeURIComponent(params[k]); });
@@ -122,6 +121,9 @@
   $("tabs").addEventListener("click", function (e) {
     var b = e.target.closest("button"); if (b) { openTab(b.dataset.tab); window.scrollTo({ top: 0, behavior: "smooth" }); }
   });
+  document.querySelectorAll("[data-goto]").forEach(function (el) {
+    el.addEventListener("click", function () { openTab(el.dataset.goto); window.scrollTo({ top: 0, behavior: "smooth" }); });
+  });
 
   /* ---------- pomocné ---------- */
 
@@ -160,12 +162,16 @@
       .then(function () { loading(false); });
   }
 
+  // pro další záložky (sponzoři) v samostatném souboru
+  window.PlesOrg = { data: function () { return state.data; }, save: save };
+
   /* ---------- vykreslení ---------- */
 
   function render() {
     var d = state.data; if (!d) return;
     $("daysLeft").textContent = Math.max(0, daysTo(new Date(2027, 0, 30)));
     renderOverview(d); renderSuppliers(d.dodavatele); renderBudget(d.rozpocet); renderTasks(d.ukoly); renderContacts(d.kontakty);
+    if (window.PlesOrgSponsors) window.PlesOrgSponsors.render(d);
   }
 
   function budgetTotals(rows) {
@@ -244,7 +250,7 @@
         '<div class="steps">' + [0, 1, 2, 3, 4].map(function (i) { return "<i" + (i <= l ? ' class="on"' : "") + "></i>"; }).join("") + "</div>" +
         (has(v[D.what]) ? "<p>" + esc(v[D.what]) + "</p>" : "") +
         '<div class="money">' +
-          (has(v[D.price]) ? "<span>Cena <b>" + (price ? kc(price) : esc(v[D.price])) + "</b></span>" : "") +
+          (has(v[D.price]) ? "<span>Cena <b>" + (price ? kc(price) : (String(v[D.price]) === "0" ? "zdarma" : esc(v[D.price]))) + "</b></span>" : "") +
           '<span>Zaplaceno <button data-paid="' + r.row + '" title="Změnit">' + (paid ? kc(paid) : "0 Kč") + "</button></span>" +
           (has(v[D.due]) ? '<span>Termín <b class="' + (w.cls === "late" ? "neg" : "") + '">' + w.text + "</b></span>" : "") +
         "</div>" +

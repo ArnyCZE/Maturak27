@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="organizace.css?v=1">
+<link rel="stylesheet" href="organizace.css?v=2">
 </head>
 <body>
 
@@ -38,6 +38,7 @@
     <nav id="tabs" class="tabs" role="tablist">
       <button data-tab="prehled" class="on">Přehled</button>
       <button data-tab="dodavatele">Dodavatelé</button>
+      <button data-tab="sponzori">Sponzoři</button>
       <button data-tab="rozpocet">Rozpočet</button>
       <button data-tab="ukoly">Úkoly</button>
       <button data-tab="kontakty">Kontakty</button>
@@ -80,6 +81,23 @@
       <div id="supList" class="cards"></div>
     </section>
 
+    <!-- SPONZOŘI -->
+    <section data-panel="sponzori" class="panel">
+      <div class="toolbar">
+        <h2>Sponzoři</h2>
+        <input id="spSearch" class="search" type="search" placeholder="Hledat firmu, město, dar…">
+      </div>
+      <div class="kpis">
+        <article class="kpi" data-spgo="dar"><h3>Získané dary</h3><b id="spDar">–</b><span id="spTotalSub"></span><span id="spRate"></span></article>
+        <article class="kpi" data-spgo="jednani"><h3>V jednání</h3><b id="spJed">–</b><span>domluvit podmínky</span></article>
+        <article class="kpi" data-spgo="ceka"><h3>Čeká na odpověď</h3><b id="spCeka">–</b><span>odmítlo: <b id="spOdm" style="font:inherit;color:inherit">–</b></span></article>
+        <article class="kpi" data-spgo="tipy"><h3>Tipy na oslovení</h3><b id="spTip">–</b><span id="spTipSub"></span></article>
+      </div>
+      <div class="chips" id="spGroups" style="margin-bottom:1rem"></div>
+      <div id="spList" class="cards"></div>
+      <p class="muted small" style="margin-top:1rem">Data jsou z tabulek „Maturák Sponzoři“ a „Maturák 2027 – Tipy na nové sponzory“. Stav můžeš změnit tady, zapíše se rovnou do tabulky.</p>
+    </section>
+
     <!-- ROZPOČET -->
     <section data-panel="rozpocet" class="panel">
       <div class="toolbar"><h2>Rozpočet</h2></div>
@@ -119,13 +137,14 @@
     </section>
   </main>
 
-  <footer class="foot">Data jsou v soukromé tabulce „Maturák 2027 – Organizace“. Stránku nesdílej mimo organizační tým.</footer>
+  <footer class="foot">Data jsou v soukromých tabulkách v Arnoštově Google Disku. Stránku nesdílej mimo organizační tým.</footer>
 </div>
 
 <div id="loading" class="loading"><span></span></div>
 
 <script src="config.js?v=23"></script>
 <script>PLES_CONFIG.api = PLES_CONFIG.orgApi || PLES_CONFIG.api;</script>
-<script src="organizace.js?v=1"></script>
+<script src="organizace-sponzori.js?v=1"></script>
+<script src="organizace.js?v=2"></script>
 </body>
 </html>

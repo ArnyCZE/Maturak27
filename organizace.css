@@ -167,3 +167,12 @@ input:focus, select:focus { outline: 2px solid var(--gold); outline-offset: 1px;
   .hero { padding-top: 1.2rem; }
   .countdown b { font-size: 1.8rem; }
 }
+
+/* sponzoři */
+.neg-pill { color: var(--red); }
+.search { min-width: 220px; border-radius: 999px; padding: .45rem .9rem; font-size: .85rem; }
+.kpi[data-spgo] { cursor: pointer; transition: border-color .2s; }
+.kpi[data-spgo]:hover { border-color: var(--gold); }
+.chips button b { color: var(--gold-hi); margin-left: .2rem; }
+.card.sp { gap: .45rem; }
+@media (max-width: 560px) { .search { min-width: 0; width: 100%; } }
