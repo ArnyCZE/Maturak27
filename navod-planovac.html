@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<title>Návod k plánovači plesu – Maturitní ples 2027</title>
+<title>Návod pro organizátory – Maturitní ples 2027</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
@@ -21,11 +21,17 @@
   .lead { color: var(--muted); margin-top: .8rem; max-width: 660px; }
   a { color: var(--gold-mid); }
   .cta { display: inline-block; margin-top: 1.4rem; background: var(--butter); color: #1a1406; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; font-size: .78rem; border-radius: 999px; padding: .7rem 1.3rem; text-decoration: none; }
+  .parts { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: .9rem; }
+  .part { border: 1px solid rgba(230,184,79,.45); border-radius: 16px; padding: 1.1rem; background: #0b0905; }
+  .part .tag { font-size: .62rem; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); }
+  .part h3 { color: var(--gold-hi); font-size: 1.05rem; margin: .2rem 0 .4rem; }
+  .part p, .part li { font-size: .88rem; }
+  .part ul { margin: .4rem 0 0 1.1rem; }
+  .part .who { color: var(--muted); font-size: .78rem; margin-top: .5rem; }
   .step { display: grid; grid-template-columns: 56px 1fr; gap: 1rem; padding: 1.3rem 0; border-top: 1px solid var(--line); }
   .num { width: 46px; height: 46px; border-radius: 50%; background: var(--butter); color: #1a1406; display: grid; place-items: center; font-family: "Archivo Black", sans-serif; font-size: 1.2rem; }
   .step h3 { font-size: 1.05rem; font-weight: 800; color: var(--gold-hi); margin-bottom: .3rem; }
   .step p, .step li { font-size: .95rem; }
-  .step ul { margin: .4rem 0 0 1.1rem; }
   .why { color: var(--muted); font-size: .85rem; margin-top: .4rem; }
   .tabs { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: .8rem; }
   .tab { border: 1px solid var(--line); border-radius: 14px; padding: 1rem; background: #050403; }
@@ -43,21 +49,53 @@
   .faq h4 { font-size: .9rem; color: var(--gold-hi); margin-bottom: .3rem; }
   .faq p { font-size: .86rem; }
   footer { margin-top: 3rem; color: var(--muted); font-size: .8rem; text-align: center; }
-  @media print { body { background: #fff; color: #111; } :root { --text: #111; --muted: #555; --line: #ddd; --gold: #8a6510; --gold-mid: #8a6510; --gold-hi: #111; } .tab, .faq div { background: #fff; } .cta { display: none; } .num { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+  @media print { body { background: #fff; color: #111; } :root { --text: #111; --muted: #555; --line: #ddd; --gold: #8a6510; --gold-mid: #8a6510; --gold-hi: #111; } .tab, .faq div, .part { background: #fff; } .cta { display: none; } .num { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <p class="eyebrow">Maturitní ples 4.F a 4.H · 30. 1. 2027</p>
-  <h1>Návod k plánovači plesu</h1>
-  <p class="lead">Plánovač je jedno místo, kde celý organizační tým vidí, jak jsme na tom: kteří dodavatelé jsou zajištění, kolik co stojí, co se musí udělat a do kdy, jak to jde se sponzory a kolik je prodaných vstupenek. Funguje na mobilu i na počítači a nic se neinstaluje.</p>
-  <a class="cta" href="organizace.html">Otevřít plánovač →</a>
+  <p class="eyebrow">Maturitní ples 4.F a 4.H · 30. 1. 2027 · Ideon Pardubice</p>
+  <h1>Návod pro organizátory</h1>
+  <p class="lead">Ples organizujeme přes web, který má tři části: veřejné stránky pro hosty, prodej vstupenek přes pokladní a plánovač pro nás organizátory. Tady je popsané, co která část dělá a jak se do plánovače dostaneš.</p>
 
-  <h2>Jak začít</h2>
+  <h2>Co už máme</h2>
+  <div class="parts">
+    <div class="part">
+      <p class="tag">1 · pro všechny</p>
+      <h3>🌐 Web plesu</h3>
+      <p><a href="./">maturak.virtuos.tech</a> – stránky pro hosty a rodiče:</p>
+      <ul>
+        <li>datum, místo, program večera, dress code</li>
+        <li>jak a kde se kupují vstupenky</li>
+        <li>plánek sálu se stoly – živě ukazuje, která místa jsou volná a která prodaná</li>
+        <li>naši sponzoři s logy</li>
+      </ul>
+      <p class="who">Vidí každý, kdo má odkaz. Klidně ho posílejte dál.</p>
+    </div>
+    <div class="part">
+      <p class="tag">2 · pro pokladní</p>
+      <h3>🎟️ Prodej vstupenek</h3>
+      <p>Vstupenky (450 Kč, u stolu i na stání) se prodávají ve škole ve studentské místnosti o velkých přestávkách. Prodává je <b>pokladní</b> – člověk s přihlášením – přímo na webu:</p>
+      <ul>
+        <li>vybere s kupujícím místa v plánku sálu,</li>
+        <li>kupující zaplatí QR kódem z mobilu (hotovost nebereme),</li>
+        <li>pokladní ověří platbu a dá mu papírové lístky.</li>
+      </ul>
+      <p class="who">Všechno se samo zapisuje do tabulky. Podrobně: <a href="navod.html">návod pro pokladní</a>.</p>
+    </div>
+    <div class="part">
+      <p class="tag">3 · jen pro organizátory</p>
+      <h3>📋 Plánovač plesu</h3>
+      <p>Přehled celé organizace na jednom místě: dodavatelé, sponzoři, rozpočet, úkoly a kontakty. Uvidíš i, kolik je prodaných vstupenek.</p>
+      <p class="who">Jen po přihlášení – je tam rozpočet a kontakty. Popis níž.</p>
+    </div>
+  </div>
+
+  <h2>Jak se dostat do plánovače</h2>
 
   <div class="step"><div class="num">1</div><div>
     <h3>Řekni si Arnoštovi o přístup</h3>
-    <p>Arnošt ti dá <b>přihlašovací jméno a heslo</b>. Pokud už prodáváš vstupenky jako pokladní, je to stejné přihlášení – Arnošt ti jen zapne přístup do plánovače.</p>
+    <p>Arnošt ti pošle <b>přihlašovací jméno a heslo</b>. Pokud budeš chtít i prodávat vstupenky, řekni mu to – stejné přihlášení pak funguje i jako pokladní.</p>
   </div></div>
 
   <div class="step"><div class="num">2</div><div>
@@ -70,27 +108,28 @@
     <h3>Rozhlédni se po záložkách</h3>
     <p>Nahoře je šest záložek. Co v nich najdeš a co tam můžeš měnit, je popsané níž.</p>
   </div></div>
+  <a class="cta" href="organizace.html">Otevřít plánovač →</a>
 
   <h2>Co je v jednotlivých záložkách</h2>
   <div class="tabs">
     <div class="tab"><h4>📊 Přehled</h4>
-      <p>Odpočet dní do plesu, čtyři hlavní čísla (dodavatelé, rozpočet, úkoly, vstupenky) a seznam <b>„Co hoří“</b> – úkoly a platby po termínu nebo do 14 dní a dodavatelé, které ještě nemáme.</p>
+      <p>Odpočet dní do plesu, čtyři hlavní čísla (dodavatelé, rozpočet, úkoly, prodané vstupenky) a seznam <b>„Co hoří“</b> – úkoly a platby po termínu nebo do 14 dní a dodavatelé, které ještě nemáme.</p>
       <p class="can">Kliknutím na dodavatele se otevře jeho karta.</p></div>
     <div class="tab"><h4>🤝 Dodavatelé</h4>
       <p>Sál, kapela, zvuk, moderátor, foto, video, výzdoba… U každého cena, kolik je zaplaceno, kontakt, smlouva a poznámky. Ukazatel nahoře ukazuje, jak daleko to je.</p>
       <div class="pills"><span class="pill" style="color:var(--muted)">Nezajištěno</span><span class="pill" style="color:var(--blue)">Poptáno / V jednání</span><span class="pill" style="color:var(--orange)">Domluveno</span><span class="pill" style="color:var(--gold-mid)">Smlouva podepsána</span><span class="pill" style="color:var(--green)">Zaplaceno</span></div>
       <p class="can">Můžeš změnit stav (rozbalovací menu) a zaplacenou částku (klik na ni).</p></div>
     <div class="tab"><h4>🎁 Sponzoři</h4>
-      <p>Všechny oslovené firmy rozdělené na získané dary, v jednání, čeká na odpověď a odmítnuto + přes 260 tipů na nové sponzory seřazených podle priority. Nahoře je hledání.</p>
+      <p>Firmy, které jsme oslovili kvůli darům do tomboly, rozdělené na získané dary, v jednání, čeká na odpověď a odmítnuto. K tomu přes 260 tipů na další firmy seřazených podle priority. Nahoře je hledání.</p>
       <p class="can">Můžeš změnit stav firmy – když ti někdo odepíše, přepni ho třeba na „Dar do tomboly“ nebo „Odmítnuto“.</p></div>
     <div class="tab"><h4>💰 Rozpočet</h4>
-      <p>Příjmy a výdaje – plán (odhad) a skutečnost (co opravdu přišlo nebo odešlo). Tržba za vstupenky se počítá sama z pokladny.</p>
+      <p>Příjmy a výdaje – plán (odhad) a skutečnost (co opravdu přišlo nebo odešlo). Tržba za vstupenky se počítá sama z prodeje.</p>
       <p class="can">Skutečnou částku u výdaje přepíšeš kliknutím na ni.</p></div>
     <div class="tab"><h4>✅ Úkoly</h4>
       <p>Všechno, co se musí udělat, seřazené podle termínu. Červeně je, co je po termínu, oranžově, co hoří tento týden. Filtr <b>„Moje“</b> ukáže úkoly s tvým jménem.</p>
       <p class="can">Hotový úkol odškrtni. Nový přidáš nahoře – napiš co, kdo a do kdy.</p></div>
     <div class="tab"><h4>📞 Kontakty</h4>
-      <p>Lidé, které budeme potřebovat – Ideon, SRPŠ, moderátor, fotograf… Z mobilu jim zavoláš nebo napíšeš jedním klepnutím.</p></div>
+      <p>Lidé, které budeme potřebovat – Ideon, SRPŠ (rodičovský spolek, přes který se platí), moderátor, fotograf… Z mobilu jim zavoláš nebo napíšeš jedním klepnutím.</p></div>
   </div>
 
   <h2>Pravidla</h2>
@@ -99,7 +138,7 @@
     <li>Každá změna se ukládá i s tvým jménem a časem, takže je vidět, kdo co změnil.</li>
     <li>Stránka se sama obnovuje každé 2 minuty. Když chceš mít jistotu, obnov ji ručně.</li>
     <li>Ceny, smlouvy, kontakty a nové dodavatele doplňuje Arnošt – pošli mu je a on je zapíše.</li>
-    <li class="no"><b>Přihlašovací údaje nikomu nedávej</b> a stránku nesdílej mimo organizační tým – je tam rozpočet a kontakty.</li>
+    <li class="no"><b>Přihlašovací údaje nikomu nedávej</b> a odkaz na plánovač nesdílej mimo organizační tým – je tam rozpočet a kontakty.</li>
     <li class="no">Na cizím zařízení se nakonec <b>odhlas</b> (vpravo nahoře).</li>
   </ul>
 
@@ -110,7 +149,7 @@
     <div><h4>Vidím starou verzi stránky</h4><p>Obnov stránku úplně: na počítači Ctrl + Shift + R, na mobilu zavři a znovu otevři prohlížeč.</p></div>
     <div><h4>Načítá se to dlouho</h4><p>První načtení po přihlášení trvá pár vteřin, protože se stahují všichni sponzoři a tipy. Pak už je to rychlé.</p></div>
     <div><h4>Spletl(a) jsem se ve stavu nebo částce</h4><p>Prostě to přepni zpátky. Kdyby to nešlo, napiš Arnoštovi.</p></div>
-    <div><h4>Chybí mi tam něco</h4><p>Napiš Arnoštovi – dá se doplnit.</p></div>
+    <div><h4>Chci prodávat vstupenky</h4><p>Napiš Arnoštovi a přečti si <a href="navod.html">návod pro pokladní</a>.</p></div>
   </div>
 
   <footer>Maturitní ples tříd 4. F a 4. H · Gymnázium Pardubice, Dašická 1083 · Při problému piš Arnoštovi.</footer>

@@ -19,7 +19,7 @@
     <img src="favicon.svg" alt="" class="login-logo">
     <p class="eyebrow">Maturitní ples 4.F a 4.H</p>
     <h1>Plánovač plesu</h1>
-    <p class="muted">Jen pro organizátory. Přihlas se stejným jménem a heslem jako do pokladny.</p>
+    <p class="muted">Jen pro organizátory plesu. Přihlašovací jméno a heslo ti dá Arnošt.</p>
     <label>Přihlašovací jméno<input id="lgName" name="username" autocomplete="username" required></label>
     <label>Heslo
       <span class="pw"><input id="lgPass" name="password" type="password" autocomplete="current-password" required>
@@ -27,6 +27,7 @@
     </label>
     <p id="lgErr" class="err" role="alert"></p>
     <button id="lgBtn" class="btn" type="submit">Přihlásit</button>
+    <a class="muted small" href="navod-planovac.html">Co je plánovač a jak funguje? → návod</a>
     <a class="muted small" href="./">← zpět na web plesu</a>
   </form>
 </main>
@@ -110,7 +111,7 @@
         <div class="box"><h2>Příjmy</h2><table class="tbl" id="tIn"></table></div>
         <div class="box"><h2>Výdaje</h2><table class="tbl" id="tOut"></table></div>
       </div>
-      <p class="muted small">Plán = odhad, skutečnost = co opravdu přišlo / odešlo. Skutečnost u výdaje můžeš přepsat kliknutím na částku. Vstupenky se počítají samy z pokladny.</p>
+      <p class="muted small">Plán = odhad, skutečnost = co opravdu přišlo / odešlo. Skutečnost u výdaje můžeš přepsat kliknutím na částku. Vstupenky se počítají samy z prodeje.</p>
     </section>
 
     <!-- ÚKOLY -->
@@ -137,7 +138,7 @@
     </section>
   </main>
 
-  <footer class="foot">Data jsou v soukromých tabulkách v Arnoštově Google Disku. Stránku nesdílej mimo organizační tým.</footer>
+  <footer class="foot">Data jsou v soukromých tabulkách v Arnoštově Google Disku. Stránku nesdílej mimo organizační tým. · <a href="navod-planovac.html">Návod</a></footer>
 </div>
 
 <div id="loading" class="loading"><span></span></div>
