@@ -8,12 +8,12 @@
   var T = { name: 0, city: 1, field: 2, web: 3, email: 4, ask: 5, prio: 6, note: 7, source: 8, status: 9 };
   var STATES = ["Neosloveno", "Odesláno", "V jednání", "Dar do tomboly", "Odmítnuto"];
   var GROUPS = [
-    { id: "dar", label: "🎁 Získané dary", test: function (s) { return /^dar/i.test(s); } },
-    { id: "jednani", label: "🤝 V jednání", test: function (s) { return /jedn/i.test(s); } },
-    { id: "ceka", label: "📨 Čeká na odpověď", test: function (s) { return /^odesl/i.test(s); } },
-    { id: "odmitnuto", label: "✕ Odmítnuto", test: function (s) { return /odm/i.test(s); } },
-    { id: "neosloveno", label: "Neosloveno", test: function (s) { return !s || /^neoslov/i.test(s); } },
-    { id: "tipy", label: "💡 Tipy na oslovení", tips: true }
+    { id: "dar", test: function (s) { return /^dar/i.test(s); } },
+    { id: "jednani", test: function (s) { return /jedn/i.test(s); } },
+    { id: "ceka", test: function (s) { return /^odesl/i.test(s); } },
+    { id: "odmitnuto", test: function (s) { return /odm/i.test(s); } },
+    { id: "neosloveno", test: function (s) { return !s || /^neoslov/i.test(s); } },
+    { id: "tipy", tips: true }
   ];
   var view = { group: "dar", q: "" };
   var $ = function (id) { return document.getElementById(id); };
@@ -37,21 +37,23 @@
     var counts = {};
     spons.forEach(function (r) { var g = groupOf(r.v[S.status]); counts[g] = (counts[g] || 0) + 1; });
     var freshTips = tips.filter(function (r) { return !has(r.v[T.status]) || /^neoslov/i.test(st(r.v[T.status])); }).length;
-    counts.tipy = tips.length;
 
     $("spDar").textContent = counts.dar || 0;
     $("spJed").textContent = counts.jednani || 0;
     $("spCeka").textContent = counts.ceka || 0;
     $("spOdm").textContent = counts.odmitnuto || 0;
+    $("spNeo").textContent = counts.neosloveno || 0;
     $("spTip").textContent = freshTips;
     $("spTipSub").textContent = "z " + tips.length + " tipů ještě neosloveno";
     $("spTotalSub").textContent = "z " + spons.length + " oslovených firem";
     var asked = spons.length - (counts.neosloveno || 0);
     $("spRate").textContent = asked ? Math.round((counts.dar || 0) / asked * 100) + " % úspěšnost" : "";
 
-    $("spGroups").innerHTML = GROUPS.map(function (g) {
-      return '<button data-g="' + g.id + '" class="' + (g.id === view.group ? "on" : "") + '">' + g.label + " <b>" + (counts[g.id] || 0) + "</b></button>";
-    }).join("");
+    document.querySelectorAll("[data-spgo]").forEach(function (el) {
+      var on = el.dataset.spgo === view.group;
+      el.classList.toggle("on", on);
+      el.setAttribute("aria-pressed", on ? "true" : "false");
+    });
 
     var q = norm(view.q), html;
     if (view.group === "tipy") {
@@ -95,10 +97,6 @@
       (/^https?:\/\//i.test(web) ? '<a href="' + esc(web) + '" target="_blank" rel="noopener">🌐 Web</a>' : "") + "</div></article>";
   }
 
-  $("spGroups").addEventListener("click", function (e) {
-    var b = e.target.closest("button"); if (!b) return;
-    view.group = b.dataset.g; window.PlesOrg && render(window.PlesOrg.data());
-  });
   $("spSearch").addEventListener("input", function (e) {
     view.q = e.target.value; window.PlesOrg && render(window.PlesOrg.data());
   });
@@ -107,7 +105,9 @@
     window.PlesOrg.save(s.dataset.sp, s.dataset.row, s.dataset.col, s.value, "Stav sponzora změněn ✓");
   });
   document.querySelectorAll("[data-spgo]").forEach(function (el) {
-    el.addEventListener("click", function () { view.group = el.dataset.spgo; window.PlesOrg && render(window.PlesOrg.data()); });
+    function go() { view.group = el.dataset.spgo; window.PlesOrg && render(window.PlesOrg.data()); }
+    el.addEventListener("click", go);
+    el.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } });
   });
 
   window.PlesOrgSponsors = { render: render };
