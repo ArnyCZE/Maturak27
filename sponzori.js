@@ -3,26 +3,36 @@
    taky; když se tabulka nenačte, zůstane jen ten seznam.
    Ke každé firmě patří oficiální název (name), odkaz na její web a logo (DATA níže). Každá karta má stejně velkou dlaždici:
    s logem (bílá, u světlých log tmavá – dark: true), bez loga se v dlaždici ukáže název firmy.
-   Pod dlaždicí je vždy celý oficiální název.
-   Logo Kosmasu poslali e-mailem jako PDF – je v Arnoštově Google Drive sdílené odkazem (lh3.googleusercontent.com/d/<id>
-   vrací náhled jako obrázek). Bakla café má jen Facebook – bere se profilový obrázek jejich stránky. */
+   Pod dlaždicí je vždy celý oficiální název. Nový sponzor z tabulky se na webu objeví sám (zatím s názvem místo loga),
+   logo se doplní sem.
+   Loga poslaná e-mailem: Kosmas a Autoškola CHILL jako PDF v Arnoštově Google Drive (lh3.googleusercontent.com/d/<id>
+   vrací náhled jako obrázek), Východočeské divadlo jako soubor loga/vcd.png na tomhle webu.
+   Bakla café a VOGA – bere se profilový obrázek jejich facebookové stránky. */
 (function () {
   var URL = "https://docs.google.com/spreadsheets/d/18tbTqbiRGQaAFtXcp2peYWdz93SIBP-x7r0L-sKOW_0/gviz/tq?tqx=out:csv&sheet=Web&range=H2:H300";
 
   // klíč = název firmy z tabulky malými písmeny bez teček a čárek
   var DATA = {
+    "autoškola chill": { name: "Autoškola CHILL", url: "https://autoskolachill.cz/", logo: "https://lh3.googleusercontent.com/d/1EKWN44YCuMn9u3PHrbMWbR25pVUcOeNn=w800" },
     "bakla café": { name: "Bakla café", url: "https://www.facebook.com/baklacafe", logo: "https://graph.facebook.com/baklacafe/picture?type=large" },
+    "balonklub chrudim": { name: "Balonklub Chrudim", url: "https://www.balonklub.cz/", logo: "https://www.balonklub.cz/wp-content/themes/balonklub/assets/img/logo-black.png" },
     "de franc": { name: "DE FRANC – cukrářská dílna", url: "https://www.defranc.cz/", logo: "https://www.defranc.cz/element/simple/image/9/0/7d180045191dcba5.png?sirka=504&vyska=180", dark: true },
     "fk pardubice": { name: "FK Pardubice", url: "https://www.fkpardubice.cz/", logo: "https://fkpardubice.esports.cz/files/logos/FKP_ikona_kruhova_pcervena_RGB.png" },
     "fronte s r o": { name: "fronte tiskárny, s.r.o.", url: "https://www.fronte.cz/", logo: "https://www.fronte.cz/img/logo.png" },
     "choceňská mlékárna": { name: "Choceňská mlékárna s.r.o.", url: "https://www.chocenskamlekarna.cz/", logo: "https://www.chocenskamlekarna.cz/wp-content/uploads/2021/03/chm_logo_200.png" },
+    "iq park ideon": { name: "IQ PARK IDEON", url: "https://www.iqparkideon.cz/" },
     "kara trutnov": { name: "KARA Trutnov a.s.", url: "https://kara.cz/", logo: "https://kara.cz/img/logo.svg" },
     "knihkupectví kosmas pardubice": { name: "Knihkupectví Kosmas Pardubice", url: "https://www.kosmas.cz/", logo: "https://lh3.googleusercontent.com/d/1nbuNVZ5zy8GH2W3Kfry8GMDhxJ36sqlB=w800" },
     "komorní filharmonie pardubice": { name: "Komorní filharmonie Pardubice", url: "https://www.kfpar.cz/", logo: "https://www.kfpar.cz/data/filecache/ff/kfp_logo_zakladni_barva_2_1.png", dark: true },
     "kutil cz": { name: "Železářství KUTIL, s.r.o.", url: "https://www.kutil.cz/", logo: "https://www.kutil.cz/images/logo.png" },
     "leoexpress": { name: "Leo Express", url: "https://www.leoexpress.com/cs", logo: "https://upload.wikimedia.org/wikipedia/commons/2/2f/Leo_Express.svg" },
+    "letiště pardubice": { name: "Letiště Pardubice", url: "https://www.airport-pardubice.cz/", logo: "https://www.airport-pardubice.cz/wp-content/uploads/2026/03/letiste-pardubice-logo-barva.svg" },
     "město pardubice": { name: "Statutární město Pardubice", url: "https://pardubice.eu/", logo: "https://upload.wikimedia.org/wikipedia/commons/d/d6/Pardubice_logo.svg" },
+    "restaart": { name: "RESTAART – sportovní centrum", url: "https://www.restaart.cz/", logo: "https://www.restaart.cz/static-icons/brand_logo.svg" },
+    "salori": { name: "SALORI – Saunová zahrada", url: "https://www.salori.cz/" },
     "vak": { name: "Vodovody a kanalizace Pardubice, a.s.", url: "https://www.vakpce.cz/", logo: "https://www.vakpce.cz/data/filecache/90/vak-text-as-prave-logo-full-color-rgb-900px-w-72ppi.png" },
+    "voga": { name: "VOGA – dámská móda", url: "https://www.voga-moda.cz/", logo: "https://graph.facebook.com/vogamodaobchod/picture?type=large" },
+    "východočeské divadlo": { name: "Východočeské divadlo Pardubice", url: "https://www.vcd.cz/", logo: "loga/vcd.png" },
     "ploty dobrý": { name: "Ploty Dobrý", url: "https://www.levne-pletivo.cz/", logo: "https://cdn.myshoptet.com/usr/www.levne-pletivo.cz/user/logos/logo-ploty-dobry-764x180-5.png" },
     "2vv s r o": { name: "2VV s.r.o.", url: "https://www.2vv.cz/", logo: "https://www.2vv.cz/wp-content/uploads/logo-2vv.svg" },
     "pivovar svijany": { name: "Pivovar Svijany, a.s.", url: "https://www.pivovarsvijany.cz/", logo: "https://www.pivovarsvijany.cz/Fe/images/logo-pivovarsvijany.svg" }
