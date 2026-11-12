@@ -7,13 +7,15 @@
    logo se doplní sem.
    Loga poslaná e-mailem: Kosmas a Autoškola CHILL jako PDF v Arnoštově Google Drive (lh3.googleusercontent.com/d/<id>
    vrací náhled jako obrázek), Východočeské divadlo jako soubor loga/vcd.png na tomhle webu.
-   Bakla café a VOGA – bere se profilový obrázek jejich facebookové stránky. */
+   Bakla café a VOGA – bere se profilový obrázek jejich facebookové stránky.
+   Autoškola No.1 – logo zatím neposlali (slíbili), do té doby dlaždice s názvem. */
 (function () {
   var URL = "https://docs.google.com/spreadsheets/d/18tbTqbiRGQaAFtXcp2peYWdz93SIBP-x7r0L-sKOW_0/gviz/tq?tqx=out:csv&sheet=Web&range=H2:H300";
 
   // klíč = název firmy z tabulky malými písmeny bez teček a čárek
   var DATA = {
     "autoškola chill": { name: "Autoškola CHILL", url: "https://autoskolachill.cz/", logo: "https://lh3.googleusercontent.com/d/1EKWN44YCuMn9u3PHrbMWbR25pVUcOeNn=w800" },
+    "autoškola no 1": { name: "Autoškola No.1", url: "https://www.autoskola-no1.cz/" },
     "bakla café": { name: "Bakla café", url: "https://www.facebook.com/baklacafe", logo: "https://graph.facebook.com/baklacafe/picture?type=large" },
     "balonklub chrudim": { name: "Balonklub Chrudim", url: "https://www.balonklub.cz/", logo: "https://www.balonklub.cz/wp-content/themes/balonklub/assets/img/logo-black.png" },
     "de franc": { name: "DE FRANC – cukrářská dílna", url: "https://www.defranc.cz/", logo: "https://www.defranc.cz/element/simple/image/9/0/7d180045191dcba5.png?sirka=504&vyska=180", dark: true },
