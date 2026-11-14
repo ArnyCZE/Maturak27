@@ -6,16 +6,15 @@
    Pod dlaždicí je vždy celý oficiální název. Nový sponzor z tabulky se na webu objeví sám (zatím s názvem místo loga),
    logo se doplní sem.
    Loga poslaná e-mailem: Kosmas a Autoškola CHILL jako PDF v Arnoštově Google Drive (lh3.googleusercontent.com/d/<id>
-   vrací náhled jako obrázek), Východočeské divadlo jako soubor loga/vcd.png na tomhle webu.
-   Bakla café a VOGA – bere se profilový obrázek jejich facebookové stránky.
-   Autoškola No.1 – logo zatím neposlali (slíbili), do té doby dlaždice s názvem. */
+   vrací náhled jako obrázek), Východočeské divadlo a Autoškola No.1 jako soubory ve složce loga/ na tomhle webu.
+   Bakla café a VOGA – bere se profilový obrázek jejich facebookové stránky. */
 (function () {
   var URL = "https://docs.google.com/spreadsheets/d/18tbTqbiRGQaAFtXcp2peYWdz93SIBP-x7r0L-sKOW_0/gviz/tq?tqx=out:csv&sheet=Web&range=H2:H300";
 
   // klíč = název firmy z tabulky malými písmeny bez teček a čárek
   var DATA = {
     "autoškola chill": { name: "Autoškola CHILL", url: "https://autoskolachill.cz/", logo: "https://lh3.googleusercontent.com/d/1EKWN44YCuMn9u3PHrbMWbR25pVUcOeNn=w800" },
-    "autoškola no 1": { name: "Autoškola No.1", url: "https://www.autoskola-no1.cz/" },
+    "autoškola no 1": { name: "Autoškola No.1", url: "https://www.autoskola-no1.cz/", logo: "loga/autoskola-no1.jpg" },
     "bakla café": { name: "Bakla café", url: "https://www.facebook.com/baklacafe", logo: "https://graph.facebook.com/baklacafe/picture?type=large" },
     "balonklub chrudim": { name: "Balonklub Chrudim", url: "https://www.balonklub.cz/", logo: "https://www.balonklub.cz/wp-content/themes/balonklub/assets/img/logo-black.png" },
     "de franc": { name: "DE FRANC – cukrářská dílna", url: "https://www.defranc.cz/", logo: "https://www.defranc.cz/element/simple/image/9/0/7d180045191dcba5.png?sirka=504&vyska=180", dark: true },
@@ -32,6 +31,7 @@
     "město pardubice": { name: "Statutární město Pardubice", url: "https://pardubice.eu/", logo: "https://upload.wikimedia.org/wikipedia/commons/d/d6/Pardubice_logo.svg" },
     "restaart": { name: "RESTAART – sportovní centrum", url: "https://www.restaart.cz/", logo: "https://www.restaart.cz/static-icons/brand_logo.svg" },
     "salori": { name: "SALORI – Saunová zahrada", url: "https://www.salori.cz/" },
+    "univerzita pardubice": { name: "Univerzita Pardubice", url: "https://www.upce.cz/" },
     "vak": { name: "Vodovody a kanalizace Pardubice, a.s.", url: "https://www.vakpce.cz/", logo: "https://www.vakpce.cz/data/filecache/90/vak-text-as-prave-logo-full-color-rgb-900px-w-72ppi.png" },
     "voga": { name: "VOGA – dámská móda", url: "https://www.voga-moda.cz/", logo: "https://graph.facebook.com/vogamodaobchod/picture?type=large" },
     "východočeské divadlo": { name: "Východočeské divadlo Pardubice", url: "https://www.vcd.cz/", logo: "loga/vcd.png" },
