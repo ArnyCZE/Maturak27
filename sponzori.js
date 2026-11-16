@@ -31,6 +31,7 @@
     "město pardubice": { name: "Statutární město Pardubice", url: "https://pardubice.eu/", logo: "https://upload.wikimedia.org/wikipedia/commons/d/d6/Pardubice_logo.svg" },
     "restaart": { name: "RESTAART – sportovní centrum", url: "https://www.restaart.cz/", logo: "https://www.restaart.cz/static-icons/brand_logo.svg" },
     "salori": { name: "SALORI – Saunová zahrada", url: "https://www.salori.cz/" },
+    "solárium luxur": { name: "Luxur – solární a výživové studio", url: "https://www.solarium-luxur.cz/" },
     "univerzita pardubice": { name: "Univerzita Pardubice", url: "https://www.upce.cz/" },
     "vak": { name: "Vodovody a kanalizace Pardubice, a.s.", url: "https://www.vakpce.cz/", logo: "https://www.vakpce.cz/data/filecache/90/vak-text-as-prave-logo-full-color-rgb-900px-w-72ppi.png" },
     "voga": { name: "VOGA – dámská móda", url: "https://www.voga-moda.cz/", logo: "https://graph.facebook.com/vogamodaobchod/picture?type=large" },
