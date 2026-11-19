@@ -4,9 +4,10 @@
    Ke každé firmě patří oficiální název (name), odkaz na její web a logo (DATA níže). Každá karta má stejně velkou dlaždici:
    s logem (bílá, u světlých log tmavá – dark: true), bez loga se v dlaždici ukáže název firmy.
    Pod dlaždicí je vždy celý oficiální název. Nový sponzor z tabulky se na webu objeví sám (zatím s názvem místo loga),
-   logo se doplní sem.
-   Loga poslaná e-mailem: Kosmas a Autoškola CHILL jako PDF v Arnoštově Google Drive (lh3.googleusercontent.com/d/<id>
-   vrací náhled jako obrázek), Východočeské divadlo a Autoškola No.1 jako soubory ve složce loga/ na tomhle webu.
+   logo se doplní sem. partner: true = firma nechce být uváděna jako sponzor, pod názvem se ukáže „partner plesu“.
+   Loga poslaná e-mailem: Kosmas, Autoškola CHILL a Pivovar Neratov jako PDF v Arnoštově Google Drive
+   (lh3.googleusercontent.com/d/<id> vrací náhled jako obrázek), Východočeské divadlo, Autoškola No.1 a Divadlo Drak
+   jako soubory ve složce loga/ na tomhle webu.
    Bakla café a VOGA – bere se profilový obrázek jejich facebookové stránky. */
 (function () {
   var URL = "https://docs.google.com/spreadsheets/d/18tbTqbiRGQaAFtXcp2peYWdz93SIBP-x7r0L-sKOW_0/gviz/tq?tqx=out:csv&sheet=Web&range=H2:H300";
@@ -18,6 +19,7 @@
     "bakla café": { name: "Bakla café", url: "https://www.facebook.com/baklacafe", logo: "https://graph.facebook.com/baklacafe/picture?type=large" },
     "balonklub chrudim": { name: "Balonklub Chrudim", url: "https://www.balonklub.cz/", logo: "https://www.balonklub.cz/wp-content/themes/balonklub/assets/img/logo-black.png" },
     "de franc": { name: "DE FRANC – cukrářská dílna", url: "https://www.defranc.cz/", logo: "https://www.defranc.cz/element/simple/image/9/0/7d180045191dcba5.png?sirka=504&vyska=180", dark: true },
+    "divadlo drak": { name: "Divadlo Drak", url: "https://www.draktheatre.cz/", logo: "loga/drak.png", partner: true },
     "fk pardubice": { name: "FK Pardubice", url: "https://www.fkpardubice.cz/", logo: "https://fkpardubice.esports.cz/files/logos/FKP_ikona_kruhova_pcervena_RGB.png" },
     "fronte s r o": { name: "fronte tiskárny, s.r.o.", url: "https://www.fronte.cz/", logo: "https://www.fronte.cz/img/logo.png" },
     "choceňská mlékárna": { name: "Choceňská mlékárna s.r.o.", url: "https://www.chocenskamlekarna.cz/", logo: "https://www.chocenskamlekarna.cz/wp-content/uploads/2021/03/chm_logo_200.png" },
@@ -30,7 +32,8 @@
     "letiště pardubice": { name: "Letiště Pardubice", url: "https://www.airport-pardubice.cz/", logo: "https://www.airport-pardubice.cz/wp-content/uploads/2026/03/letiste-pardubice-logo-barva.svg" },
     "město pardubice": { name: "Statutární město Pardubice", url: "https://pardubice.eu/", logo: "https://upload.wikimedia.org/wikipedia/commons/d/d6/Pardubice_logo.svg" },
     "muzeum východních čech": { name: "Muzeum východních Čech v Hradci Králové", url: "https://www.muzeumhk.cz/" },
-    "pivovar neratov": { name: "Pivovar Neratov", url: "https://www.pivovarneratov.cz/" },
+    "pivovar neratov": { name: "Pivovar Neratov", url: "https://pivovarneratov.cz/", logo: "https://lh3.googleusercontent.com/d/1_0WChEDhRc3-VulerLbKZBfWIRr2kCH3=w800" },
+    "regionální muzeum v chrudimi": { name: "Regionální muzeum v Chrudimi", url: "https://www.muzeumcr.cz/" },
     "restaart": { name: "RESTAART – sportovní centrum", url: "https://www.restaart.cz/", logo: "https://www.restaart.cz/static-icons/brand_logo.svg" },
     "salori": { name: "SALORI – Saunová zahrada", url: "https://www.salori.cz/" },
     "saunový ráj holice": { name: "Saunový ráj Holice", url: "https://www.saunovyraj.cz/" },
@@ -63,7 +66,7 @@
     var tile = document.createElement("span");
     var label = document.createElement("span");
     label.className = "s-name";
-    label.textContent = full;
+    label.textContent = d.partner ? full + " (partner plesu)" : full;
 
     function textTile() {
       tile.className = "s-logo s-text";
