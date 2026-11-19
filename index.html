@@ -9,8 +9,8 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Cinzel:wght@500;700&family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=22">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Cinzel:wght@500;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Montserrat:wght@300;400;600;800&family=Pinyon+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=23">
 </head>
 <body>
 
@@ -22,11 +22,11 @@
 
 <a class="scroll-clock" href="#top" aria-label="Zpět nahoru">
   <svg viewBox="0 0 60 60">
-    <circle cx="30" cy="30" r="22" fill="none" stroke="rgba(230,184,79,.25)" stroke-width="2"/>
-    <circle id="sc-ring" cx="30" cy="30" r="22" fill="none" stroke="#e6b84f" stroke-width="2"
+    <circle cx="30" cy="30" r="22" fill="none" stroke="rgba(240,225,195,.25)" stroke-width="2"/>
+    <circle id="sc-ring" cx="30" cy="30" r="22" fill="none" stroke="#d6b67c" stroke-width="2"
             stroke-dasharray="138.2" stroke-dashoffset="138.2" transform="rotate(-90 30 30)" stroke-linecap="round"/>
-    <line id="sc-hand" x1="30" y1="30" x2="30" y2="14" stroke="#fff1b8" stroke-width="2" stroke-linecap="round" style="transform-origin:30px 30px"/>
-    <circle cx="30" cy="30" r="2.5" fill="#fff1b8"/>
+    <line id="sc-hand" x1="30" y1="30" x2="30" y2="14" stroke="#fff6e6" stroke-width="2" stroke-linecap="round" style="transform-origin:30px 30px"/>
+    <circle cx="30" cy="30" r="2.5" fill="#fff6e6"/>
   </svg>
 </a>
 
@@ -46,18 +46,19 @@
 
       <h1 class="title">
         <span class="line"><span>Back to the</span></span>
-        <span class="line"><span>Future</span></span>
+        <span class="line script"><span>future</span></span>
       </h1>
+      <div class="ornament" aria-hidden="true"><i></i><span>✦</span><i></i></div>
 
       <div class="hero-info">
         <div class="item">
           <svg viewBox="0 0 34 46" aria-hidden="true">
-            <defs><linearGradient id="hg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff1b8"/><stop offset=".5" stop-color="#d79b23"/><stop offset="1" stop-color="#fbe38a"/></linearGradient></defs>
+            <defs><linearGradient id="hg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fffaf0"/><stop offset=".5" stop-color="#c9a165"/><stop offset="1" stop-color="#f1dfb8"/></linearGradient></defs>
             <rect x="2" y="1" width="30" height="4" rx="1.5" fill="url(#hg)"/>
             <rect x="2" y="41" width="30" height="4" rx="1.5" fill="url(#hg)"/>
             <path d="M6 5 C6 16 15 19 15 23 C15 27 6 30 6 41 M28 5 C28 16 19 19 19 23 C19 27 28 30 28 41" fill="none" stroke="url(#hg)" stroke-width="1.6"/>
-            <path d="M10 36 Q17 30 24 36 L26 40 L8 40 Z" fill="#f4cf63"/>
-            <path d="M11 11 L23 11 Q17 18 17 21 Q17 18 11 11 Z" fill="#f4cf63" opacity=".8"/>
+            <path d="M10 36 Q17 30 24 36 L26 40 L8 40 Z" fill="#ead6aa"/>
+            <path d="M11 11 L23 11 Q17 18 17 21 Q17 18 11 11 Z" fill="#ead6aa" opacity=".8"/>
           </svg>
           <b>30.1.2027<br>18:00</b>
         </div>
@@ -67,24 +68,25 @@
     </div>
 
     <div class="big-clock">
+      <div class="swirl" aria-hidden="true"></div>
       <svg viewBox="0 0 400 400" id="hero-clock" role="img" aria-label="Hodiny ukazující aktuální čas">
         <defs>
           <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#fff6c8"/>
-            <stop offset=".35" stop-color="#d79b23"/>
-            <stop offset=".6" stop-color="#fbe38a"/>
-            <stop offset="1" stop-color="#9a6a12"/>
+            <stop offset="0" stop-color="#fffaf0"/>
+            <stop offset=".35" stop-color="#c9a165"/>
+            <stop offset=".6" stop-color="#f1dfb8"/>
+            <stop offset="1" stop-color="#8a6a3a"/>
           </linearGradient>
         </defs>
-        <circle cx="200" cy="200" r="196" fill="none" stroke="url(#rim)" stroke-width="6"/>
-        <circle cx="200" cy="200" r="184" fill="#000" stroke="url(#rim)" stroke-width="1.5"/>
-        <line x1="200" y1="30" x2="200" y2="370" stroke="#f4cf63" stroke-width="2" stroke-dasharray="2 7" stroke-linecap="round" opacity=".8"/>
+        <circle cx="200" cy="200" r="196" fill="none" stroke="url(#rim)" stroke-width="3"/>
+        <circle cx="200" cy="200" r="184" fill="#000" stroke="url(#rim)" stroke-width="1"/>
+        <line x1="200" y1="30" x2="200" y2="370" stroke="#ead6aa" stroke-width="2" stroke-dasharray="2 7" stroke-linecap="round" opacity=".6"/>
         <g class="ticks"></g>
-        <g class="numerals" font-family="Cinzel, serif" font-weight="700" font-size="34" fill="url(#rim)" text-anchor="middle" dominant-baseline="central"></g>
-        <line class="hand hand-h" x1="200" y1="214" x2="200" y2="112" stroke="url(#rim)" stroke-width="7" stroke-linecap="round"/>
-        <line class="hand hand-m" x1="200" y1="222" x2="200" y2="52" stroke="#fff1b8" stroke-width="4" stroke-linecap="round"/>
-        <line class="hand hand-s" x1="200" y1="236" x2="200" y2="40" stroke="#f4cf63" stroke-width="1.4" stroke-linecap="round"/>
-        <circle cx="200" cy="200" r="8" fill="#f4cf63"/>
+        <g class="numerals" font-family="Cinzel, serif" font-weight="500" font-size="34" fill="url(#rim)" text-anchor="middle" dominant-baseline="central"></g>
+        <line class="hand hand-h" x1="200" y1="214" x2="200" y2="112" stroke="url(#rim)" stroke-width="6" stroke-linecap="round"/>
+        <line class="hand hand-m" x1="200" y1="222" x2="200" y2="52" stroke="#fff6e6" stroke-width="3" stroke-linecap="round"/>
+        <line class="hand hand-s" x1="200" y1="236" x2="200" y2="40" stroke="#ead6aa" stroke-width="1.2" stroke-linecap="round"/>
+        <circle cx="200" cy="200" r="7" fill="#ead6aa"/>
       </svg>
     </div>
   </div>
@@ -167,17 +169,17 @@
           <svg viewBox="0 0 400 400" id="prog-clock" aria-hidden="true">
             <defs>
               <linearGradient id="rim2" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stop-color="#fff6c8"/><stop offset=".35" stop-color="#d79b23"/>
-                <stop offset=".6" stop-color="#fbe38a"/><stop offset="1" stop-color="#9a6a12"/>
+                <stop offset="0" stop-color="#fffaf0"/><stop offset=".35" stop-color="#c9a165"/>
+                <stop offset=".6" stop-color="#f1dfb8"/><stop offset="1" stop-color="#8a6a3a"/>
               </linearGradient>
             </defs>
-            <circle cx="200" cy="200" r="192" fill="#000" stroke="url(#rim2)" stroke-width="5"/>
-            <line x1="200" y1="30" x2="200" y2="370" stroke="#f4cf63" stroke-width="2" stroke-dasharray="2 7" stroke-linecap="round" opacity=".6"/>
+            <circle cx="200" cy="200" r="192" fill="#000" stroke="url(#rim2)" stroke-width="3"/>
+            <line x1="200" y1="30" x2="200" y2="370" stroke="#ead6aa" stroke-width="2" stroke-dasharray="2 7" stroke-linecap="round" opacity=".5"/>
             <g class="ticks"></g>
-            <g class="numerals" font-family="Cinzel, serif" font-weight="700" font-size="34" fill="url(#rim2)" text-anchor="middle" dominant-baseline="central"></g>
-            <line class="hand hand-h" x1="200" y1="214" x2="200" y2="112" stroke="url(#rim2)" stroke-width="8" stroke-linecap="round"/>
-            <line class="hand hand-m" x1="200" y1="222" x2="200" y2="56" stroke="#fff1b8" stroke-width="4.5" stroke-linecap="round"/>
-            <circle cx="200" cy="200" r="8" fill="#f4cf63"/>
+            <g class="numerals" font-family="Cinzel, serif" font-weight="500" font-size="34" fill="url(#rim2)" text-anchor="middle" dominant-baseline="central"></g>
+            <line class="hand hand-h" x1="200" y1="214" x2="200" y2="112" stroke="url(#rim2)" stroke-width="7" stroke-linecap="round"/>
+            <line class="hand hand-m" x1="200" y1="222" x2="200" y2="56" stroke="#fff6e6" stroke-width="3.5" stroke-linecap="round"/>
+            <circle cx="200" cy="200" r="7" fill="#ead6aa"/>
           </svg>
           <div>
             <div class="prog-now" id="prog-now">18:00</div>
