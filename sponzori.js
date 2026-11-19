@@ -5,9 +5,9 @@
    s logem (bílá, u světlých log tmavá – dark: true), bez loga se v dlaždici ukáže název firmy.
    Pod dlaždicí je vždy celý oficiální název. Nový sponzor z tabulky se na webu objeví sám (zatím s názvem místo loga),
    logo se doplní sem. partner: true = firma nechce být uváděna jako sponzor, pod názvem se ukáže „partner plesu“.
-   Loga poslaná e-mailem: Kosmas, Autoškola CHILL a Pivovar Neratov jako PDF v Arnoštově Google Drive
+   Loga poslaná e-mailem: Kosmas a Autoškola CHILL jako PDF v Arnoštově Google Drive
    (lh3.googleusercontent.com/d/<id> vrací náhled jako obrázek), Východočeské divadlo, Autoškola No.1 a Divadlo Drak
-   jako soubory ve složce loga/ na tomhle webu.
+   jako soubory ve složce loga/ na tomhle webu. Pivovar Neratov – SVG logo z jejich webu (PDF od nich mělo na 1. straně jen titulek).
    Bakla café a VOGA – bere se profilový obrázek jejich facebookové stránky. */
 (function () {
   var URL = "https://docs.google.com/spreadsheets/d/18tbTqbiRGQaAFtXcp2peYWdz93SIBP-x7r0L-sKOW_0/gviz/tq?tqx=out:csv&sheet=Web&range=H2:H300";
@@ -32,7 +32,7 @@
     "letiště pardubice": { name: "Letiště Pardubice", url: "https://www.airport-pardubice.cz/", logo: "https://www.airport-pardubice.cz/wp-content/uploads/2026/03/letiste-pardubice-logo-barva.svg" },
     "město pardubice": { name: "Statutární město Pardubice", url: "https://pardubice.eu/", logo: "https://upload.wikimedia.org/wikipedia/commons/d/d6/Pardubice_logo.svg" },
     "muzeum východních čech": { name: "Muzeum východních Čech v Hradci Králové", url: "https://www.muzeumhk.cz/" },
-    "pivovar neratov": { name: "Pivovar Neratov", url: "https://pivovarneratov.cz/", logo: "https://lh3.googleusercontent.com/d/1_0WChEDhRc3-VulerLbKZBfWIRr2kCH3=w800" },
+    "pivovar neratov": { name: "Pivovar Neratov", url: "https://pivovarneratov.cz/", logo: "https://pivovarneratov.cz/wp-content/uploads/2022/04/Logo_Neratov_03_krivky.svg" },
     "regionální muzeum v chrudimi": { name: "Regionální muzeum v Chrudimi", url: "https://www.muzeumcr.cz/" },
     "restaart": { name: "RESTAART – sportovní centrum", url: "https://www.restaart.cz/", logo: "https://www.restaart.cz/static-icons/brand_logo.svg" },
     "salori": { name: "SALORI – Saunová zahrada", url: "https://www.salori.cz/" },
