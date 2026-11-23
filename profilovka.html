@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Profilovky na Instagram – Maturitní ples 2027</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Cormorant+Garamond:wght@500;600&family=Pinyon+Script&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: #0b0a08; color: #f3e6c9; font-family: "Cormorant Garamond", serif; text-align: center; }
+  h1 { font-weight: 500; letter-spacing: .12em; margin: 2rem 1rem .4rem; }
+  p { color: #b9ab8f; margin: 0 1rem 2rem; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; max-width: 1200px; margin: 0 auto; padding: 0 1rem 3rem; }
+  figure { margin: 0; }
+  canvas { width: 100%; height: auto; border-radius: 50%; box-shadow: 0 0 0 1px rgba(243,230,201,.25), 0 20px 50px rgba(0,0,0,.7); }
+  canvas.sq { border-radius: 12px; }
+  figcaption { margin-top: .8rem; font-size: 1.2rem; }
+  button { font: 600 .9rem "Cinzel", serif; letter-spacing: .12em; margin-top: .6rem; padding: .8rem 1.4rem; border: 1px solid #d6b67c; background: #f3e6c9; color: #14100a; border-radius: 2px; cursor: pointer; }
+  label { display: block; margin: 0 0 1.5rem; color: #b9ab8f; }
+</style>
+</head>
+<body>
+<h1>PROFILOVKY NA INSTAGRAM</h1>
+<p>4 návrhy ve stylu vstupenky · 1080 × 1080 px · klikni na „Stáhnout“</p>
+<label><input type="checkbox" id="square"> ukázat jako čtverec (Instagram je ořízne do kruhu)</label>
+<div class="grid" id="grid"></div>
+
+<script>
+(function () {
+  var S = 1080, C = S / 2;
+  var CREAM = "#f3e6c9", CHAMP = "#e6cfa0", GOLD = "#c9a165";
+
+  function star(ctx, x, y, r, a) {
+    ctx.save(); ctx.translate(x, y); ctx.globalAlpha = a == null ? 1 : a;
+    var g = ctx.createRadialGradient(0, 0, 0, 0, 0, r * 2.2);
+    g.addColorStop(0, "rgba(255,246,225,.9)"); g.addColorStop(1, "rgba(255,246,225,0)");
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, r * 2.2, 0, 7); ctx.fill();
+    ctx.fillStyle = "#fffaf0"; ctx.beginPath();
+    ctx.moveTo(0, -r); ctx.quadraticCurveTo(r * .12, -r * .12, r, 0); ctx.quadraticCurveTo(r * .12, r * .12, 0, r);
+    ctx.quadraticCurveTo(-r * .12, r * .12, -r, 0); ctx.quadraticCurveTo(-r * .12, -r * .12, 0, -r); ctx.fill();
+    ctx.restore();
+  }
+  function bg(ctx, cx, cy) {
+    ctx.fillStyle = "#000"; ctx.fillRect(0, 0, S, S);
+    var g = ctx.createRadialGradient(cx, cy, 0, cx, cy, S * .6);
+    g.addColorStop(0, "rgba(201,161,101,.18)"); g.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, S, S);
+  }
+  function dust(ctx, cx, cy, rMin, rMax, n, seed) {
+    var s = seed || 1; function rnd() { s = (s * 9301 + 49297) % 233280; return s / 233280; }
+    for (var i = 0; i < n; i++) {
+      var a = rnd() * Math.PI * 2, r = rMin + rnd() * (rMax - rMin);
+      ctx.fillStyle = "rgba(255,240,210," + (.15 + rnd() * .7) + ")";
+      ctx.beginPath(); ctx.arc(cx + Math.cos(a) * r, cy + Math.sin(a) * r, rnd() * 2.2 + .3, 0, 7); ctx.fill();
+    }
+  }
+  function swirl(ctx, cx, cy, R, turns, seed) {
+    var s = seed || 7; function rnd() { s = (s * 9301 + 49297) % 233280; return s / 233280; }
+    ctx.save(); ctx.translate(cx, cy); ctx.globalCompositeOperation = "lighter";
+    for (var k = 0; k < 9; k++) {
+      ctx.beginPath();
+      var off = k * 0.7, w = 1 + rnd() * 3;
+      for (var t = 0; t <= 1; t += 0.004) {
+        var ang = off + t * Math.PI * 2 * turns, r = R * (0.12 + t * 0.9);
+        var x = Math.cos(ang) * r, y = Math.sin(ang) * r * 0.92;
+        if (t === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = "rgba(240,215,165," + (0.18 + rnd() * 0.3) + ")"; ctx.lineWidth = w;
+      ctx.shadowColor = "rgba(255,220,160,.9)"; ctx.shadowBlur = 18; ctx.stroke();
+    }
+    ctx.shadowBlur = 0;
+    for (var i = 0; i < 900; i++) {
+      var tt = rnd(), ang2 = rnd() * 6 + tt * Math.PI * 2 * turns, rr = R * (0.1 + tt * 0.95);
+      ctx.fillStyle = "rgba(255,238,200," + (rnd() * .8) + ")";
+      ctx.beginPath(); ctx.arc(Math.cos(ang2) * rr, Math.sin(ang2) * rr * .92, rnd() * 1.8 + .2, 0, 7); ctx.fill();
+    }
+    ctx.restore();
+  }
+  function clock(ctx, cx, cy, R, h, m) {
+    ctx.save(); ctx.translate(cx, cy);
+    var g = ctx.createLinearGradient(-R, -R, R, R);
+    g.addColorStop(0, "#fffaf0"); g.addColorStop(.35, GOLD); g.addColorStop(.6, "#f1dfb8"); g.addColorStop(1, "#8a6a3a");
+    ctx.strokeStyle = g; ctx.lineWidth = R * .035; ctx.beginPath(); ctx.arc(0, 0, R, 0, 7); ctx.stroke();
+    ctx.lineWidth = R * .01; ctx.beginPath(); ctx.arc(0, 0, R * .93, 0, 7); ctx.stroke();
+    for (var i = 0; i < 60; i++) {
+      var a = i / 60 * Math.PI * 2, big = i % 5 === 0;
+      ctx.lineWidth = big ? R * .018 : R * .006;
+      ctx.beginPath(); ctx.moveTo(Math.sin(a) * R * (big ? .82 : .87), -Math.cos(a) * R * (big ? .82 : .87));
+      ctx.lineTo(Math.sin(a) * R * .91, -Math.cos(a) * R * .91); ctx.stroke();
+    }
+    var nums = ["XII","I","II","III","IV","V","VI","VII","VIII","IX","X","XI"];
+    ctx.fillStyle = g; ctx.font = "600 " + Math.round(R * .14) + "px Cinzel"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    nums.forEach(function (n, i) { var a = i / 12 * Math.PI * 2; ctx.fillText(n, Math.sin(a) * R * .68, -Math.cos(a) * R * .68); });
+    ctx.lineCap = "round";
+    ctx.lineWidth = R * .03; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(Math.sin(h) * R * .42, -Math.cos(h) * R * .42); ctx.stroke();
+    ctx.lineWidth = R * .016; ctx.strokeStyle = "#fff6e6"; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(Math.sin(m) * R * .62, -Math.cos(m) * R * .62); ctx.stroke();
+    ctx.restore();
+    star(ctx, cx, cy, R * .09);
+  }
+  function text(ctx, t, x, y, font, color, spacing) {
+    ctx.save(); ctx.fillStyle = color || CREAM; ctx.font = font; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    if (spacing) { try { ctx.letterSpacing = spacing + "px"; } catch (e) {} }
+    ctx.shadowColor = "rgba(255,220,160,.45)"; ctx.shadowBlur = 24; ctx.fillText(t, x, y); ctx.restore();
+  }
+  function line(ctx, x1, x2, y) {
+    var g = ctx.createLinearGradient(x1, 0, x2, 0);
+    g.addColorStop(0, "rgba(243,230,201,0)"); g.addColorStop(.5, "rgba(243,230,201,.9)"); g.addColorStop(1, "rgba(243,230,201,0)");
+    ctx.strokeStyle = g; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(x2, y); ctx.stroke();
+  }
+
+  var designs = [
+    { name: "1 · Hodiny a „future“", draw: function (ctx) {
+      bg(ctx, C, C); dust(ctx, C, C, 330, 520, 500, 3);
+      clock(ctx, C, C - 30, 330, 2.1, 5.9);
+      ctx.fillStyle = "rgba(0,0,0,.55)"; ctx.fillRect(0, 640, S, 260);
+      text(ctx, "future", C, 735, "190px 'Pinyon Script'", CHAMP);
+      line(ctx, 330, 750, 850); star(ctx, C, 850, 16);
+      text(ctx, "4.F & 4.H · 2027", C, 905, "600 44px 'Cormorant Garamond'", CREAM, 8);
+    } },
+    { name: "2 · Monogram", draw: function (ctx) {
+      bg(ctx, C, C); dust(ctx, C, C, 0, 540, 700, 9);
+      ctx.strokeStyle = "rgba(243,230,201,.55)"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(C, C, 430, 0, 7); ctx.stroke();
+      ctx.strokeStyle = "rgba(243,230,201,.2)"; ctx.beginPath(); ctx.arc(C, C, 412, 0, 7); ctx.stroke();
+      text(ctx, "BACK TO THE", C, 390, "500 92px 'Cormorant Garamond'", CREAM, 14);
+      text(ctx, "future", C, 545, "230px 'Pinyon Script'", CHAMP);
+      line(ctx, 300, 780, 690); star(ctx, C, 690, 20); star(ctx, 300, 690, 8, .8); star(ctx, 780, 690, 8, .8);
+      text(ctx, "4.F & 4.H", C, 760, "600 48px Cinzel", CREAM, 10);
+      text(ctx, "2027", C, 830, "500 40px Cinzel", GOLD, 12);
+    } },
+    { name: "3 · Zlatý vír", draw: function (ctx) {
+      bg(ctx, C, C); swirl(ctx, C, C, 470, 1.6, 11);
+      star(ctx, C, C, 60); star(ctx, 250, 260, 14, .8); star(ctx, 830, 300, 10, .7); star(ctx, 800, 820, 16, .8);
+      text(ctx, "2027", C, 890, "600 70px Cinzel", CREAM, 18);
+      text(ctx, "4.F & 4.H", C, 190, "600 46px Cinzel", CREAM, 10);
+    } },
+    { name: "4 · Hodiny ve víru", draw: function (ctx) {
+      bg(ctx, C, C); swirl(ctx, C, C, 520, 1.3, 23);
+      ctx.fillStyle = "rgba(0,0,0,.6)"; ctx.beginPath(); ctx.arc(C, C, 300, 0, 7); ctx.fill();
+      clock(ctx, C, C, 290, 0.3, 4.2);
+      text(ctx, "future", C, 880, "150px 'Pinyon Script'", CHAMP);
+    } }
+  ];
+
+  var grid = document.getElementById("grid");
+  function render() {
+    grid.innerHTML = "";
+    designs.forEach(function (d, i) {
+      var fig = document.createElement("figure"), cv = document.createElement("canvas");
+      cv.width = cv.height = S; d.draw(cv.getContext("2d"));
+      if (document.getElementById("square").checked) cv.className = "sq";
+      var btn = document.createElement("button"); btn.textContent = "Stáhnout PNG";
+      btn.onclick = function () { var a = document.createElement("a"); a.download = "profilovka-maturak-" + (i + 1) + ".png"; a.href = cv.toDataURL("image/png"); a.click(); };
+      var cap = document.createElement("figcaption"); cap.textContent = d.name;
+      fig.appendChild(cv); fig.appendChild(cap); fig.appendChild(btn); grid.appendChild(fig);
+    });
+  }
+  document.getElementById("square").onchange = render;
+  Promise.all([
+    document.fonts.load("230px 'Pinyon Script'"), document.fonts.load("600 48px Cinzel"),
+    document.fonts.load("500 92px 'Cormorant Garamond'"), document.fonts.load("600 44px 'Cormorant Garamond'")
+  ]).then(render, render);
+})();
+</script>
+</body>
+</html>
