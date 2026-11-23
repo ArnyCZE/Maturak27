@@ -1,8 +1,9 @@
 /* Rozmístění stolů v Ideonu – přízemí přesně podle plánku od p. Vašíčka (PLESOVÉ USPOŘÁDÁNÍ STOLŮ V IDEONU),
-   galerie podle fotky z galerie nad barem:
+   galerie podle oficiálního plánku „Rozmístění stolů v IDEONU Pardubice“:
    - Velký sál: podium vlevo, taneční parket uprostřed, blok VS 10–29 vpravo před barem, VS 43–30 dole,
+   - Levý sál: LS 44–50 v jednom sloupci u levé stěny (LS 44–46 ještě v úrovni velkého sálu pod šatnami),
    - Levý a Pravý sál hned pod velkým sálem, vchody do nich mezerami v dolní řadě stolů (mezi 41/40 a 33/32),
-     mezi nimi WC a chodba ke vstupu,
+     mezi nimi WC a chodba ke vstupu; PS 70 vpravo v první řadě,
    - Galerie: ochoz do „U“ kolem velkého sálu; stůl G 27 je zrušený – je tam projekce.
    Souřadnice jsou v jednotkách plánku (přízemí = desetina pixelu Vašíčkova plánku),
    stůl = [označení, x, y, natočení] – střed stolu; natočení „v“ = nastojato, „h“ = naležato (jako na plánku).
@@ -47,7 +48,6 @@ window.IDEON_PLAN = (function () {
           { t: "Toalety pro účinkující", s: "WC účink.", x: 2.5, y: 20, w: 12, h: 4.8 },
           { t: "Šatna účinkujících 1", s: "Šatna 1", x: 2.5, y: 24.8, w: 12, h: 4.9 },
           { t: "Šatna účinkujících 2", s: "Šatna 2", x: 2.5, y: 29.7, w: 12, h: 6.4 },
-          { t: "Fotokoutek", s: "Foto", x: 2.5, y: 37.8, w: 15, h: 4.9 },
           { t: "Podium · kapela", s: "Podium", x: 21.7, y: 15.1, w: 13.7, h: 17.8, cls: "solid" },
           { t: "Taneční parket", s: "Parket", x: 38.1, y: 11.8, w: 24.8, h: 24.4, cls: "floor-dance" },
           { t: "Bar", x: 110, y: 11.8, w: 10.5, h: 18, cls: "bar" },
@@ -57,8 +57,7 @@ window.IDEON_PLAN = (function () {
           { t: "vstup", s: "", x: 88.6, y: 43.4, w: 7.8, h: 1.8, cls: "door" },
           { t: "WC", x: 57.3, y: 44.3, w: 5.6, h: 11.5 },
           { t: "WC", x: 71.2, y: 44.3, w: 5.6, h: 11.5 },
-          { t: "Vstup", x: 63.5, y: 62, w: 7.1, h: 9, cls: "door" },
-          { t: "Fotokoutek", s: "Foto", x: 109.8, y: 46, w: 10.2, h: 4.8 }
+          { t: "Vstup", x: 63.5, y: 62, w: 7.1, h: 9, cls: "door" }
         ],
         names: [
           { t: "Velký sál · po 6", x: 21.5, y: 3.8 },
@@ -80,13 +79,13 @@ window.IDEON_PLAN = (function () {
           at("VS", [43, 42, 41], [23.2, 28.7, 34.1], 40.3, "v"),
           at("VS", [40, 39, 38, 37, 36, 35, 34, 33], [47.8, 53.3, 58.8, 64.3, 69.8, 75.3, 80.9, 86.4], 40.3, "v"),
           at("VS", [32, 31, 30], [97.4, 102.9, 108.4], 40.3, "v"),
-          // Levý sál: LS 47–50 naležato u levé stěny, ostatní nastojato
-          colAt("LS", [47, 48, 49, 50], 7.4, [50, 53.4, 56.7, 60.1], "h"),
+          // Levý sál: LS 44–50 naležato v jednom sloupci u levé stěny, ostatní nastojato
+          colAt("LS", [44, 45, 46, 47, 48, 49, 50], 7.4, [40.1, 43.4, 46.7, 50, 53.4, 56.7, 60.1], "h"),
           at("LS", [62, 63, 64, 65], [26.1, 31.3, 47.8, 53.3], 48.4, "v"),
           at("LS", [58, 59, 60, 61], [26.1, 31.3, 42.3, 53.3], 56.7, "v"),
           at("LS", [51, 52, 53, 54, 55, 56, 57], [10.7, 26.1, 31.3, 42.3, 47.8, 53.3, 58.8], 65, "v"),
           // Pravý sál – vše nastojato
-          at("PS", [66, 67, 68, 69], [80.9, 86.4, 97.4, 105.9], 48.4, "v"),
+          at("PS", [66, 67, 68, 69, 70], [80.9, 86.4, 97.4, 105.9, 113.9], 48.4, "v"),
           at("PS", [74, 75, 76, 71, 72], [80.9, 91.9, 97.4, 108.4, 113.9], 56.7, "v"),
           at("PS", [77, 78, 79, 80, 81, 82, 83, 73], [75.4, 80.9, 86.4, 91.9, 97.4, 102.9, 108.4, 113.9], 65, "v")
         )
