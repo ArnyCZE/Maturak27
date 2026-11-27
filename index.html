@@ -3,284 +3,82 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Back to the Future – Maturitní ples 2027 | Gymnázium Pardubice, Dašická</title>
-<meta name="description" content="Maturitní ples tříd 4. F a 4. H Gymnázia Pardubice, Dašická – Back to the Future. Sobota 30. ledna 2027 od 18:00, Ideon Pardubice.">
+<title>Maturitní plesy 2027 | Gymnázium Pardubice, Dašická</title>
+<meta name="description" content="Maturitní plesy Gymnázia Pardubice, Dašická 2027: čtyřleté ročníky 4. F a 4. H (Back to the Future, 30. 1. 2027) a osmileté ročníky 8. A a 8. B (One Night in Brazil, 6. 2. 2027). Oba v Ideonu Pardubice.">
 <meta name="theme-color" content="#000000">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Cinzel:wght@500;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Montserrat:wght@300;400;600;800&family=Pinyon+Script&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=23">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Montserrat:wght@400;600;800&family=Pinyon+Script&family=Pacifico&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body { background: #000; color: #fff; font-family: Montserrat, system-ui, sans-serif; display: flex; flex-direction: column; min-height: 100vh; }
+  .top { text-align: center; padding: 34px 20px 18px; }
+  .top small { display: block; letter-spacing: .32em; text-transform: uppercase; font-size: 12px; color: #a9a39a; }
+  .top h1 { margin: 8px 0 0; font: 600 clamp(28px, 4vw, 46px)/1.1 "Cormorant Garamond", serif; letter-spacing: .04em; }
+  .split { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 0; min-height: 520px; }
+  .ball { position: relative; display: flex; flex-direction: column; justify-content: flex-end; padding: 44px clamp(22px, 4vw, 56px); text-decoration: none; color: inherit; overflow: hidden; isolation: isolate; }
+  .ball::before { content: ""; position: absolute; inset: 0; z-index: -1; transition: transform .6s ease, filter .6s ease; }
+  .ball:hover::before { transform: scale(1.04); }
+  .ball .who { font-size: 13px; letter-spacing: .28em; text-transform: uppercase; font-weight: 600; }
+  .ball h2 { margin: 6px 0 4px; font-weight: 400; line-height: 1; }
+  .ball .when { font-size: clamp(16px, 1.6vw, 20px); font-weight: 600; margin: 14px 0 2px; }
+  .ball .where { font-size: 14px; opacity: .8; }
+  .ball .go { margin-top: 24px; align-self: flex-start; padding: 12px 24px; border-radius: 999px; font-weight: 800; font-size: 14px; letter-spacing: .06em; transition: transform .25s; }
+  .ball:hover .go { transform: translateX(6px); }
+  /* 4. F + 4. H – Back to the Future (černá a zlatá) */
+  .bttf { border-right: 1px solid #222; }
+  .bttf::before { background: radial-gradient(ellipse at 70% 25%, rgba(214,182,124,.28), transparent 55%), repeating-radial-gradient(circle at 70% 25%, rgba(214,182,124,.09) 0 2px, transparent 2px 46px), #050505; }
+  .bttf .who { color: #d6b67c; }
+  .bttf h2 { font-family: "Cormorant Garamond", serif; font-weight: 600; font-size: clamp(26px, 3vw, 40px); letter-spacing: .22em; color: #efe1c3; }
+  .bttf h2 span { display: block; font-family: "Pinyon Script", cursive; letter-spacing: 0; font-size: 2.6em; color: #ead6aa; margin-top: -.08em; text-shadow: 0 0 24px rgba(234,214,170,.35); }
+  .bttf .go { background: linear-gradient(135deg, #fffaf0, #c9a165 45%, #f1dfb8); color: #1a1408; }
+  .clock { position: absolute; right: 8%; top: 12%; width: min(34%, 260px); aspect-ratio: 1; border: 3px solid #c9a165; border-radius: 50%; opacity: .55; }
+  .clock::before, .clock::after { content: ""; position: absolute; left: 50%; bottom: 50%; width: 3px; background: #ead6aa; transform-origin: 50% 100%; border-radius: 2px; }
+  .clock::before { height: 30%; animation: spin 60s linear infinite; }
+  .clock::after { height: 42%; width: 2px; animation: spin 6s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  /* 8. A + 8. B – One Night in Brazil */
+  .brazil::before { background: linear-gradient(180deg, rgba(0,0,0,.15) 0%, rgba(0,0,0,.25) 40%, rgba(0,20,8,.92) 78%), var(--img) center 30%/cover no-repeat, #0a6b3a; }
+  .brazil .who { color: #ffd23f; }
+  .brazil h2 { font-family: Pacifico, cursive; font-size: clamp(34px, 4.2vw, 60px); color: #ffd23f; text-shadow: 0 3px 0 #0a6b3a, 0 0 30px rgba(0,0,0,.6); }
+  .brazil .go { background: #ffd23f; color: #063d22; }
+  .brazil .go.soon { background: rgba(255,255,255,.14); color: #fff; border: 1px solid rgba(255,255,255,.35); }
+  span.ball { cursor: default; }
+  footer { text-align: center; color: #77716a; font-size: 12px; padding: 18px 20px 24px; letter-spacing: .04em; }
+  @media (max-width: 760px) {
+    .split { grid-template-columns: 1fr; }
+    .ball { min-height: 70vh; }
+    .bttf { border-right: 0; border-bottom: 1px solid #222; }
+  }
+</style>
 </head>
 <body>
+  <header class="top">
+    <small>Gymnázium Pardubice, Dašická 1083</small>
+    <h1>Maturitní plesy 2027</h1>
+  </header>
 
-<div class="gears" aria-hidden="true">
-  <svg class="gear" data-speed=".25" style="width:520px; top:-120px; left:-160px" viewBox="-100 -100 200 200"></svg>
-  <svg class="gear" data-speed="-.35" style="width:340px; top:30vh; right:-120px" viewBox="-100 -100 200 200"></svg>
-  <svg class="gear" data-speed=".2" style="width:640px; bottom:-260px; left:20vw" viewBox="-100 -100 200 200"></svg>
-</div>
+  <main class="split">
+    <a class="ball bttf" href="4fh.html">
+      <div class="clock" aria-hidden="true"></div>
+      <div class="who">Čtyřleté ročníky · 4. F + 4. H</div>
+      <h2>Back to the <span>future</span></h2>
+      <div class="when">Sobota 30. 1. 2027 · 18:00</div>
+      <div class="where">Ideon Pardubice</div>
+      <div class="go">Vstoupit →</div>
+    </a>
+    <!-- BRAZIL_ODKAZ: až bude web osmiletých, změnit <span> na <a href="..."> a „Web připravujeme“ na „Vstoupit →“ -->
+    <span class="ball brazil" style="--img:url('https://lh3.googleusercontent.com/d/1q1JkgoZDRFfEbXOgi93KrS2YbtBpGer8=w1400')">
+      <div class="who">Osmileté ročníky · 8. A + 8. B</div>
+      <h2>One Night in Brazil</h2>
+      <div class="when">Sobota 6. 2. 2027</div>
+      <div class="where">Ideon Pardubice</div>
+      <div class="go soon">Web připravujeme</div>
+    </span>
+  </main>
 
-<a class="scroll-clock" href="#top" aria-label="Zpět nahoru">
-  <svg viewBox="0 0 60 60">
-    <circle cx="30" cy="30" r="22" fill="none" stroke="rgba(240,225,195,.25)" stroke-width="2"/>
-    <circle id="sc-ring" cx="30" cy="30" r="22" fill="none" stroke="#d6b67c" stroke-width="2"
-            stroke-dasharray="138.2" stroke-dashoffset="138.2" transform="rotate(-90 30 30)" stroke-linecap="round"/>
-    <line id="sc-hand" x1="30" y1="30" x2="30" y2="14" stroke="#fff6e6" stroke-width="2" stroke-linecap="round" style="transform-origin:30px 30px"/>
-    <circle cx="30" cy="30" r="2.5" fill="#fff6e6"/>
-  </svg>
-</a>
-
-<header class="hero" id="top">
-  <canvas id="dust" aria-hidden="true"></canvas>
-  <div class="flash" id="flash"></div>
-
-  <div class="hero-grid">
-    <div class="hero-text">
-      <div class="hero-top">
-        <div>
-          <span class="big">Maturitní ples</span>
-          <span class="school">Gymnázium Pardubice,<br>Dašická 1083</span>
-        </div>
-        <span class="big">Tříd 4.F a 4.H</span>
-      </div>
-
-      <h1 class="title">
-        <span class="line"><span>Back to the</span></span>
-        <span class="line script"><span>future</span></span>
-      </h1>
-      <div class="ornament" aria-hidden="true"><i></i><span>✦</span><i></i></div>
-
-      <div class="hero-info">
-        <div class="item">
-          <svg viewBox="0 0 34 46" aria-hidden="true">
-            <defs><linearGradient id="hg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fffaf0"/><stop offset=".5" stop-color="#c9a165"/><stop offset="1" stop-color="#f1dfb8"/></linearGradient></defs>
-            <rect x="2" y="1" width="30" height="4" rx="1.5" fill="url(#hg)"/>
-            <rect x="2" y="41" width="30" height="4" rx="1.5" fill="url(#hg)"/>
-            <path d="M6 5 C6 16 15 19 15 23 C15 27 6 30 6 41 M28 5 C28 16 19 19 19 23 C19 27 28 30 28 41" fill="none" stroke="url(#hg)" stroke-width="1.6"/>
-            <path d="M10 36 Q17 30 24 36 L26 40 L8 40 Z" fill="#ead6aa"/>
-            <path d="M11 11 L23 11 Q17 18 17 21 Q17 18 11 11 Z" fill="#ead6aa" opacity=".8"/>
-          </svg>
-          <b>30.1.2027<br>18:00</b>
-        </div>
-        <div class="item"><b>Ideon<br>Pardubice</b></div>
-        <a class="pill" href="#mista">Volná místa</a>
-      </div>
-    </div>
-
-    <div class="big-clock">
-      <div class="swirl" aria-hidden="true"></div>
-      <svg viewBox="0 0 400 400" id="hero-clock" role="img" aria-label="Hodiny ukazující aktuální čas">
-        <defs>
-          <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#fffaf0"/>
-            <stop offset=".35" stop-color="#c9a165"/>
-            <stop offset=".6" stop-color="#f1dfb8"/>
-            <stop offset="1" stop-color="#8a6a3a"/>
-          </linearGradient>
-        </defs>
-        <circle cx="200" cy="200" r="196" fill="none" stroke="url(#rim)" stroke-width="3"/>
-        <circle cx="200" cy="200" r="184" fill="#000" stroke="url(#rim)" stroke-width="1"/>
-        <line x1="200" y1="30" x2="200" y2="370" stroke="#ead6aa" stroke-width="2" stroke-dasharray="2 7" stroke-linecap="round" opacity=".6"/>
-        <g class="ticks"></g>
-        <g class="numerals" font-family="Cinzel, serif" font-weight="500" font-size="34" fill="url(#rim)" text-anchor="middle" dominant-baseline="central"></g>
-        <line class="hand hand-h" x1="200" y1="214" x2="200" y2="112" stroke="url(#rim)" stroke-width="6" stroke-linecap="round"/>
-        <line class="hand hand-m" x1="200" y1="222" x2="200" y2="52" stroke="#fff6e6" stroke-width="3" stroke-linecap="round"/>
-        <line class="hand hand-s" x1="200" y1="236" x2="200" y2="40" stroke="#ead6aa" stroke-width="1.2" stroke-linecap="round"/>
-        <circle cx="200" cy="200" r="7" fill="#ead6aa"/>
-      </svg>
-    </div>
-  </div>
-
-  <a class="scroll-hint arrow" href="#odpocet" aria-label="Posunout dolů">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
-  </a>
-</header>
-
-<main>
-
-  <section class="circuits" id="odpocet">
-    <div class="wrap">
-      <p class="eyebrow reveal">Časové obvody aktivovány</p>
-      <h2 class="reveal d1">Cíl cesty: <em>30. ledna 2027</em></h2>
-      <p class="lead reveal d2">Čtyři roky jsme jeli naplno. Teď nastavujeme stroj času na jeden večer, na který se nezapomíná.</p>
-
-      <div class="panel reveal d2" aria-label="Časové obvody">
-        <div class="r-dest">
-          <div class="row">
-            <div class="cell"><small>MONTH</small><div class="seg">JAN</div></div>
-            <div class="cell"><small>DAY</small><div class="seg">30</div></div>
-            <div class="cell"><small>YEAR</small><div class="seg">2027</div></div>
-            <div class="cell"><small>HOUR</small><div class="seg">18</div></div>
-            <div class="cell"><small>MIN</small><div class="seg">00</div></div>
-          </div>
-          <div class="row-label">DESTINATION TIME</div>
-        </div>
-        <div class="r-pres">
-          <div class="row">
-            <div class="cell"><small>MONTH</small><div class="seg" id="p-mo">---</div></div>
-            <div class="cell"><small>DAY</small><div class="seg" id="p-d">--</div></div>
-            <div class="cell"><small>YEAR</small><div class="seg" id="p-y">----</div></div>
-            <div class="cell"><small>HOUR</small><div class="seg" id="p-h">--</div></div>
-            <div class="cell"><small>MIN</small><div class="seg" id="p-mi">--</div></div>
-          </div>
-          <div class="row-label">PRESENT TIME</div>
-        </div>
-        <div class="r-last">
-          <div class="row">
-            <div class="cell"><small>MONTH</small><div class="seg">SEP</div></div>
-            <div class="cell"><small>DAY</small><div class="seg">01</div></div>
-            <div class="cell"><small>YEAR</small><div class="seg">2023</div></div>
-            <div class="cell"><small>HOUR</small><div class="seg">08</div></div>
-            <div class="cell"><small>MIN</small><div class="seg">00</div></div>
-          </div>
-          <div class="row-label">LAST TIME DEPARTED</div>
-        </div>
-      </div>
-
-      <div class="countdown">
-        <div class="cd reveal"><span class="n" id="cd-d">--</span><span class="u">dní</span></div>
-        <div class="cd reveal d1"><span class="n" id="cd-h">--</span><span class="u">hodin</span></div>
-        <div class="cd reveal d2"><span class="n" id="cd-m">--</span><span class="u">minut</span></div>
-        <div class="cd reveal d3"><span class="n" id="cd-s">--</span><span class="u">sekund</span></div>
-      </div>
-    </div>
-  </section>
-
-  <section class="info">
-    <div class="wrap">
-      <p class="eyebrow reveal">Souřadnice</p>
-      <h2 class="reveal d1">Kdy a <em>kde</em></h2>
-      <div class="facts">
-        <div class="fact reveal"><div class="k">Datum</div><div class="v">30. 1. 2027</div><p>Sobota</p></div>
-        <div class="fact reveal d1"><div class="k">Začátek</div><div class="v">18:00</div><p>Otevření sálu</p></div>
-        <div class="fact reveal d2"><div class="k">Místo</div><div class="v">Ideon</div><p><a href="https://www.google.com/maps/search/?api=1&amp;query=Ideon+Pardubice+Jir%C3%A1skova+1963" target="_blank" rel="noopener">Jiráskova 1963, Pardubice</a></p></div>
-        <div class="fact reveal d3"><div class="k">Dress code</div><div class="v">Formální</div><p>Pánové oblek nebo smoking, dámy dlouhé společenské šaty.</p></div>
-      </div>
-    </div>
-  </section>
-
-  <section class="program" id="program">
-    <div class="wrap">
-      <p class="eyebrow reveal">Harmonogram</p>
-      <h2 class="reveal d1">Program <em>večera</em></h2>
-
-      <div class="prog-grid">
-        <div class="prog-clock">
-          <svg viewBox="0 0 400 400" id="prog-clock" aria-hidden="true">
-            <defs>
-              <linearGradient id="rim2" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stop-color="#fffaf0"/><stop offset=".35" stop-color="#c9a165"/>
-                <stop offset=".6" stop-color="#f1dfb8"/><stop offset="1" stop-color="#8a6a3a"/>
-              </linearGradient>
-            </defs>
-            <circle cx="200" cy="200" r="192" fill="#000" stroke="url(#rim2)" stroke-width="3"/>
-            <line x1="200" y1="30" x2="200" y2="370" stroke="#ead6aa" stroke-width="2" stroke-dasharray="2 7" stroke-linecap="round" opacity=".5"/>
-            <g class="ticks"></g>
-            <g class="numerals" font-family="Cinzel, serif" font-weight="500" font-size="34" fill="url(#rim2)" text-anchor="middle" dominant-baseline="central"></g>
-            <line class="hand hand-h" x1="200" y1="214" x2="200" y2="112" stroke="url(#rim2)" stroke-width="7" stroke-linecap="round"/>
-            <line class="hand hand-m" x1="200" y1="222" x2="200" y2="56" stroke="#fff6e6" stroke-width="3.5" stroke-linecap="round"/>
-            <circle cx="200" cy="200" r="7" fill="#ead6aa"/>
-          </svg>
-          <div>
-            <div class="prog-now" id="prog-now">18:00</div>
-            <div class="prog-now-label" id="prog-label">Otevření sálu</div>
-          </div>
-        </div>
-
-        <ol class="steps">
-          <li class="step" data-time="18:00"><time>18:00</time><h3>Otevření sálu</h3><p>Příjezd hostů, uvítací drink a fotokoutek.</p></li>
-          <li class="step" data-time="19:00"><time>19:00</time><h3>Slavnostní zahájení</h3><p>Úvodní slovo moderátorů.</p></li>
-          <li class="step" data-time="19:15"><time>19:15</time><h3>Proslov ředitele školy</h3><p>Slavnostní slovo vedení Gymnázia Pardubice, Dašická.</p></li>
-          <li class="step" data-time="19:30"><time>19:30</time><h3>Předtančení 4. F</h3><p>Vystoupení maturantů 4. F.</p></li>
-          <li class="step" data-time="19:45"><time>19:45</time><h3>Předtančení 4. H</h3><p>Vystoupení maturantů 4. H.</p></li>
-          <li class="step" data-time="20:05"><time>20:05</time><h3>Taneční skupina Hroch</h3><p>Taneční vystoupení – host večera.</p></li>
-          <li class="step" data-time="20:45"><time>20:45</time><h3>Šerpování 4. F</h3><p>Předání šerp za doprovodu třídního učitele.</p></li>
-          <li class="step" data-time="21:30"><time>21:30</time><h3>Šerpování 4. H</h3><p>Předání šerp za doprovodu třídního učitele.</p></li>
-          <li class="step" data-time="22:15"><time>22:15</time><h3>Tanec s rodiči</h3><p>Maturanti tančí se svými rodiči.</p></li>
-          <li class="step" data-time="23:00"><time>23:00</time><h3>Vyhlášení tomboly</h3><p>Losování cen od našich sponzorů. Nezapomeňte na lístky do tomboly!</p></li>
-          <li class="step" data-time="00:00"><time>00:00</time><h3>Půlnoční překvapení</h3><p>Návrat do budoucnosti… víc zatím neprozradíme.</p></li>
-          <li class="step" data-time="02:00"><time>02:00</time><h3>Afterparty v Patapuf baru</h3><p>Po skončení plesu pokračujeme v Patapuf baru.</p></li>
-        </ol>
-      </div>
-      <p class="note">Program se může ještě upřesnit.</p>
-    </div>
-  </section>
-
-  <section class="seating" id="mista">
-    <div class="wrap">
-      <p class="eyebrow reveal">Zasedací pořádek</p>
-      <h2 class="reveal d1">Volná <em>místa</em></h2>
-      <p class="lead reveal d2">Stoly v Ideonu s aktuální obsazeností – klikni na stůl a uvidíš, která místa jsou volná. Vstupenky (450 Kč, u stolu i na stání) prodávají maturanti 4. F a 4. H.</p>
-
-      <div class="seat-head reveal d2">
-        <div class="seat-total">
-          <div class="k">Volných míst</div>
-          <div class="v"><span id="st-free">–</span> <small>z <span id="st-total">810</span></small></div>
-          <div class="bar"><i id="st-bar"></i></div>
-        </div>
-        <div class="floor-tabs" role="tablist">
-          <button role="tab" data-floor="ground" aria-selected="true">Přízemí</button>
-          <button role="tab" data-floor="gallery" aria-selected="false">Galerie</button>
-        </div>
-      </div>
-
-      <div class="plan-wrap">
-        <div class="plan" id="plan"></div>
-      </div>
-      <p class="swipe-hint">↔ Plánek můžeš posouvat do stran.</p>
-
-      <div class="seat-foot">
-        <div class="legend">
-          <span><i class="free"></i>volná místa</span>
-          <span><i class="taken"></i>obsazeno</span>
-        </div>
-        <div class="table-info" id="table-info"></div>
-      </div>
-      <p class="seat-msg" id="seat-msg">Načítám aktuální obsazenost…</p>
-    </div>
-  </section>
-
-  <section class="tickets" id="vstupenky">
-    <div class="wrap">
-      <p class="eyebrow reveal">Vstupenky</p>
-      <h2 class="reveal d1">Jak koupit <em>vstupenku</em></h2>
-      <div class="tickets-box reveal d2">
-        <div>
-          <h3>U maturantů · QR platbou</h3>
-          <p>Vstupenky (450 Kč) prodávají maturanti 4. F a 4. H. Podívej se, která místa jsou volná,
-             řekni si o ně a zaplať QR kódem v bankovní aplikaci. Jakmile platba dorazí, místa se označí jako obsazená.</p>
-          <p>Vstupenky se prodávají ve škole ve studentské místnosti, vždy o velkých přestávkách. Začátek prodeje vyhlásíme předem.</p>
-        </div>
-        <a class="pill" href="#mista">Volná místa</a>
-      </div>
-    </div>
-  </section>
-
-  <section class="sponsors">
-    <div class="wrap">
-      <p class="eyebrow reveal">Partneři</p>
-      <h2 class="reveal d1">Děkujeme <em>sponzorům a partnerům</em></h2>
-      <div class="sponsors-row">
-        <div class="sponsor reveal">Ploty Dobrý</div>
-        <div class="sponsor reveal d1">2VV s.r.o.</div>
-        <div class="sponsor reveal d2">Pivovar Svijany</div>
-      </div>
-    </div>
-  </section>
-
-</main>
-
-<footer>
-  <p class="mark">BACK TO THE FUTURE · 2027</p>
-  <p>Maturitní ples tříd 4. F a 4. H · Gymnázium Pardubice, Dašická 1083</p>
-  <p class="legal">© 2027 Maturitní ples 4. F a 4. H · Gymnázium Pardubice, Dašická 1083 · Všechna práva vyhrazena</p>
-  <p class="credit">Created by AMN</p>
-</footer>
-
-<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
-<script src="config.js?v=16"></script>
-<script src="plan.js?v=17"></script>
-<script src="app.js?v=22"></script>
-<script src="sponzori.js?v=25"></script>
+  <footer>Vstupenky na oba plesy koupíte o velkých přestávkách ve škole · Created by AMN</footer>
 </body>
 </html>
