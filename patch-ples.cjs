@@ -65,3 +65,16 @@ console.log("logo:", s.includes("school-logo"), "| em:", /<em>/.test(s), "| angl
 }
 
 { let t = fs.readFileSync("index.html", "utf8"); t = t.replace(/uprava\.css\?v=\d+/, "uprava.css?v=4"); fs.writeFileSync("index.html", t); console.log("v4 css"); }
+
+// v5: jen jedno logo (v hodinách), větší a přesně uprostřed; rohové logo pryč
+{
+  let t = fs.readFileSync("index.html", "utf8");
+  t = t.replace(/\s*<a class="g-logo"[^>]*><\/a>/, "");
+  t = t.replace(/<mask id="horse-mask"[\s\S]*?<\/mask>/,
+    '<mask id="horse-mask" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="122" y="126.5" width="156" height="147"><svg x="122" y="126.5" width="156" height="146.6" viewBox="0 0 133.6 125.568" preserveAspectRatio="xMidYMid meet"><image href="gypce-logo.svg" width="425.197" height="125.568"/></svg></mask>');
+  t = t.replace(/<circle cx="200" cy="200" r="66" fill="#000" stroke="url\(#rim\)" stroke-width="1.5" opacity=".95"\/>/, '<circle cx="200" cy="200" r="86" fill="#000"/>');
+  t = t.replace(/<rect class="horse-core" x="140" y="143" width="120" height="113"/, '<rect class="horse-core" x="122" y="126.5" width="156" height="147"');
+  t = t.replace(/uprava\.css\?v=\d+/, "uprava.css?v=5");
+  fs.writeFileSync("index.html", t);
+  console.log("v5 rohové logo pryč:", !t.includes('class="g-logo"'), "| kůň 156:", t.includes('width="156"'));
+}

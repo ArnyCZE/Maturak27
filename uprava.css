@@ -33,3 +33,8 @@ h2 em { font-style: normal; }
 .title, .hero-text { overflow: visible; }
 .title .line.script { padding-left: .35em; }
 .hero-who .school { font-family: Montserrat, system-ui, sans-serif; font-weight: 600; letter-spacing: .03em; }
+
+/* v5: „f“ se kreslí přes background-clip:text – musí mít kolem sebe dost vnitřního místa, jinak se ořízne */
+.title .line.script > span { padding: .1em .35em .4em 1.1em !important; margin-left: -.5em; }
+.title .line.script { padding-left: 0; }
+.g-logo { display: none !important; }
