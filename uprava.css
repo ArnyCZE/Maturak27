@@ -38,3 +38,7 @@ h2 em { font-style: normal; }
 .title .line.script > span { padding: .1em .35em .4em 1.1em !important; margin-left: -.5em; }
 .title .line.script { padding-left: 0; }
 .g-logo { display: none !important; }
+
+/* klikací schody na plánku */
+.plan .zone.to-gallery, .plan .zone.to-ground { cursor: pointer; pointer-events: auto; transition: background-color .2s, box-shadow .2s; }
+.plan .zone.to-gallery:hover, .plan .zone.to-ground:hover { background-color: rgba(230,184,79,.28); box-shadow: 0 0 0 2px #e6b84f inset; }

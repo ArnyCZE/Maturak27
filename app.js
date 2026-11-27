@@ -1258,3 +1258,14 @@
   }, { passive: true });
   onScroll();
 })();
+
+/* schody na plánku: klik přepne patro (Arnošt 27. 11.) */
+(function () {
+  var planEl = document.getElementById("plan"); if (!planEl) return;
+  planEl.addEventListener("click", function (e) {
+    var z = e.target.closest && e.target.closest(".zone.to-gallery, .zone.to-ground"); if (!z) return;
+    var want = z.classList.contains("to-gallery") ? "gallery" : "ground";
+    var b = document.querySelector('.floor-tabs button[data-floor="' + want + '"]'); if (b) b.click();
+    var w = document.querySelector(".plan-wrap"); if (w && w.scrollIntoView) w.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+})();

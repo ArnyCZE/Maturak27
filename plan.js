@@ -36,7 +36,7 @@ window.IDEON_PLAN = (function () {
     halls: { VS: "Velký sál", LS: "Levý sál", PS: "Pravý sál", G: "Galerie" },
     floors: {
       ground: {
-        w: 121, h: 72, d: 3.6,
+        w: 133, h: 72, d: 3.6,
         vw: 2.9, vh: 4.8, hw: 8, hh: 2.2,
         rooms: [
           { x: 20.5, y: 3, w: 100, h: 41.3 },   // Velký sál
@@ -51,8 +51,9 @@ window.IDEON_PLAN = (function () {
           { t: "Podium · kapela", s: "Podium", x: 21.7, y: 15.1, w: 13.7, h: 17.8, cls: "solid" },
           { t: "Taneční parket", s: "Parket", x: 38.1, y: 11.8, w: 24.8, h: 24.4, cls: "floor-dance" },
           { t: "Bar", x: 110, y: 11.8, w: 10.5, h: 18, cls: "bar" },
-          { t: "Schody na galerii", s: "Schody", x: 110, y: 32, w: 10.5, h: 6, cls: "stairs" },
-          { t: "Šatna maturantů", s: "Šatna mat.", x: 107, y: 0, w: 13.5, h: 2.8 },
+          { t: "Schody na galerii ↑", s: "Schody ↑", x: 95, y: 3.4, w: 37, h: 6.2, cls: "stairs to-gallery" },
+          { t: "Šatna maturantů (pod schody)", s: "Šatna mat.", x: 121, y: 9.6, w: 11, h: 20.2 },
+          { t: "vstup", s: "", x: 120.2, y: 17, w: 1.6, h: 6, cls: "door" },
           { t: "vstup", s: "", x: 36.5, y: 43.4, w: 10, h: 1.8, cls: "door" },
           { t: "vstup", s: "", x: 88.6, y: 43.4, w: 7.8, h: 1.8, cls: "door" },
           { t: "WC", x: 57.3, y: 44.3, w: 5.6, h: 11.5 },
@@ -100,8 +101,8 @@ window.IDEON_PLAN = (function () {
           { t: "Taneční parket (dole)", x: 28, y: 13, w: 34, h: 33, cls: "floor-dance faded" },
           { t: "Podium", x: 18.5, y: 13, w: 9.5, h: 33, cls: "solid faded" },
           { t: "Stoly velkého sálu (dole)", x: 63, y: 13, w: 25, h: 33, cls: "faded" },
-          { t: "Schody", x: 2, y: 2, w: 13, h: 5, cls: "stairs" },
-          { t: "Schody", x: 92, y: 2, w: 13, h: 5, cls: "stairs" },
+          { t: "Schody dolů ↓", s: "Schody ↓", x: 2, y: 2, w: 13, h: 5, cls: "stairs to-ground" },
+          { t: "Schody dolů ↓", s: "Schody ↓", x: 92, y: 2, w: 13, h: 5, cls: "stairs to-ground" },
           { t: "Projekce", x: 93.5, y: 27, w: 9, h: 6, cls: "solid" }
         ],
         names: [
@@ -132,8 +133,8 @@ window.IDEON_PLAN = (function () {
           { t: "Podium (dole)", x: 22, y: 16, w: 50, h: 7, cls: "solid faded" },
           { t: "Taneční parket (dole)", x: 22, y: 25, w: 50, h: 30, cls: "floor-dance faded" },
           { t: "Stoly velkého sálu (dole)", x: 22, y: 58, w: 50, h: 26, cls: "faded" },
-          { t: "Schody", x: 70, y: 2, w: 8, h: 9, cls: "stairs" },
-          { t: "Schody", x: 70, y: 98, w: 8, h: 10, cls: "stairs" },
+          { t: "Schody ↓", x: 70, y: 2, w: 8, h: 9, cls: "stairs to-ground" },
+          { t: "Schody ↓", x: 70, y: 98, w: 8, h: 10, cls: "stairs to-ground" },
           { t: "Proj.", x: galleryRow[4] - 2.9, y: 100.5, w: 5.8, h: 5, cls: "solid" }
         ],
         names: [

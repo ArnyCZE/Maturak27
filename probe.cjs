@@ -1,4 +1,4 @@
 const fs = require("fs");
-const css = fs.readFileSync("style.css", "utf8");
-let i = 0; const re = /[^{}]*(\.title|\.line|\.script|\.hero-text|\.hero-grid|clip-path|overflow)[^{}]*\{[^}]*\}/g; let m;
-while ((m = re.exec(css)) && i++ < 40) console.log(m[0].trim().slice(0, 400) + "\n---");
+const a = fs.readFileSync("app.js", "utf8");
+for (const re of [/zones/g, /data-floor/g, /floor-tabs/g, /\.cls/g]) { let m, k = 0; while ((m = re.exec(a)) && k++ < 4) console.log(re, JSON.stringify(a.slice(Math.max(0, m.index - 150), m.index + 250))); }
+const c = fs.readFileSync("style.css", "utf8"); let m, re = /[^{}]*stairs[^{}]*\{[^}]*\}/g; while ((m = re.exec(c))) console.log("CSS", m[0].trim());
