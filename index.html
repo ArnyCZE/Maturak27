@@ -11,6 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Cinzel:wght@500;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Montserrat:wght@300;400;600;800&family=Pinyon+Script&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css?v=23">
+<link rel="stylesheet" href="uprava.css?v=1">
 </head>
 <body>
 
@@ -37,11 +38,8 @@
   <div class="hero-grid">
     <div class="hero-text">
       <div class="hero-top">
-        <div>
-          <span class="big">Maturitní ples</span>
-          <span class="school">Gymnázium Pardubice,<br>Dašická 1083</span>
-        </div>
-        <span class="big">Tříd 4.F a 4.H</span>
+        <a class="school-logo" href="https://www.gypce.cz/" target="_blank" rel="noopener" aria-label="Gymnázium Pardubice, Dašická"><img src="https://www.gypce.cz/wp-content/themes/2025/assets/gypce-logo.svg" alt="Logo Gymnázia Pardubice, Dašická"></a>
+        <div class="hero-who"><span class="big">Maturitní ples 4. F a 4. H</span><span class="school">Gymnázium Pardubice, Dašická 1083</span></div>
       </div>
 
       <h1 class="title">
@@ -100,40 +98,38 @@
 
   <section class="circuits" id="odpocet">
     <div class="wrap">
-      <p class="eyebrow reveal">Časové obvody aktivovány</p>
-      <h2 class="reveal d1">Cíl cesty: <em>30. ledna 2027</em></h2>
-      <p class="lead reveal d2">Čtyři roky jsme jeli naplno. Teď nastavujeme stroj času na jeden večer, na který se nezapomíná.</p>
+      <h2 class="reveal d1">Do plesu zbývá</h2>
 
-      <div class="panel reveal d2" aria-label="Časové obvody">
+      <div class="panel reveal d2" aria-label="Odpočet">
         <div class="r-dest">
           <div class="row">
-            <div class="cell"><small>MONTH</small><div class="seg">JAN</div></div>
-            <div class="cell"><small>DAY</small><div class="seg">30</div></div>
-            <div class="cell"><small>YEAR</small><div class="seg">2027</div></div>
-            <div class="cell"><small>HOUR</small><div class="seg">18</div></div>
+            <div class="cell"><small>MĚSÍC</small><div class="seg">LED</div></div>
+            <div class="cell"><small>DEN</small><div class="seg">30</div></div>
+            <div class="cell"><small>ROK</small><div class="seg">2027</div></div>
+            <div class="cell"><small>HOD</small><div class="seg">18</div></div>
             <div class="cell"><small>MIN</small><div class="seg">00</div></div>
           </div>
-          <div class="row-label">DESTINATION TIME</div>
+          <div class="row-label">PLES</div>
         </div>
         <div class="r-pres">
           <div class="row">
-            <div class="cell"><small>MONTH</small><div class="seg" id="p-mo">---</div></div>
-            <div class="cell"><small>DAY</small><div class="seg" id="p-d">--</div></div>
-            <div class="cell"><small>YEAR</small><div class="seg" id="p-y">----</div></div>
-            <div class="cell"><small>HOUR</small><div class="seg" id="p-h">--</div></div>
+            <div class="cell"><small>MĚSÍC</small><div class="seg" id="p-mo">---</div></div>
+            <div class="cell"><small>DEN</small><div class="seg" id="p-d">--</div></div>
+            <div class="cell"><small>ROK</small><div class="seg" id="p-y">----</div></div>
+            <div class="cell"><small>HOD</small><div class="seg" id="p-h">--</div></div>
             <div class="cell"><small>MIN</small><div class="seg" id="p-mi">--</div></div>
           </div>
-          <div class="row-label">PRESENT TIME</div>
+          <div class="row-label">TEĎ</div>
         </div>
         <div class="r-last">
           <div class="row">
-            <div class="cell"><small>MONTH</small><div class="seg">SEP</div></div>
-            <div class="cell"><small>DAY</small><div class="seg">01</div></div>
-            <div class="cell"><small>YEAR</small><div class="seg">2023</div></div>
-            <div class="cell"><small>HOUR</small><div class="seg">08</div></div>
+            <div class="cell"><small>MĚSÍC</small><div class="seg">ZÁŘ</div></div>
+            <div class="cell"><small>DEN</small><div class="seg">01</div></div>
+            <div class="cell"><small>ROK</small><div class="seg">2023</div></div>
+            <div class="cell"><small>HOD</small><div class="seg">08</div></div>
             <div class="cell"><small>MIN</small><div class="seg">00</div></div>
           </div>
-          <div class="row-label">LAST TIME DEPARTED</div>
+          <div class="row-label">NÁSTUP NA GYMPL</div>
         </div>
       </div>
 
@@ -148,8 +144,7 @@
 
   <section class="info">
     <div class="wrap">
-      <p class="eyebrow reveal">Souřadnice</p>
-      <h2 class="reveal d1">Kdy a <em>kde</em></h2>
+      <h2 class="reveal d1">Kdy a kde</h2>
       <div class="facts">
         <div class="fact reveal"><div class="k">Datum</div><div class="v">30. 1. 2027</div><p>Sobota</p></div>
         <div class="fact reveal d1"><div class="k">Začátek</div><div class="v">18:00</div><p>Otevření sálu</p></div>
@@ -161,8 +156,7 @@
 
   <section class="program" id="program">
     <div class="wrap">
-      <p class="eyebrow reveal">Harmonogram</p>
-      <h2 class="reveal d1">Program <em>večera</em></h2>
+      <h2 class="reveal d1">Program</h2>
 
       <div class="prog-grid">
         <div class="prog-clock">
@@ -188,18 +182,18 @@
         </div>
 
         <ol class="steps">
-          <li class="step" data-time="18:00"><time>18:00</time><h3>Otevření sálu</h3><p>Příjezd hostů, uvítací drink a fotokoutek.</p></li>
-          <li class="step" data-time="19:00"><time>19:00</time><h3>Slavnostní zahájení</h3><p>Úvodní slovo moderátorů.</p></li>
-          <li class="step" data-time="19:15"><time>19:15</time><h3>Proslov ředitele školy</h3><p>Slavnostní slovo vedení Gymnázia Pardubice, Dašická.</p></li>
-          <li class="step" data-time="19:30"><time>19:30</time><h3>Předtančení 4. F</h3><p>Vystoupení maturantů 4. F.</p></li>
-          <li class="step" data-time="19:45"><time>19:45</time><h3>Předtančení 4. H</h3><p>Vystoupení maturantů 4. H.</p></li>
-          <li class="step" data-time="20:05"><time>20:05</time><h3>Taneční skupina Hroch</h3><p>Taneční vystoupení – host večera.</p></li>
-          <li class="step" data-time="20:45"><time>20:45</time><h3>Šerpování 4. F</h3><p>Předání šerp za doprovodu třídního učitele.</p></li>
-          <li class="step" data-time="21:30"><time>21:30</time><h3>Šerpování 4. H</h3><p>Předání šerp za doprovodu třídního učitele.</p></li>
-          <li class="step" data-time="22:15"><time>22:15</time><h3>Tanec s rodiči</h3><p>Maturanti tančí se svými rodiči.</p></li>
-          <li class="step" data-time="23:00"><time>23:00</time><h3>Vyhlášení tomboly</h3><p>Losování cen od našich sponzorů. Nezapomeňte na lístky do tomboly!</p></li>
-          <li class="step" data-time="00:00"><time>00:00</time><h3>Půlnoční překvapení</h3><p>Návrat do budoucnosti… víc zatím neprozradíme.</p></li>
-          <li class="step" data-time="02:00"><time>02:00</time><h3>Afterparty v Patapuf baru</h3><p>Po skončení plesu pokračujeme v Patapuf baru.</p></li>
+          <li class="step" data-time="18:00"><time>18:00</time><h3>Otevření sálu</h3></li>
+          <li class="step" data-time="19:00"><time>19:00</time><h3>Slavnostní zahájení</h3></li>
+          <li class="step" data-time="19:15"><time>19:15</time><h3>Proslov ředitele školy</h3></li>
+          <li class="step" data-time="19:30"><time>19:30</time><h3>Předtančení 4. F</h3></li>
+          <li class="step" data-time="19:45"><time>19:45</time><h3>Předtančení 4. H</h3></li>
+          <li class="step" data-time="20:05"><time>20:05</time><h3>Taneční skupina Hroch</h3></li>
+          <li class="step" data-time="20:45"><time>20:45</time><h3>Šerpování 4. F</h3></li>
+          <li class="step" data-time="21:30"><time>21:30</time><h3>Šerpování 4. H</h3></li>
+          <li class="step" data-time="22:15"><time>22:15</time><h3>Tanec s rodiči</h3></li>
+          <li class="step" data-time="23:00"><time>23:00</time><h3>Vyhlášení tomboly</h3></li>
+          <li class="step" data-time="00:00"><time>00:00</time><h3>Půlnoční překvapení</h3></li>
+          <li class="step" data-time="02:00"><time>02:00</time><h3>Afterparty v Patapuf baru</h3></li>
         </ol>
       </div>
       <p class="note">Program se může ještě upřesnit.</p>
@@ -208,9 +202,8 @@
 
   <section class="seating" id="mista">
     <div class="wrap">
-      <p class="eyebrow reveal">Zasedací pořádek</p>
-      <h2 class="reveal d1">Volná <em>místa</em></h2>
-      <p class="lead reveal d2">Stoly v Ideonu s aktuální obsazeností – klikni na stůl a uvidíš, která místa jsou volná. Vstupenky (450 Kč, u stolu i na stání) prodávají maturanti 4. F a 4. H.</p>
+      <h2 class="reveal d1">Volná místa</h2>
+      <p class="lead reveal d2">Klikni na stůl a uvidíš, která místa jsou volná. Vstupenka stojí 450 Kč, u stolu i na stání.</p>
 
       <div class="seat-head reveal d2">
         <div class="seat-total">
@@ -242,8 +235,7 @@
 
   <section class="tickets" id="vstupenky">
     <div class="wrap">
-      <p class="eyebrow reveal">Vstupenky</p>
-      <h2 class="reveal d1">Jak koupit <em>vstupenku</em></h2>
+      <h2 class="reveal d1">Vstupenky</h2>
       <div class="tickets-box reveal d2">
         <div>
           <h3>U maturantů · QR platbou</h3>
@@ -258,8 +250,7 @@
 
   <section class="sponsors">
     <div class="wrap">
-      <p class="eyebrow reveal">Partneři</p>
-      <h2 class="reveal d1">Děkujeme <em>sponzorům a partnerům</em></h2>
+      <h2 class="reveal d1">Sponzoři</h2>
       <div class="sponsors-row">
         <div class="sponsor reveal">Ploty Dobrý</div>
         <div class="sponsor reveal d1">2VV s.r.o.</div>
@@ -280,7 +271,7 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 <script src="config.js?v=16"></script>
 <script src="plan.js?v=17"></script>
-<script src="app.js?v=22"></script>
+<script src="app.js?v=23"></script>
 <script src="sponzori.js?v=25"></script>
 </body>
 </html>

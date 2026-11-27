@@ -1,0 +1,9 @@
+/* Arnošt 27. 11.: čistší hlavička s logem školy, bez kurzívy v nadpisech */
+.hero-top { justify-content: flex-start; align-items: center; gap: clamp(.9rem, 2vw, 1.4rem); text-transform: none; }
+.school-logo { display: block; flex: none; transition: transform .3s; }
+.school-logo:hover { transform: scale(1.05); }
+.school-logo img { display: block; height: clamp(58px, 7vw, 86px); width: auto; filter: brightness(0) invert(1); opacity: .92; }
+.hero-who .big { display: block; font-size: clamp(1.25rem, 2.8vw, 1.9rem); text-transform: uppercase; color: var(--gold-mid); letter-spacing: .06em; line-height: 1.1; }
+.hero-who .school { display: block; font-size: clamp(.85rem, 1.4vw, 1.05rem); letter-spacing: .05em; text-transform: none; color: var(--gold); margin-top: .35rem; font-weight: 600; }
+h2 em { font-style: normal; }
+.steps .step p { display: none; }
