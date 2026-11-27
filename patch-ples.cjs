@@ -63,3 +63,5 @@ console.log("logo:", s.includes("school-logo"), "| em:", /<em>/.test(s), "| angl
   fs.writeFileSync("index.html", t);
   console.log("v3 kůň v hodinách:", t.includes("horse-core"));
 }
+
+{ let t = fs.readFileSync("index.html", "utf8"); t = t.replace(/uprava\.css\?v=\d+/, "uprava.css?v=4"); fs.writeFileSync("index.html", t); console.log("v4 css"); }

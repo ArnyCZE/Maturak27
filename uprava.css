@@ -28,3 +28,8 @@ h2 em { font-style: normal; }
 .hero-who .big, .hero-who .school, .hero-info b, .fact .v, .seg { font-variant-numeric: lining-nums; font-feature-settings: "lnum" 1; }
 .hero-who .big { font-family: Montserrat, system-ui, sans-serif; font-weight: 800; }
 .horse-core { filter: drop-shadow(0 0 6px rgba(214,182,124,.35)); }
+
+/* v4: ocásek „f“ vlevo dole se neořezává, rovné číslice i v řádku se školou */
+.title, .hero-text { overflow: visible; }
+.title .line.script { padding-left: .35em; }
+.hero-who .school { font-family: Montserrat, system-ui, sans-serif; font-weight: 600; letter-spacing: .03em; }
