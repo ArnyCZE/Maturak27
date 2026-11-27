@@ -33,3 +33,18 @@ let a = fs.readFileSync("app.js", "utf8");
 a = a.replace('["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"]', '["LED","ÚNO","BŘE","DUB","KVĚ","ČVN","ČVC","SRP","ZÁŘ","ŘÍJ","LIS","PRO"]');
 fs.writeFileSync("app.js", a);
 console.log("logo:", s.includes("school-logo"), "| em:", /<em>/.test(s), "| anglicky:", /DESTINATION|PRESENT TIME|MONTH|"JAN"/.test(s + a), "| eyebrow:", s.includes('class="eyebrow'), "| popisky programu:", /<\/h3><p>[^<]*<\/p><\/li>/.test(s));
+
+// v2 (Arnošt 27. 11. 14:40): logo jen „G s koněm“ ve zlaté v rohu, celé názvy měsíců, „NÁSTUP NA GYMNÁZIUM“
+{
+  let t = fs.readFileSync("index.html", "utf8");
+  t = t.replace(/<a class="school-logo"[^>]*>.*?<\/a>\s*/s, "");
+  if (!t.includes('class="g-logo"')) t = t.replace('<header class="hero" id="top">', '<header class="hero" id="top">\n  <a class="g-logo" href="https://www.gypce.cz/" target="_blank" rel="noopener" aria-label="Gymnázium Pardubice, Dašická"></a>');
+  t = t.replace('<div class="seg">LED</div>', '<div class="seg">LEDEN</div>').replace('<div class="seg">ZÁŘ</div>', '<div class="seg">ZÁŘÍ</div>');
+  t = t.replace("NÁSTUP NA GYMPL", "NÁSTUP NA GYMNÁZIUM");
+  t = t.replace("uprava.css?v=1", "uprava.css?v=2").replace("app.js?v=23", "app.js?v=24");
+  fs.writeFileSync("index.html", t);
+  let a = fs.readFileSync("app.js", "utf8");
+  a = a.replace('["LED","ÚNO","BŘE","DUB","KVĚ","ČVN","ČVC","SRP","ZÁŘ","ŘÍJ","LIS","PRO"]', '["LEDEN","ÚNOR","BŘEZEN","DUBEN","KVĚTEN","ČERVEN","ČERVENEC","SRPEN","ZÁŘÍ","ŘÍJEN","LISTOPAD","PROSINEC"]');
+  fs.writeFileSync("app.js", a);
+  console.log("v2 g-logo:", t.includes("g-logo"), "| měsíce:", a.includes("LISTOPAD"), "| gymnázium:", t.includes("NÁSTUP NA GYMNÁZIUM"));
+}

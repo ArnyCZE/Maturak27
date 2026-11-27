@@ -150,7 +150,7 @@
   });
 
   /* --- odpočet a „present time“ --- */
-  var MONTHS = ["LED","ÚNO","BŘE","DUB","KVĚ","ČVN","ČVC","SRP","ZÁŘ","ŘÍJ","LIS","PRO"];
+  var MONTHS = ["LEDEN","ÚNOR","BŘEZEN","DUBEN","KVĚTEN","ČERVEN","ČERVENEC","SRPEN","ZÁŘÍ","ŘÍJEN","LISTOPAD","PROSINEC"];
   var ball = new Date("2027-01-30T18:00:00+01:00").getTime();
   function pad(n) { return (n < 10 ? "0" : "") + n; }
   function set(id, v) { document.getElementById(id).textContent = v; }

@@ -7,3 +7,16 @@
 .hero-who .school { display: block; font-size: clamp(.85rem, 1.4vw, 1.05rem); letter-spacing: .05em; text-transform: none; color: var(--gold); margin-top: .35rem; font-weight: 600; }
 h2 em { font-style: normal; }
 .steps .step p { display: none; }
+
+/* v2: jen kolečko s koněm (výřez loga přes masku), zlaté, v levém horním rohu */
+.g-logo {
+  position: absolute; top: clamp(14px, 2.2vw, 28px); left: clamp(14px, 2.2vw, 28px); z-index: 5;
+  width: clamp(46px, 5vw, 70px); aspect-ratio: 133.6 / 125.568;
+  background: linear-gradient(135deg, #fffaf0, #c9a165 45%, #f1dfb8 70%, #8a6a3a);
+  -webkit-mask: url("gypce-logo.svg") 0 50% / 318.3% auto no-repeat;
+          mask: url("gypce-logo.svg") 0 50% / 318.3% auto no-repeat;
+  filter: drop-shadow(0 0 10px rgba(214,182,124,.35));
+  transition: transform .4s, filter .4s;
+}
+.g-logo:hover { transform: rotate(-8deg) scale(1.06); filter: drop-shadow(0 0 16px rgba(214,182,124,.6)); }
+.r-dest .seg, .r-pres .seg, .r-last .seg { white-space: nowrap; }
