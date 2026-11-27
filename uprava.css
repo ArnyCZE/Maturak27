@@ -20,3 +20,11 @@ h2 em { font-style: normal; }
 }
 .g-logo:hover { transform: rotate(-8deg) scale(1.06); filter: drop-shadow(0 0 16px rgba(214,182,124,.6)); }
 .r-dest .seg, .r-pres .seg, .r-last .seg { white-space: nowrap; }
+
+/* v3: „f“ ve future se neořezává, čísla tříd na stejné úrovni jako písmena */
+.title .line { overflow: visible; padding-bottom: .12em; }
+.title .line.script { padding-bottom: .45em; margin-bottom: -.3em; }
+.title .line.script > span { padding: 0 .15em .2em; }
+.hero-who .big, .hero-who .school, .hero-info b, .fact .v, .seg { font-variant-numeric: lining-nums; font-feature-settings: "lnum" 1; }
+.hero-who .big { font-family: Montserrat, system-ui, sans-serif; font-weight: 800; }
+.horse-core { filter: drop-shadow(0 0 6px rgba(214,182,124,.35)); }

@@ -48,3 +48,18 @@ console.log("logo:", s.includes("school-logo"), "| em:", /<em>/.test(s), "| angl
   fs.writeFileSync("app.js", a);
   console.log("v2 g-logo:", t.includes("g-logo"), "| měsíce:", a.includes("LISTOPAD"), "| gymnázium:", t.includes("NÁSTUP NA GYMNÁZIUM"));
 }
+
+// v3 (Arnošt 27. 11.): kůň Dašáku jako jádro hodin, dotažené „f“ ve future, „4. F a 4. H“ s číslicemi na stejné úrovni
+{
+  let t = fs.readFileSync("index.html", "utf8");
+  if (!t.includes("horse-core")) {
+    const core = '<mask id="horse-mask" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="140" y="143" width="120" height="113"><svg x="140" y="143" width="120" height="112.8" viewBox="0 0 133.6 125.568"><image href="gypce-logo.svg" width="425.197" height="125.568"/></svg></mask>' +
+      '<circle cx="200" cy="200" r="66" fill="#000" stroke="url(#rim)" stroke-width="1.5" opacity=".95"/>' +
+      '<rect class="horse-core" x="140" y="143" width="120" height="113" fill="url(#rim)" mask="url(#horse-mask)"/>';
+    t = t.replace('<g class="ticks"></g>\n        <g class="numerals" font-family="Cinzel, serif" font-weight="500" font-size="34" fill="url(#rim)"', '<g class="ticks"></g>\n        ' + core + '\n        <g class="numerals" font-family="Cinzel, serif" font-weight="500" font-size="34" fill="url(#rim)"');
+    t = t.replace('<circle cx="200" cy="200" r="7" fill="#ead6aa"/>\n      </svg>\n    </div>\n  </div>', '<circle cx="200" cy="200" r="5" fill="#ead6aa"/>\n      </svg>\n    </div>\n  </div>');
+  }
+  t = t.replace("uprava.css?v=2", "uprava.css?v=3");
+  fs.writeFileSync("index.html", t);
+  console.log("v3 kůň v hodinách:", t.includes("horse-core"));
+}
